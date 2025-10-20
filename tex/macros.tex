@@ -1,0 +1,305 @@
+\usetikzlibrary{arrows,arrows.meta,shapes.misc, decorations.pathreplacing,decorations.pathmorphing,calligraphy, patterns.meta}
+\tikzset{dotmark/.style={circle,fill,inner sep=1.5pt}}
+\tikzset{emptymark/.style={circle,draw,fill=white,inner sep=1.5pt}}
+\tikzset{crossmark/.style={thick,inner sep=1.5pt}}
+
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\D}{\mathcal{D}}
+
+
+\DeclareRobustCommand{\twoheadleadsto}{\tikz[baseline=(a.base)]{%
+        \node at (.2,0) {\(\leadsto\)};%
+        \fill[white] (-.1,-.1+.012) -- (.25,-.1+.012) -- (.345,0.011) -- (.25,.113) --
+        (-.1,.113) --cycle;
+        \node at (.125,0) {\(\leadsto\)};%
+        \node (a) at (.4/2,-.0) {\phantom{\(\leadsto\)}};%
+}}
+
+\def\onto{\twoheadleadsto}
+\def\ponto#1{\twoheadleadsto\kern-.3em{}_{#1}\kern.3em}
+
+\DeclareMathOperator*{\polylog}{polylog}
+\DeclareMathOperator*{\poly}{poly}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\DeclareMathOperator*{\downshift}{\searrow\,}
+\DeclareMathOperator*{\upshift}{\nwarrow}
+
+\def\substr{\ensuremath {\color{red}\preccurlyeq}}
+\def\intvlco#1#2{\bm{[}\,#1\,\bm{,}\,#2\,\bm{)}}
+\def\intvloc#1#2{\bm{(}\,#1\,\bm{,}\,#2\,\bm{]}}
+\def\intvloo#1#2{\bm{(}\,#1\,\bm{,}\,#2\,\bm{)}}
+\def\intvl#1#2{\bm{[}\,#1\,\bm{,}\,#2\,\bm{]}}
+\def\fragmentco#1#2{\bm{[}\,#1\,\bm{.\,.}\,#2\,\bm{)}}
+\def\fragmentoc#1#2{\bm{(}\,#1\,\bm{.\,.}\,#2\,\bm{]}}
+\def\fragmentoo#1#2{\bm{(}\,#1\,\bm{.\,.}\,#2\,\bm{)}}
+\def\fragment#1#2{\bm{[}\,#1\,\bm{.\,.}\,#2\,\bm{]}}
+\def\position#1{\bm{[}\,#1\,\bm{]}}
+\def\submatrix#1#2#3#4{\bm{[}\,#1\,\bm{.\,.}\,#2\,,\,#3\,\bm{.\,.}\,#4\,\bm{]}}
+\def\setn#1{\bm{[}\,#1\,\bm{]}}
+
+\def\highlight#1{\colorbox{c5!30}{#1}}
+\def\mid{\ensuremath :}
+
+\newcommand{\PMWE}{\textsc{PM\-with\-Edits}\xspace}
+
+\def\emptyset{\varnothing}
+
+
+\def\Sb{\S_{\beta}}
+\def\Sm{\S_{\mu}}
+\def\Sf{\S_{\varphi}}
+
+
+\newcommand{\Oh}{\mathcal{O}}
+\newcommand{\tOh}{{\rlap{\raisebox{-0.2ex}{$\widetilde{\phantom{\Oh}}$}}\Oh}}
+\newcommand{\cO}{\mathcal{O}}
+\newcommand{\cOtilde}{\tOh}
+\newcommand{\Ohtilde}{\tOh}
+
+\newcommand{\per}{\operatorname{per}}
+\newcommand{\rot}{\operatorname{rot}}
+\newcommand{\lcp}{\mathsf{lcp}}
+
+
+\newcommand{\OccEx}{\mathrm{Occ}}
+\newcommand{\OccE}{\mathrm{Occ}}
+\newcommand{\OccW}{\mathrm{Occ}^w}
+\newcommand{\ed}{\mathsf{ed}}
+\newcommand{\edw}{\mathsf{ed}^w}
+\newcommand\selfed{\mathsf{self}\text{-}\mathsf{ed}}
+\def\edu#1#2{\mathsf{ed}(#1,#2)}
+\def\edw#1#2{\mathsf{ed}^w(#1 \rightarrow #2)}
+\def\edwk#1#2#3{\mathsf{ed}^w_{\leq #1}(#2 \rightarrow #3)}
+\def\edwa#1#2#3{\mathsf{ed}^w_{#1}(#2 \rightarrow #3)}
+\def\w#1#2{\ensuremath w(#1 \mapsto #2)}
+
+\newcommand{\Esigma}{\bar{\Sigma}}
+\newcommand{\sqEsigma}{\bar{\Sigma}^2}
+
+\newcommand{\edl}[2]{{\ed}(#1,{}^*\!#2^*)}
+
+\def\edwl#1#2{\mathsf{ed}^w(#1 \rightarrow {}^*\!#2^*)}
+\def\edws#1#2{\mathsf{ed}^w(#1 \rightarrow {}^*\!#2)}
+\def\edwp#1#2{\mathsf{ed}^w(#1 \rightarrow #2^*)}
+
+
+\newcommand{\eds}[2]{{\ed}(#1,{}^*\!#2)}
+\newcommand{\edp}[2]{{\ed}(#1,#2^*)}
+
+\def\pillar{{\tt PILLAR}\xspace}
+\def\modelname{{\tt PILLAR}\xspace}
+\def\lceOp#1#2{{\tt LCP}(#1, #2)}
+\def\lcbOp#1#2{{\tt LCP}^R(#1, #2)}
+\def\ipmOp#1#2{{\tt IPM}(#1, #2)}
+\def\perOp#1{{\tt Period}(#1)}
+\def\rotOp#1#2{{\tt Rotate}(#1, #2)}
+\def\accOp#1#2{#1\position{#2}}
+\def\ipmOpName{{\tt IPM}\xspace}
+\def\accOpName{{\tt Access}\xspace}
+\def\extractOpName{{\tt Extract}\xspace}
+\def\lenOpName{{\tt Length}\xspace}
+\def\perOpName{{\tt Period}\xspace}
+\def\lceOpName{{\tt LCP}\xspace}
+\def\lcbOpName{{\tt LCP$^R$}\xspace}
+\def\cycEqOpName{{\tt Rotations}\xspace}
+\def\fraOp#1#2#3{#1\fragment{#2}{#3}}
+\def\cycEqOp#1#2{{\tt Rotations}(#1,#2)}
+\newcommand{\ceil}[1]{\left\lceil #1 \right\rceil}
+\newcommand{\floor}[1]{\left\lfloor #1 \right\rfloor}
+
+\newcommand{\allOccs}{\textsc{\ref{keyxtssyqb}}\xspace}
+\newcommand{\growFern}{\textsc{\ref{prob:grow_fern}}\xspace}
+\newcommand{\verify}{\textsc{\ref{dputabwsur}}\xspace}
+\newcommand{\algverify}{\texttt{Verify}}
+\newcommand{\growfern}{\textsc{GrowFern}\xspace}
+\newcommand{\alggrowfern}{\texttt{GrowFern}}
+\newcommand{\listalloccs}{\texttt{ListAllOccs}}
+\newcommand{\apmsmallsed}{\texttt{GrowFern-SmallSED}}
+\newcommand{\apmsmalled}{\texttt{GrowFern}}
+
+\def\Q{\ensuremath Q^{\infty}}
+
+
+\newcommand{\ktot}{\kappa}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Zz}{\mathbb{Z}_{\ge 0}}
+\newcommand{\Zp}{\mathbb{Z}_{> 0}}
+
+\renewcommand{\S}{\mathcal{S}}
+\def\Sb{\S_{\beta}}
+\def\Sm{\S_{\mu}}
+\def\Sf{\S_{\varphi}}
+
+\newcommand{\Sr}{\hat{S}}
+
+\def\torn{torsion\xspace}
+\newcommand{\PDPM}{\textsc{\ref{tvssrtdhgs}}\xspace}
+\newcommand{\DPM}{\textsc{\ref{kaqmrblnrj}}\xspace}
+\newcommand{\BCDPM}{\textsc{\ref{pupolgyhot}}\xspace}
+\newcommand{\I}{\mathcal{I}}
+\newcommand{\J}{\mathcal{J}}
+
+
+\newcommand{\tor}{{\sf tor}}
+\newcommand{\shift}{{\sf shift}}
+\newcommand{\bb}{{\sf bb}}
+\newcommand{\tb}{{\sf tb}}
+\newcommand{\Rinf}{\overline{\mathbb{R}}_{\geq 0}}
+\newcommand{\fern}{\textsf{fern}}
+\renewcommand{\P}{\mathcal{P}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Y}{\mathcal{Y}}
+\newcommand{\FF}{\mathcal{F}}
+\newcommand{\QQ}{\mathcal{Q}}
+\newcommand{\val}{\textsf{val}}
+
+\def\brpst#1#2{\sigma^{#1}_{#2}}
+\def\brped#1#2{\lambda^{#1}_{#2}}
+
+\def\sp#1{\textsf{Special}(#1)}
+\def\spb#1{\textsf{Special}_{\beta\varphi}(#1)}
+\def\rred#1{\textsf{Red}(#1)}
+
+\newcommand{\Comp}{\textsf{Trim}}
+\newcommand{\Comps}{\textsf{Tm}}
+\newcommand{\comp}{\alpha}
+\newcommand{\rgreen}{\textsf{Blue}}
+\newcommand{\update}{\textsf{update}}
+\newcommand{\rpl}{\textsf{Plain}}
+\SetKwFunction{swaps}{TrimmedPM}
+\SetKwFunction{boosted}{BoostedPM}
+\newcommand{\unpack}{\textsf{Unpack}\xspace}
+\newcommand{\blanked}{\textsf{Bleached}\xspace}
+\newcommand{\blact}{\textsf{BleachAct}\xspace}
+
+\newcommand{\bx}{\bar{x}}
+\newcommand{\by}{\bar{y}}
+\newcommand{\AG}{\mathsf{AG}}
+\newcommand{\AGW}{\mathsf{AG}^w}
+\newcommand{\AGw}{\AGW}
+\newcommand{\oAG}{\overline{\mathsf{AG}}}
+\newcommand{\oAGw}{\overline{\mathsf{AG}}^w}
+\newcommand{\oAGwd}{\overline{\mathsf{AG}}^w_d}
+\newcommand{\oAGws}{\overline{\mathsf{AG}}^w_s}
+
+\DeclareMathOperator{\BM}{BM}
+\newcommand{\BMw}{\BM^w}
+
+
+\def\emptystring{\ensuremath\varepsilon}
+
+\def\epsilon{\gamma}
+\def\alg{\mathbb{A}}
+
+\newcommand{\dist}{\mathsf{dist}}
+
+\newcommand{\Als}{\mathbf{A}} % the family of all alignments
+
+\newcommand{\concat}{\ensuremath{\mathtt{concat}}}
+\newcommand{\makestring}{\ensuremath{\mathtt{makestring}}}
+\newcommand{\splitOp}{\ensuremath{\mathtt{split}}}
+
+\def\pn#1{\textsc{#1}}
+
+
+\newcommand{\PMED}{\textsc{\ref{bspmdzgntc}}\xspace}
+\newcommand{\PMWED}{\textsc{\ref{erbgbxwrvp}}\xspace}
+\newcommand{\meq}[1]{\mathop{\smash{\stackrel{#1}{=}}\vphantom{{}^{|^|}}}}
+
+% distance matrix P, T, w, \Delta
+\def\dmat#1#2#3#4{\ensuremath D_{#1,#2}^{\mathstrut
+#3}\smash{\raisebox{-.025ex}{\big|}}_{#4}^{\mathstrut}}
+
+% set of all (k,\Delta,w)-ferns for (P,T); P, T, w, \Delta, k
+\def\fmats#1#2#3#4#5{\ensuremath \FF_{#1,#2}^{\mathstrut #3}\smash{\raisebox{-.025ex}{\big|}}_{#4}^{\mathstrut #5}}
+
+% distance matrix P, T, w, \Delta
+\def\fmat#1#2#3#4#5{\ensuremath F_{#1,#2}^{\mathstrut
+#3}\smash{\raisebox{-.025ex}{\big|}}_{#4}^{#5}}
+
+\newcommand{\dP}{\dot{P}}
+\newcommand{\dT}{\dot{T}}
+\newcommand{\ddT}{\ddot{T}}
+\newcommand{\ddP}{\ddot{P}}
+\newcommand{\dmati}[4]{\prescript{\circ}{\circ}{\vphantom{D}}\dmat{#1}{#2}{#3}{#4}}
+\newcommand{\dmatl}[4]{\prescript{}{\circ}{\vphantom{D}}\dmat{#1}{#2}{#3}{#4}}
+\newcommand{\dmatt}[4]{\prescript{\circ}{}{\vphantom{D}}\dmat{#1}{#2}{#3}{#4}}
+\newcommand{\fmati}[5]{\prescript{\circ}{\circ}{\vphantom{F}}\fmat{#1}{#2}{#3}{#4}{#5}}
+\newcommand{\fmatl}[5]{\prescript{}{\circ}{\vphantom{F}}\fmat{#1}{#2}{#3}{#4}{#5}}
+\newcommand{\fmatt}[5]{\prescript{\circ}{}{\vphantom{F}}\fmat{#1}{#2}{#3}{#4}{#5}}
+\newcommand{\fmatsi}[5]{\prescript{\circ}{\circ}{\vphantom{F}}\fmats{#1}{#2}{#3}{#4}{#5}}
+\newcommand{\fmatsl}[5]{\prescript{}{\circ}{\vphantom{F}}\fmats{#1}{#2}{#3}{#4}{#5}}
+\newcommand{\fmatst}[5]{\prescript{\circ}{}{\vphantom{F}}\fmats{#1}{#2}{#3}{#4}{#5}}
+\newcommand{\fmi}{\prescript{\circ}{\circ}{F}}
+\newcommand{\fml}{\prescript{}{\circ}{F}}
+\newcommand{\fmt}{\prescript{\circ}{}{F}}
+\newcommand{\talt}{\hat{t}}
+
+
+\newcommand{\hG}{\hat{G}}
+\newcommand{\GPd}{\ensuremath G^{P,d}}
+\newcommand{\GPSd}{\ensuremath G^{P,S,d}}
+\newcommand{\VPSd}{\ensuremath V^{P,S,d}}
+\newcommand{\VPd}{\ensuremath V^{P,d}}
+\newcommand{\DPSd}{\ensuremath D^{P,S,d}}
+\newcommand{\DPd}{\ensuremath D^{P,d}}
+\newcommand{\hV}{\hat{V}}
+\newcommand{\hD}{\hat{D}}
+\newcommand{\F}{\mathcal{F}}
+
+
+\newcommand{\on}[1]{\operatorname{#1}}
+\newcommand{\core}[1]{\on{core}(#1)}
+\newcommand{\coresiz}{\delta}
+\newcommand{\dens}[1]{#1^{\square}}
+\newcommand{\mds}{\mathsf{CMO}}
+\DeclareMathOperator{\ssum}{sum}
+
+% def from amsmath, adjusted
+\makeatletter
+\renewenvironment{cases}{%
+    \matrix@check\cases\env@cases
+}{%
+    \endarray\right.%
+}
+\def\env@cases{%
+    \let\@ifnextchar\new@ifnextchar
+    \left\lbrace
+        \def\arraystretch{1.1}%
+        \array{@{\;}c@{\quad}l@{}}%
+}
+\makeatother
+
+
+\SetKwFunction{locked}{Locked}
+\newcommand\markf{\ensuremath \mathrm{mk}}
+\newcommand\tradeoff{\ensuremath \eta}
+\newcommand\ktotm{\ensuremath \hat{\ktot}}
+\newcommand\lpref{\ensuremath \partial_P}
+\newcommand{\Hv}{\mathbb{H}}
+\newcommand{\light}{\mathbb{L}}
+\newcommand{\LP}{\mathcal{L}^P}
+\newcommand{\LT}{\mathcal{L}^T}
+\newcommand{\res}[2]{#1_{#2}}
+\newcommand{\Lck}{\mathcal{L}}
+
+\newcommand{\tbd}{13}
+\newcommand{\slack}{30}
+\def\tbc{32}
+
+
+\newcommand{\gen}{\mathit{gen}}
+\newcommand{\G}{\mathcal{G}}
+\newcommand{\Rp}{\mathbb{R}_{\ge 0}}
+\newcommand{\Prp}[1]{P_{#1}}
+\newcommand{\hk}{\hat{k}}
+\newcommand{\orig}{\textsf{orig}}
+\newcommand{\lmore}{\mathcal{R}}
+\newcommand{\mq}{\mathcal{F}}
+\newcommand{\redsize}{\rho}
+

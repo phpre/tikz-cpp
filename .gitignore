@@ -1,5 +1,6 @@
-main
-main.dSYM
+focs25
+*.dSYM
 obj/
 figs/
 new_files.d
+out/

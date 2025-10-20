@@ -1,7 +1,8 @@
 SRCDIR := src
 OBJDIR := obj
 FIGDIR := figs
-OUTFIGDIR := ../figs
+#OUTFIGDIR := ../figs
+OUTFIGDIR := out
 
 CC=g++
 export LD	:=	$(CC)
@@ -35,9 +36,10 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $$(@D)
 $(TREE): %:
 	mkdir -p $@
 
-generate_figures: main
+generate_figures: focs25
 	@mkdir -p $(FIGDIR)
-	@./main ./figs/ tex/font tex/color ../macros
+	@mkdir -p $(OUTFIGDIR)
+	@./focs25 ./figs/ tex/font tex/color tex/macros
 	@$(MAKE) -f $(THIS_FILE) figures
 	cp $(FIGDIR)/*.pdf $(OUTFIGDIR)
 
@@ -48,11 +50,11 @@ $(FIGDIR)/%.pdf: $(FIGDIR)/%.tex
 figures:	$(PDFS)
 	@echo "$^"
 
-main:	$(OBJS)
+focs25:	$(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) $(LIBS) -o $@
 
 clean:
-	$(RM) -r $(OBJDIR) $(FIGDIR) new_files.d main
+	$(RM) -r $(OBJDIR) $(FIGDIR) new_files.d focs25
 
 include new_files.d
 
