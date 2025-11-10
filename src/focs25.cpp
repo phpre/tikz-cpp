@@ -6,18 +6,6 @@
 #include "tikz_graph.h"
 #include "tikz_string.h"
 
-std::pair<tikz_point, tikz_point> translate_right( std::pair<tikz_point, tikz_point> p_pos,
-                                                   double                            p_amount ) {
-    return { tikz_point{ p_pos.first.m_x + p_amount, p_pos.first.m_y },
-             tikz_point{ p_pos.second.m_x + p_amount, p_pos.second.m_y } };
-}
-
-std::pair<tikz_point, tikz_point> translate_down( std::pair<tikz_point, tikz_point> p_pos,
-                                                  double                            p_amount ) {
-    return { tikz_point{ p_pos.first.m_x, p_amount + p_pos.first.m_y },
-             tikz_point{ p_pos.second.m_x, p_amount + p_pos.second.m_y } };
-}
-
 constexpr std::string T = "AAAcdaAAAaacAAaddAAAAA";
 constexpr std::string P = "AbAAbcdAAAdAAbddAAaAAA";
 
@@ -31,10 +19,11 @@ const stylized_string P_NAME{ std::string{ "P" }, str_displ_t::SDT_FRAGMENT };
 const breakpoint_repn BP_P_T   = compute_breakpoints( P, T );
 const breakpoint_repn BP_P2_T2 = compute_breakpoints( P2, T2 );
 
-std::string PATH       = "../figs/";
-std::string FONT_PATH  = "font";
-std::string COLOR_PATH = "";
-std::string MACRO_PATH = "../macros";
+std::string OUT_DIR    = "../figs/";
+std::string TEX_DIR    = "../tex/";
+std::string FONT_PATH  = TEX_DIR + "font";
+std::string COLOR_PATH = TEX_DIR + "color";
+std::string MACRO_PATH = TEX_DIR + "macros";
 std::string PACKAGES   = "algorithm2e,"
                          "mathtools";
 std::string LIBRARIES  = "shapes,"
@@ -47,10 +36,10 @@ std::string EXTRA_PREAMBLE
     = "\\tikzset{cross/.style={cross out, draw, minimum size=2*(#1-\\pgflinewidth),"
       "inner sep=0pt, outer sep=0pt}}\n";
 
-#define NEW_DOC_SIMPLE( p_name )                                                             \
-    new_document( PATH + ( p_name ), FONT_PATH, COLOR_PATH, MACRO_PATH, PACKAGES, LIBRARIES, \
-                  EXTRA_PREAMBLE );                                                          \
-    fprintf( stderr, "%s\n", ( PATH + ( p_name ) ).c_str( ) );
+#define NEW_DOC_SIMPLE( p_name )                                                                \
+    new_document( OUT_DIR + ( p_name ), FONT_PATH, COLOR_PATH, MACRO_PATH, PACKAGES, LIBRARIES, \
+                  EXTRA_PREAMBLE );                                                             \
+    fprintf( stderr, "%s\n", ( OUT_DIR + ( p_name ) ).c_str( ) );
 
 void alignment_picture( const std::string& p_name      = "g01.tex",
                         breakpoint_repn    p_alignment = BP_P_T ) {
@@ -350,10 +339,13 @@ void slices_detail_picture( const std::string& p_name = "g04.tex", stylized_stri
 }
 
 int main( int p_argc, char* p_argv[] ) {
-    if( p_argc > 1 ) { PATH = std::string{ p_argv[ 1 ] }; }
-    if( p_argc > 2 ) { FONT_PATH = std::string{ p_argv[ 2 ] }; }
-    if( p_argc > 3 ) { COLOR_PATH = std::string{ p_argv[ 3 ] }; }
-    if( p_argc > 4 ) { MACRO_PATH = std::string{ p_argv[ 4 ] }; }
+    if( p_argc > 1 ) { OUT_DIR = std::string{ p_argv[ 1 ] }; }
+    if( p_argc > 2 ) {
+        TEX_DIR    = std::string{ p_argv[ 2 ] };
+        FONT_PATH  = TEX_DIR + "font";
+        COLOR_PATH = TEX_DIR + "color";
+        MACRO_PATH = TEX_DIR + "macros";
+    }
 
     alignment_picture( );
     alignment_graph_picture( );

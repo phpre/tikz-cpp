@@ -155,3 +155,15 @@ void print_debug_point( FILE* p_out, tikz_point p_position, u32 p_startIndent, u
         p_out, "\\node[fill, circle, red, inner sep = 1pt] at (%5.3lf, %5.3lf) {};\n",
         p_position.m_x, p_position.m_y );
 }
+
+std::pair<tikz_point, tikz_point> translate_right( std::pair<tikz_point, tikz_point> p_pos,
+                                                   double                            p_amount ) {
+    return { tikz_point{ p_pos.first.m_x + p_amount, p_pos.first.m_y },
+             tikz_point{ p_pos.second.m_x + p_amount, p_pos.second.m_y } };
+}
+
+std::pair<tikz_point, tikz_point> translate_down( std::pair<tikz_point, tikz_point> p_pos,
+                                                  double                            p_amount ) {
+    return { tikz_point{ p_pos.first.m_x, p_amount + p_pos.first.m_y },
+             tikz_point{ p_pos.second.m_x, p_amount + p_pos.second.m_y } };
+}

@@ -175,3 +175,9 @@ void print_cross( FILE* p_out, tikz_point p_position, color p_color = COLOR_TEXT
 
 void print_debug_point( FILE* p_out, tikz_point p_position, u32 p_startIndent = 1,
                         u32 p_indent = 4 );
+
+std::pair<tikz_point, tikz_point> translate_right( std::pair<tikz_point, tikz_point> p_pos,
+                                                   double                            p_amount );
+
+std::pair<tikz_point, tikz_point> translate_down( std::pair<tikz_point, tikz_point> p_pos,
+                                                  double                            p_amount );

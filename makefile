@@ -1,48 +1,95 @@
-SRCDIR := src
-OBJDIR := obj
-FIGDIR := figs
-#OUTFIGDIR := ../figs
-OUTFIGDIR := out
+export SHELL := /usr/bin/env bash
 
-CC=g++
-export LD	:=	$(CC)
-LDFLAGS	= -L /opt/homebrew/lib/
-
-
-SRCS	:= $(shell find $(SRCDIR) -name "*.cpp")
-OBJS	:= $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
-DEPS	:= $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.d)
-TREE	:= $(sort $(patsubst %/,%,$(dir $(OBJS))) lose)
-FIGS	:= $(wildcard $(FIGDIR)/*.tex)
-PDFS	:= $(FIGS:%.tex=%.pdf)
-
-CFLAGS	=-std=c++23 -MMD -MP -MF $(@:$(OBJDIR)/%.o=$(OBJDIR)/%.d) \
-		 -g3 -ggdb -Wall -Wextra
-CPPFLAGS= $(CFLAGS)
-
-COMMIT_EPOCH = $(shell git log -1 --pretty=%ct)
-THIS_FILE := $(lastword $(MAKEFILE_LIST))
+ifeq ($(V),1)
+    SILENTMSG := @true
+    SILENTCMD :=
+else
+    SILENTMSG := @echo
+    SILENTCMD := @
+endif
 
 
-.PHONY: all clean generate_figures
+export CXX	:= g++
+export AR	:= ar
 
-all: generate_figures
 
+CPPFLAGS := -std=c++23 -O3 -Wall -Wextra
+
+## build main library
+LIBDIR		:= lib
+OBJLIBDIR	:= lobj
+OUTLIBDIR	:= out/lib
+OUTLIBINC	:= out/lib/include
+
+LIB_SRCS := $(shell find $(LIBDIR) -name "*.cpp")
+LIB_OBJS := $(LIB_SRCS:$(LIBDIR)/%.cpp=$(OBJLIBDIR)/%.o)
+LIB_DEPS := $(LIB_SRCS:$(LIBDIR)/%.cpp=$(OBJLIBDIR)/%.d)
+LIB_TREE := $(sort $(patsubst %/,%,$(dir $(LIB_OBJS))))
+
+DEPENDS += $(LIB_OBJS:.o=.d)
+export LNAME := tikzcpp
+export LIBBIN := $(OUTLIBDIR)/lib$(LNAME).a
+
+.DEFAULT: generate_figures
+.PHONY: generate_figures $(LIBBIN)
+
+$(LIBBIN): $(LIB_OBJS)
+	$(SILENTCMD)mkdir -p $(OUTLIBDIR)
+	$(SILENTCMD)mkdir -p $(OUTLIBINC)
+	$(SILENTCMD)rm -f "$(LIBBIN)"
+	$(SILENTCMD)$(AR) rcs "$(LIBBIN)" $(LIB_OBJS)
+	$(SILENTCMD)cp $(LIBDIR)/*.h $(OUTLIBINC)/
+	@echo built ... $(notdir $@)
+
+$(LIB_TREE): %:
+	mkdir -p $@
 
 .SECONDEXPANSION:
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $$(@D)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
+$(OBJLIBDIR)/%.o: $(LIBDIR)/%.cpp | $$(@D)
+	$(SILENTMSG) CXX $(notdir $<)
+	$(SILENTCMD)$(CXX) -MMD -MP -MF $(@:$(OBJLIBDIR)/%.o=$(OBJLIBDIR)/%.d) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
+
+## build executable for tikz code generation
+SRCDIR	:= src
+OBJDIR	:= obj
+BINDIR	:= bin
+OUTDIR	:= out
+
+SRCS := $(shell find $(SRCDIR) -name "*.cpp")
+BINS := $(SRCS:$(SRCDIR)/%.cpp=$(BINDIR)/%)
+OBJS := $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(LIBBIN)
+	$(SILENTCMD)mkdir -p $(OBJDIR)
+	$(SILENTMSG) CXX $(notdir $<)
+	$(SILENTCMD)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(OUTLIBINC) -o $@ -c $<
+
+$(BINDIR)/%: $(OBJDIR)/%.o
+	$(SILENTCMD)mkdir -p $(BINDIR)
+	$(SILENTCMD)$(CXX)  $(LDFLAGS) -L$(OUTLIBDIR) -l$(LNAME) -o $@ $<
+	@echo built ... $(notdir $@)
 
 $(TREE): %:
 	mkdir -p $@
 
-generate_figures: focs25
-	@mkdir -p $(FIGDIR)
-	@mkdir -p $(OUTFIGDIR)
-	@./focs25 ./figs/ tex/font tex/color tex/macros
-	@$(MAKE) -f $(THIS_FILE) figures
-	cp $(FIGDIR)/*.pdf $(OUTFIGDIR)
 
+## produce and compile figures
+FIGDIR := figs
+TEXDIR := tex
+
+GEN_FIGS := $(SRCS:$(SRCDIR)/%.cpp=generate_figures_%)
+FIGS := $(wildcard $(FIGDIR)/*.tex)
+PDFS := $(FIGS:%.tex=%.pdf)
+
+COMMIT_EPOCH = $(shell git log -1 --pretty=%ct)
+THIS_FILE := $(lastword $(MAKEFILE_LIST))
+
+generate_figures_%: $(BINDIR)/%
+	@mkdir -p $(FIGDIR)
+	@mkdir -p $(OUTDIR)
+	@$< "$(FIGDIR)/$(notdir $<)_" "$(TEXDIR)/"
+	@$(MAKE) -f $(THIS_FILE) figures
+	cp $(FIGDIR)/*.pdf $(OUTDIR)
 
 $(FIGDIR)/%.pdf: $(FIGDIR)/%.tex
 	@SOURCE_DATE_EPOCH=$(COMMIT_EPOCH) latexmk -silent -pdf -lualatex -use-make -output-directory=$(FIGDIR) $<
@@ -50,11 +97,10 @@ $(FIGDIR)/%.pdf: $(FIGDIR)/%.tex
 figures:	$(PDFS)
 	@echo "$^"
 
-focs25:	$(OBJS)
-	$(LD) $(LDFLAGS) $(OBJS) $(LIBS) -o $@
+generate_figures: $(GEN_FIGS)
 
 clean:
-	$(RM) -r $(OBJDIR) $(FIGDIR) new_files.d focs25
+	$(SILENTCMD)rm -r $(OBJLIBDIR) $(OBJDIR) $(BINDIR) $(FIGDIR) new_files.d || true
 
 include new_files.d
 
