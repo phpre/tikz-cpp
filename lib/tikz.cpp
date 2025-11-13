@@ -1,5 +1,8 @@
 #include "tikz.h"
 
+const std::string CROSS_STYLE
+    = "\\tikzset{cross/.style={cross out, draw, minimum size=2*(#1-\\pgflinewidth), inner sep=0pt, outer sep=0pt}}\n";
+
 color color::mix( color p_other, u32 p_amount ) const {
     return color{ this->m_name + color::MIX_SYMBOL + std::to_string( p_amount ) + color::MIX_SYMBOL
                   + p_other.m_name };
@@ -28,8 +31,17 @@ FILE* new_document( const std::string& p_path, const std::string& p_fontPath,
                     const std::string& p_extra ) {
     FILE* doc = open_or_abort( p_path );
     fprintf( doc, "\\documentclass[multi=page]{standalone}\n"
-                  "\\usepackage{tikz}\n"
-                  "\\usetikzlibrary{calc, shapes, shapes.geometric}\n" );
+                  "\\usepackage{algorithm2e,mathtools,tikz}\n"
+                  "\\usetikzlibrary{"
+                  "calc, "
+                  "shapes, "
+                  "shapes.geometric, "
+                  "fit, "
+                  "decorations, "
+                  "decorations.pathmorphing, "
+                  "decorations.markings, "
+                  "decorations.pathreplacing, "
+                  "decorations.shapes}\n" );
 
     if( p_packages != EMPTY_STR ) { fprintf( doc, "\\usepackage{%s}\n", p_packages.c_str( ) ); }
 
@@ -42,6 +54,9 @@ FILE* new_document( const std::string& p_path, const std::string& p_fontPath,
     }
 
     if( p_extra != EMPTY_STR ) { fprintf( doc, "%s\n", p_extra.c_str( ) ); }
+
+    // some default extra styles
+    fprintf( doc, "%s\n", CROSS_STYLE.c_str( ) );
 
     fprintf( doc, "\\begin{document}\n" );
     fprintf( doc, "\\pdfvariable suppressoptionalinfo \\numexpr\n"

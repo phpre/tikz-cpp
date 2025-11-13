@@ -24,17 +24,9 @@ std::string TEX_DIR    = "../tex/";
 std::string FONT_PATH  = TEX_DIR + "font";
 std::string COLOR_PATH = TEX_DIR + "color";
 std::string MACRO_PATH = TEX_DIR + "macros";
-std::string PACKAGES   = "algorithm2e,"
-                         "mathtools";
-std::string LIBRARIES  = "shapes,"
-                         "fit,"
-                         "decorations.pathmorphing,"
-                         "decorations.markings,"
-                         "decorations.pathreplacing,"
-                         "decorations.shapes";
-std::string EXTRA_PREAMBLE
-    = "\\tikzset{cross/.style={cross out, draw, minimum size=2*(#1-\\pgflinewidth),"
-      "inner sep=0pt, outer sep=0pt}}\n";
+std::string PACKAGES       = "";
+std::string LIBRARIES      = "";
+std::string EXTRA_PREAMBLE = "";
 
 #define NEW_DOC_SIMPLE( p_name )                                                                \
     new_document( OUT_DIR + ( p_name ), FONT_PATH, COLOR_PATH, MACRO_PATH, PACKAGES, LIBRARIES, \
