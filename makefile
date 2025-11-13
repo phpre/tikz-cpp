@@ -30,8 +30,8 @@ DEPENDS += $(LIB_OBJS:.o=.d)
 export LNAME := tikzcpp
 export LIBBIN := $(OUTLIBDIR)/lib$(LNAME).a
 
-.DEFAULT: generate_figures
 .PHONY: generate_figures $(LIBBIN)
+.DEFAULT_GOAL = generate_figures
 
 $(LIBBIN): $(LIB_OBJS)
 	$(SILENTCMD)mkdir -p $(OUTLIBDIR)
