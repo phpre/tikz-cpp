@@ -8,6 +8,7 @@
 #include "breakpoint.h"
 #include "tikz.h"
 #include "tikz_graph.h"
+#include "wildcard.h"
 
 constexpr double CHAR_WIDTH  = .5;
 constexpr double CHAR_HEIGHT = .5;
@@ -35,8 +36,14 @@ inline std::string frag_to_string( fragmentco p_frag ) {
 }
 
 struct character_annotation {
-    color m_bgColor   = COLOR_NONE;
-    color m_textColor = COLOR_NONE;
+    color       m_bgColor        = COLOR_NONE;
+    color       m_textColor      = COLOR_NONE;
+    std::string m_wildcardSymbol = EMPTY_STR;
+    u32         m_wildcardId     = 0;
+
+    inline bool isWildcard( ) const {
+        return m_wildcardSymbol != EMPTY_STR;
+    }
 };
 typedef std::map<u32, character_annotation> string_annotation;
 
@@ -50,12 +57,17 @@ typedef std::map<u32, character_annotation> string_annotation;
 // - a b c d e
 
 enum str_displ_t {
-    SDT_FRAGMENT = 0,     // print name, combine consecutive positions
-    SDT_NAME,             // only ever print name of string
-    SDT_NAME_ROTATE,      // only ever print name of string
-    SDT_POSITION,         // name of a string, don't group positions
-    SDT_CHARACTERS,       // actual string
-    SDT_SINGLE_CHARACTER, // string is just a single character
+    SDT_FRAGMENT = 0,      // print name, combine consecutive positions
+    SDT_NAME,              // only ever print name of string (never rotate name)
+    SDT_NAME_ROTATE,       // only ever print name of string (rotate name if string is
+                           // printed vertically)
+    SDT_POSITION,          // name of a string, don't group positions
+    SDT_CHARACTERS,        // actual string
+    SDT_SINGLE_CHARACTER,  // string is just a single character
+    SDT_FRAGMENT_WILDCARD, // print name, combine consecutive positions, highlight
+                           // wildcards
+    SDT_POSITION_WILDCARD, // name of a string, don't group positions, highlight
+                           // wildcards
 };
 
 enum align_t { AN_CENTER = 0, AN_BEGIN = 1, AN_END = 2 };
@@ -87,13 +99,21 @@ struct stylized_string {
     }
 
     inline bool print_single_characters( ) const {
-        return m_displayStyle == SDT_POSITION || m_displayStyle == SDT_CHARACTERS;
+        return m_displayStyle == SDT_POSITION_WILDCARD || m_displayStyle == SDT_POSITION
+               || m_displayStyle == SDT_CHARACTERS;
     }
 
     inline std::string render_pos( u32 p_pos ) const {
         switch( m_displayStyle ) {
         case SDT_POSITION: return math_mode( m_data + pos_to_string( p_pos ) );
         case SDT_CHARACTERS: return ( *this )[ p_pos ];
+        case SDT_POSITION_WILDCARD: {
+            if( m_annotation.count( p_pos ) && m_annotation.at( p_pos ).isWildcard( ) ) {
+                return WILDCARD;
+            } else {
+                return math_mode( m_data + pos_to_string( p_pos ) );
+            }
+        }
         default: return EMPTY_STR;
         }
     }
@@ -112,6 +132,7 @@ struct stylized_string {
         auto res = vsize_correction( p_render );
         switch( m_displayStyle ) {
         case SDT_POSITION:
+        case SDT_POSITION_WILDCARD:
         case SDT_FRAGMENT: return textsize_footnotesize( res );
         case SDT_NAME_ROTATE:
         case SDT_NAME:
@@ -124,6 +145,21 @@ struct stylized_string {
         case SDT_SINGLE_CHARACTER: return text_typewriter( textsize_small( res ) );
         default: return res;
         }
+    }
+
+    inline stylized_string add_wildcards( const std::string& p_mask,
+                                          const std::string& p_wildcard = WILDCARD,
+                                          u32                p_startId  = 0 ) const {
+        auto res = *this;
+
+        for( size_t i = 0; i < p_mask.size( ); ++i ) {
+            if( std::string{ p_mask[ i ] } == p_wildcard ) {
+                res.m_annotation[ i ].m_wildcardSymbol = p_wildcard;
+                res.m_annotation[ i ].m_wildcardId     = p_startId++;
+            }
+        }
+
+        return res;
     }
 
     inline std::string operator[]( u32 p_pos ) const {

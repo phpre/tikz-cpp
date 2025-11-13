@@ -1,5 +1,6 @@
 #include "tikz.h"
 #include "tikz_string.h"
+#include "wildcard.h"
 
 void print_width_macro( FILE* p_out, double p_width, const std::string& p_text, u32 p_startIndent,
                         u32 p_indent ) {
