@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 
+#include "ag_slice.h"
 #include "breakpoint.h"
 #include "tikz.h"
 #include "tikz_graph.h"
