@@ -109,7 +109,7 @@ struct stylized_string {
         case SDT_CHARACTERS: return ( *this )[ p_pos ];
         case SDT_POSITION_WILDCARD: {
             if( m_annotation.count( p_pos ) && m_annotation.at( p_pos ).isWildcard( ) ) {
-                return WILDCARD;
+                return EMPTY_STR;
             } else {
                 return math_mode( m_data + pos_to_string( p_pos ) );
             }

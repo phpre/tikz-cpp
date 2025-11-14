@@ -17,7 +17,8 @@ void print_string_inner( FILE* p_out, const stylized_string& p_S, tikz_point p_S
 
     if( p_S.print_single_characters( ) ) {
         for( u32 pos = p_S.m_fragment.closed_begin( ); pos < p_S.m_fragment.open_end( ); ++pos ) {
-            auto text  = p_S.render_pos( pos );
+            auto text = p_S.render_pos( pos );
+            if( text == EMPTY_STR || text == " " ) { continue; }
             auto ftext = p_S.resize_rendering( text );
 
             auto posxi = p_StopLeft.m_x + ( pos - p_S.m_fragment.closed_begin( ) ) * CHAR_WIDTH

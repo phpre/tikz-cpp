@@ -84,20 +84,27 @@ PDFS := $(FIGS:%.tex=%.pdf)
 COMMIT_EPOCH = $(shell git log -1 --pretty=%ct)
 THIS_FILE := $(lastword $(MAKEFILE_LIST))
 
-generate_figures_%: $(BINDIR)/%
+generate_single_%: $(BINDIR)/%
 	@mkdir -p $(FIGDIR)
 	@mkdir -p $(OUTDIR)
 	@$< "$(FIGDIR)/$(notdir $<)_" "$(TEXDIR)/"
 	@$(MAKE) -f $(THIS_FILE) figures
-	cp $(FIGDIR)/*.pdf $(OUTDIR)
+	cp $(FIGDIR)/$(notdir $<)_*.pdf $(OUTDIR)
+
+generate_figures_%: $(BINDIR)/%
+	@mkdir -p $(FIGDIR)
+	@mkdir -p $(OUTDIR)
+	@$< "$(FIGDIR)/$(notdir $<)_" "$(TEXDIR)/"
 
 $(FIGDIR)/%.pdf: $(FIGDIR)/%.tex
-	@SOURCE_DATE_EPOCH=$(COMMIT_EPOCH) latexmk -silent -pdf -lualatex -use-make -output-directory=$(FIGDIR) $<
+	@SOURCE_DATE_EPOCH=$(COMMIT_EPOCH) latexmk -f -silent -pdf -lualatex -use-make -output-directory=$(FIGDIR) $< >/dev/null || true
 
 figures:	$(PDFS)
-	@echo "$^"
+	@echo "built ... $^"
 
 generate_figures: $(GEN_FIGS)
+	@$(MAKE) -f $(THIS_FILE) figures
+	cp $(FIGDIR)/*.pdf $(OUTDIR)
 
 clean:
 	$(SILENTCMD)rm -r $(OBJLIBDIR) $(OBJDIR) $(BINDIR) $(FIGDIR) new_files.d || true

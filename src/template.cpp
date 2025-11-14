@@ -2,6 +2,7 @@
 #include <string>
 
 #include "tikz.h"
+#include "tikz_string.h"
 
 std::string OUT_DIR        = "../figs/";
 std::string TEX_DIR        = "../tex/";
@@ -21,8 +22,14 @@ void picture_stub( const std::string& p_name = "g01.tex" ) {
     FILE* out = NEW_DOC_SIMPLE( p_name );
     initialize_tikzpicture( out );
 
+    print_string( out, stylized_string{ "hello world!", str_displ_t::SDT_CHARACTERS },
+                  tikz_point{ 0, 0 } );
+
     finish_tikzpicture( out );
     initialize_tikzpicture( out );
+
+    print_string_vertical( out, stylized_string{ "hello world!", str_displ_t::SDT_CHARACTERS },
+                           tikz_point{ 0, 0 } );
 
     finish_tikzpicture( out );
     finish_document( out );
@@ -37,5 +44,5 @@ int main( int p_argc, char* p_argv[] ) {
         MACRO_PATH = TEX_DIR + "macros";
     }
 
-    // picture_stub( );
+    picture_stub( );
 }

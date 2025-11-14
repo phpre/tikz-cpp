@@ -32,16 +32,10 @@ FILE* new_document( const std::string& p_path, const std::string& p_fontPath,
     FILE* doc = open_or_abort( p_path );
     fprintf( doc, "\\documentclass[multi=page]{standalone}\n"
                   "\\usepackage{algorithm2e,mathtools,tikz}\n"
-                  "\\usetikzlibrary{"
-                  "calc, "
-                  "shapes, "
-                  "shapes.geometric, "
-                  "fit, "
-                  "decorations, "
-                  "decorations.pathmorphing, "
-                  "decorations.markings, "
-                  "decorations.pathreplacing, "
-                  "decorations.shapes}\n" );
+                  "\\usetikzlibrary{calc,fit}\n"
+                  "\\usetikzlibrary{shapes,shapes.geometric}\n"
+                  "\\usetikzlibrary{decorations,decorations.pathmorphing,decorations.markings}\n"
+                  "\\usetikzlibrary{decorations.pathreplacing,decorations.shapes}\n" );
 
     if( p_packages != EMPTY_STR ) { fprintf( doc, "\\usepackage{%s}\n", p_packages.c_str( ) ); }
 
