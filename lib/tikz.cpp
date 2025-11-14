@@ -88,7 +88,7 @@ void finish_tikzpicture( FILE* p_out ) {
 
 void indent( FILE* p_out, u32 p_indentLevel, u32 p_indent ) {
     char buffer[ 10 ] = { 0 };
-    snprintf( buffer, 9, "%%%u s", p_indentLevel * p_indent );
+    snprintf( buffer, 9, "%%%lu s", p_indentLevel * p_indent );
     fprintf( p_out, buffer, "" );
 }
 

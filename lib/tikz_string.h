@@ -40,8 +40,10 @@ struct character_annotation {
     color       m_textColor      = COLOR_NONE;
     std::string m_wildcardSymbol = EMPTY_STR;
     u32         m_wildcardId     = 0;
+    bool        m_showSymbol     = false;
+    bool        m_showId         = false;
 
-    inline bool isWildcard( ) const {
+    inline bool is_wildcard( ) const {
         return m_wildcardSymbol != EMPTY_STR;
     }
 };
@@ -57,12 +59,12 @@ typedef std::map<u32, character_annotation> string_annotation;
 // - a b c d e
 
 enum str_displ_t {
-    SDT_FRAGMENT = 0,      // print name, combine consecutive positions
+    SDT_CHARACTERS = 0,    // actual string
+    SDT_FRAGMENT,          // print name, combine consecutive positions
     SDT_NAME,              // only ever print name of string (never rotate name)
     SDT_NAME_ROTATE,       // only ever print name of string (rotate name if string is
                            // printed vertically)
     SDT_POSITION,          // name of a string, don't group positions
-    SDT_CHARACTERS,        // actual string
     SDT_SINGLE_CHARACTER,  // string is just a single character
     SDT_FRAGMENT_WILDCARD, // print name, combine consecutive positions, highlight
                            // wildcards
@@ -77,6 +79,7 @@ struct stylized_string {
     str_displ_t       m_displayStyle;
     fragmentco        m_fragment;
     color             m_color      = COLOR_TEXT;
+    color             m_fillColor  = COLOR_TEXT.to_flavor_bg( );
     string_annotation m_annotation = { };
     align_t           m_labelAlign = AN_CENTER;
 
@@ -107,9 +110,16 @@ struct stylized_string {
         switch( m_displayStyle ) {
         case SDT_POSITION: return math_mode( m_data + pos_to_string( p_pos ) );
         case SDT_CHARACTERS: return ( *this )[ p_pos ];
-        case SDT_POSITION_WILDCARD: {
-            if( m_annotation.count( p_pos ) && m_annotation.at( p_pos ).isWildcard( ) ) {
+        case SDT_FRAGMENT_WILDCARD: {
+            if( m_annotation.count( p_pos ) && m_annotation.at( p_pos ).is_wildcard( ) ) {
+                return math_mode( std::to_string( m_annotation.at( p_pos ).m_wildcardId ) );
+            } else {
                 return EMPTY_STR;
+            }
+        }
+        case SDT_POSITION_WILDCARD: {
+            if( m_annotation.count( p_pos ) && m_annotation.at( p_pos ).is_wildcard( ) ) {
+                return math_mode( std::to_string( m_annotation.at( p_pos ).m_wildcardId ) );
             } else {
                 return math_mode( m_data + pos_to_string( p_pos ) );
             }
@@ -147,15 +157,17 @@ struct stylized_string {
         }
     }
 
-    inline stylized_string add_wildcards( const std::string& p_mask,
-                                          const std::string& p_wildcard = WILDCARD,
-                                          u32                p_startId  = 0 ) const {
+    inline stylized_string add_wildcards( const std::string& p_mask, bool p_showId = false,
+                                          bool p_showSymbol = false, u32 p_startId = 0,
+                                          const std::string& p_wildcard = WILDCARD ) const {
         auto res = *this;
 
         for( size_t i = 0; i < p_mask.size( ); ++i ) {
             if( std::string{ p_mask[ i ] } == p_wildcard ) {
                 res.m_annotation[ i ].m_wildcardSymbol = p_wildcard;
                 res.m_annotation[ i ].m_wildcardId     = p_startId++;
+                res.m_annotation[ i ].m_showSymbol     = p_showSymbol;
+                res.m_annotation[ i ].m_showId         = p_showId;
             }
         }
 
@@ -165,42 +177,60 @@ struct stylized_string {
     inline std::string operator[]( u32 p_pos ) const {
         if( m_displayStyle == SDT_SINGLE_CHARACTER ) { return m_data; }
         if( m_displayStyle == SDT_CHARACTERS && p_pos < m_data.length( ) ) {
-            return std::string{ m_data[ p_pos ] };
+            if( m_annotation.count( p_pos ) && m_annotation.at( p_pos ).is_wildcard( ) ) {
+                return m_annotation.at( p_pos ).m_wildcardSymbol;
+            } else {
+                return std::string{ m_data[ p_pos ] };
+            }
         }
         return EMPTY_STR;
     }
 
+    inline stylized_string color_invert( ) const {
+        return stylized_string{ m_data,      m_fragment, m_displayStyle,
+                                m_fillColor, m_color,    m_annotation };
+    }
+
     inline stylized_string slice( fragmentco p_fragment ) const {
-        return stylized_string{ m_data, p_fragment, m_displayStyle, m_color, m_annotation };
+        return stylized_string{ m_data,  p_fragment,  m_displayStyle,
+                                m_color, m_fillColor, m_annotation };
     }
 
     inline stylized_string slice( fragmentco p_fragment, const std::string& p_dataOverride ) const {
-        return stylized_string{ p_dataOverride, p_fragment, SDT_CHARACTERS, m_color, m_annotation };
+        return stylized_string{ p_dataOverride, p_fragment,  SDT_CHARACTERS,
+                                m_color,        m_fillColor, m_annotation };
     }
 
     inline stylized_string slice( fragmentco p_fragment, char p_dataOverride ) const {
-        return stylized_string{ std::string{ p_dataOverride }, p_fragment, SDT_SINGLE_CHARACTER,
-                                m_color, m_annotation };
+        return stylized_string{ std::string{ p_dataOverride },
+                                p_fragment,
+                                SDT_SINGLE_CHARACTER,
+                                m_color,
+                                m_fillColor,
+                                m_annotation };
     }
 
     stylized_string( const std::string& p_string, str_displ_t p_displayStyle = SDT_FRAGMENT,
-                     color p_color = COLOR_TEXT, const string_annotation& p_annotation = { } )
+                     color p_color = COLOR_TEXT, color p_fillColor = COLOR_TEXT.to_flavor_bg( ),
+                     const string_annotation& p_annotation = { } )
         : m_data{ p_string }, m_displayStyle{ p_displayStyle },
           m_fragment{ 0, static_cast<u32>( p_string.length( ) ) }, m_color{ p_color },
-          m_annotation{ p_annotation } {
+          m_fillColor{ p_fillColor }, m_annotation{ p_annotation } {
     }
 
     stylized_string( char p_char, color p_color = COLOR_TEXT,
+                     color                    p_fillColor  = COLOR_TEXT.to_flavor_bg( ),
                      const string_annotation& p_annotation = { } )
         : m_data{ p_char }, m_displayStyle{ str_displ_t::SDT_SINGLE_CHARACTER }, m_fragment{ 0, 1 },
-          m_color{ p_color }, m_annotation{ p_annotation } {
+          m_color{ p_color }, m_fillColor{ p_fillColor }, m_annotation{ p_annotation } {
     }
 
     stylized_string( const std::string& p_string, fragmentco p_fragment,
                      str_displ_t p_displayStyle = SDT_FRAGMENT, color p_color = COLOR_TEXT,
+                     color                    p_fillColor  = COLOR_TEXT.to_flavor_bg( ),
                      const string_annotation& p_annotation = { } )
         : m_data{ p_string }, m_displayStyle{ p_displayStyle }, m_fragment{ p_fragment },
-          m_color{ p_color }, m_annotation{ p_annotation } {
+          m_color{ p_color }, m_fillColor{ p_fillColor }, m_annotation{ p_annotation } {
     }
 };
 

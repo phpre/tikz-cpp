@@ -55,7 +55,7 @@ breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& 
 breakpoint_repn breakpoint_slice( const breakpoint_repn& p_brpts, fragmentco p_frag,
                                   bool p_print ) {
     for( auto i : p_brpts ) {
-        PRINT_MACRO( "(%i %c, %i %c) ", i.m_posP, i.m_charP, i.m_posT, i.m_charT );
+        PRINT_MACRO( "(%lu %c, %lu %c) ", i.m_posP, i.m_charP, i.m_posT, i.m_charT );
     }
     PRINT_MACRO( "\n" );
 
@@ -85,7 +85,7 @@ breakpoint_repn breakpoint_slice( const breakpoint_repn& p_brpts, fragmentco p_f
     }
 
     for( auto i : result ) {
-        PRINT_MACRO( "(%i %c, %i %c) ", i.m_posP, i.m_charP, i.m_posT, i.m_charT );
+        PRINT_MACRO( "(%lu %c, %lu %c) ", i.m_posP, i.m_charP, i.m_posT, i.m_charT );
     }
     PRINT_MACRO( "\n" );
 
@@ -96,7 +96,7 @@ fragmentco align_fragment( const breakpoint_repn& p_brpts, fragmentco p_frag, bo
     auto sl = breakpoint_slice( p_brpts, p_frag );
     PRINT_MACRO( "  " );
     for( auto i : sl ) {
-        PRINT_MACRO( "(%i %c, %i %c) ", i.m_posP, i.m_charP, i.m_posT, i.m_charT );
+        PRINT_MACRO( "(%lu %c, %lu %c) ", i.m_posP, i.m_charP, i.m_posT, i.m_charT );
     }
     PRINT_MACRO( "\n" );
 

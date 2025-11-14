@@ -13,11 +13,13 @@ std::string MACRO_PATH     = TEX_DIR + "macros";
 std::string PACKAGES       = "";
 std::string LIBRARIES      = "";
 std::string EXTRA_PREAMBLE = "";
+std::string PROGRAM_NAME   = "";
 
 #define NEW_DOC_SIMPLE( p_name )                                                                \
     new_document( OUT_DIR + ( p_name ), FONT_PATH, COLOR_PATH, MACRO_PATH, PACKAGES, LIBRARIES, \
                   EXTRA_PREAMBLE );                                                             \
-    fprintf( stderr, "%s\n", ( OUT_DIR + ( p_name ) ).c_str( ) );
+    fprintf( stderr, "[%s] Generating %s.\n", PROGRAM_NAME.c_str( ),                            \
+             ( OUT_DIR + ( p_name ) ).c_str( ) );
 
 std::string T = "abab" + WILDCARD + "abcaab" + WILDCARD + "a" + WILDCARD + "ab";
 std::string P = "abcab";
@@ -54,6 +56,7 @@ void multi_trie_picture( const std::string& p_name = "g02.tex" ) {
 }
 
 int main( int p_argc, char* p_argv[] ) {
+    PROGRAM_NAME = p_argv[ 0 ];
     if( p_argc > 1 ) { OUT_DIR = std::string{ p_argv[ 1 ] }; }
     if( p_argc > 2 ) {
         TEX_DIR    = std::string{ p_argv[ 2 ] };

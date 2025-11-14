@@ -9,6 +9,60 @@ void print_width_macro( FILE* p_out, double p_width, const std::string& p_text, 
                                    p_width, p_text.c_str( ) );
 }
 
+void print_single_character( FILE* p_out, const stylized_string& p_S, u32 p_pos,
+                             tikz_point p_center, std::string p_extraOptions, u32 p_startIndent,
+                             u32 p_indent ) {
+    auto text  = p_S.render_pos( p_pos );
+    auto ftext = p_S.resize_rendering( text );
+
+    print_width_macro( p_out, CHAR_WIDTH, text, p_startIndent, p_indent );
+
+    if( p_S.m_annotation.count( p_pos )
+        && p_S.m_annotation.at( p_pos ).m_textColor.is_non_empty( ) ) {
+        p_extraOptions += ", color = " + p_S.m_annotation.at( p_pos ).m_textColor.to_string( );
+    }
+    print_node( p_out, p_center, ftext, p_extraOptions, EMPTY_STR, p_startIndent, p_indent );
+}
+
+void print_wildcard( FILE* p_out, const stylized_string& p_S, u32 p_pos, tikz_point p_center,
+                     u32 p_startIndent, u32 p_indent ) {
+    double cor1 = p_pos ? .005 : 0, cor2 = ( p_pos + 1 < p_S.length( ) ) ? .005 : 0;
+    auto   col = p_S.m_color;
+    col.replace_if_non_empty( p_S.annotation_at_pos( p_pos ).m_textColor );
+
+    auto bgcol = p_S.m_fillColor;
+    bgcol.replace_if_non_empty( p_S.annotation_at_pos( p_pos ).m_bgColor );
+
+    INDENT_PRINT( p_startIndent )(
+        p_out,
+        "\\fill[%s, rounded corners = 1pt, %s] "
+        "(%5.3lf + %5.3lf, %5.3lf - %5.3lf) rectangle (%5.3lf - %5.3lf, %5.3lf + %5.3lf);\n",
+        LW_OUTLINE.c_str( ), col.c_str( ), p_center.m_x - CHAR_WIDTH / 2, cor1,
+        p_center.m_y + CHAR_HEIGHT / 2, cor1, p_center.m_x + CHAR_WIDTH / 2, cor2,
+        p_center.m_y - CHAR_HEIGHT / 2, cor2 );
+
+    const auto& wc = p_S.m_annotation.at( p_pos );
+    // print wildcard symbol
+    if( wc.m_showSymbol ) {
+        print_node( p_out, p_center, text_typewriter( wc.m_wildcardSymbol ), bgcol.c_str( ),
+                    EMPTY_STR, p_startIndent, p_indent );
+    } else {
+        // wildcard lozenge
+        print_node( p_out, p_center, "$\\vardiamondsuit$", bgcol.c_str( ), EMPTY_STR, p_startIndent,
+                    p_indent );
+    }
+    // print wildcard index
+    if( wc.m_showId ) {
+        auto text  = std::string{ "$" } + std::to_string( wc.m_wildcardId ) + "$";
+        auto ftext = textsize_tiny( text );
+
+        print_width_macro( p_out, CHAR_WIDTH / 2.0, text, p_startIndent, p_indent );
+        print_node( p_out,
+                    tikz_point{ p_center.m_x + CHAR_WIDTH / 3.5, p_center.m_y - CHAR_HEIGHT / 3.5 },
+                    ftext, bgcol.c_str( ), EMPTY_STR, p_startIndent, p_indent );
+    }
+}
+
 void print_string_inner( FILE* p_out, const stylized_string& p_S, tikz_point p_StopLeft,
                          u32 p_startIndent, u32 p_indent ) {
     auto        posx     = p_StopLeft.m_x + ( p_S.length( ) * CHAR_WIDTH ) / 2.0;
@@ -17,22 +71,15 @@ void print_string_inner( FILE* p_out, const stylized_string& p_S, tikz_point p_S
 
     if( p_S.print_single_characters( ) ) {
         for( u32 pos = p_S.m_fragment.closed_begin( ); pos < p_S.m_fragment.open_end( ); ++pos ) {
-            auto text = p_S.render_pos( pos );
-            if( text == EMPTY_STR || text == " " ) { continue; }
-            auto ftext = p_S.resize_rendering( text );
-
             auto posxi = p_StopLeft.m_x + ( pos - p_S.m_fragment.closed_begin( ) ) * CHAR_WIDTH
                          + CHAR_WIDTH / 2.0;
-
-            print_width_macro( p_out, CHAR_WIDTH, text, p_startIndent, p_indent );
-
-            std::string exo = extraopt;
-            if( p_S.m_annotation.count( pos )
-                && p_S.m_annotation.at( pos ).m_textColor.is_non_empty( ) ) {
-                exo += ", color = " + p_S.m_annotation.at( pos ).m_textColor.to_string( );
+            if( p_S.m_annotation.count( pos ) && p_S.m_annotation.at( pos ).is_wildcard( ) ) {
+                print_wildcard( p_out, p_S, pos, tikz_point{ posxi, posy }, p_startIndent,
+                                p_indent );
+            } else {
+                print_single_character( p_out, p_S, pos, tikz_point{ posxi, posy }, extraopt,
+                                        p_startIndent, p_indent );
             }
-            print_node( p_out, tikz_point{ posxi, posy }, ftext, exo, EMPTY_STR, p_startIndent,
-                        p_indent );
         }
     } else {
         if( p_S.m_labelAlign == AN_BEGIN ) {
@@ -61,21 +108,16 @@ void print_string_inner_vertical( FILE* p_out, const stylized_string& p_S, tikz_
 
     if( p_S.print_single_characters( ) ) {
         for( u32 pos = p_S.m_fragment.closed_begin( ); pos < p_S.m_fragment.open_end( ); ++pos ) {
-            auto text  = p_S.render_pos( pos );
-            auto ftext = p_S.resize_rendering( text );
-
             auto posyi = p_StopLeft.m_y - ( pos - p_S.m_fragment.closed_begin( ) ) * CHAR_HEIGHT
                          - CHAR_HEIGHT / 2.0;
-
-            print_width_macro( p_out, CHAR_WIDTH, text, p_startIndent, p_indent );
-
-            std::string exo = p_S.rotatable( ) ? extraopt_rotate : extraopt;
-            if( p_S.m_annotation.count( pos )
-                && p_S.m_annotation.at( pos ).m_textColor.is_non_empty( ) ) {
-                exo += ", color = " + p_S.m_annotation.at( pos ).m_textColor.to_string( );
+            if( p_S.m_annotation.count( pos ) && p_S.m_annotation.at( pos ).is_wildcard( ) ) {
+                print_wildcard( p_out, p_S, pos, tikz_point{ posx, posyi }, p_startIndent,
+                                p_indent );
+            } else {
+                print_single_character( p_out, p_S, pos, tikz_point{ posx, posyi },
+                                        p_S.rotatable( ) ? extraopt_rotate : extraopt,
+                                        p_startIndent, p_indent );
             }
-            print_node( p_out, tikz_point{ posx, posyi }, ftext, exo, EMPTY_STR, p_startIndent,
-                        p_indent );
         }
     } else {
         if( p_S.m_labelAlign == AN_BEGIN ) {
@@ -104,13 +146,13 @@ void print_string( FILE* p_out, const stylized_string& p_S, tikz_point p_StopLef
     if( !p_S.length( ) ) { return; }
 
     double cor3 = -0.035;
-    INDENT_PRINT( p_startIndent )(
-        p_out,
-        "\\fill[rounded corners = 2pt, %s] "
-        "(%5.3lf + %5.3lf, %5.3lf - %5.3lf) rectangle"
-        "(%5.3lf - %5.3lf, %5.3lf + %5.3lf);\n",
-        p_S.m_color.to_flavor_bg( ).c_str( ), p_StopLeft.m_x, cor3, p_StopLeft.m_y, cor3,
-        p_StopLeft.m_x + p_S.length( ) * CHAR_WIDTH, cor3, p_StopLeft.m_y - CHAR_HEIGHT, cor3 );
+    INDENT_PRINT( p_startIndent )( p_out,
+                                   "\\fill[rounded corners = 2pt, %s] "
+                                   "(%5.3lf + %5.3lf, %5.3lf - %5.3lf) rectangle"
+                                   "(%5.3lf - %5.3lf, %5.3lf + %5.3lf);\n",
+                                   p_S.m_fillColor.c_str( ), p_StopLeft.m_x, cor3, p_StopLeft.m_y,
+                                   cor3, p_StopLeft.m_x + p_S.length( ) * CHAR_WIDTH, cor3,
+                                   p_StopLeft.m_y - CHAR_HEIGHT, cor3 );
 
     // for each character, print a small rectangle
     for( u32 i = 0; i < p_S.length( ); ++i ) {
@@ -128,13 +170,13 @@ void print_string( FILE* p_out, const stylized_string& p_S, tikz_point p_StopLef
     }
     // fill draw white box with label
     cor3 = 0.015;
-    INDENT_PRINT( p_startIndent )(
-        p_out,
-        "\\fill[rounded corners = 1pt, %s] "
-        "(%5.3lf + %5.3lf, %5.3lf - %5.3lf) rectangle"
-        "(%5.3lf - %5.3lf, %5.3lf + %5.3lf);\n",
-        p_S.m_color.to_flavor_bg( ).c_str( ), p_StopLeft.m_x, cor3, p_StopLeft.m_y, cor3,
-        p_StopLeft.m_x + p_S.length( ) * CHAR_WIDTH, cor3, p_StopLeft.m_y - CHAR_HEIGHT, cor3 );
+    INDENT_PRINT( p_startIndent )( p_out,
+                                   "\\fill[rounded corners = 1pt, %s] "
+                                   "(%5.3lf + %5.3lf, %5.3lf - %5.3lf) rectangle"
+                                   "(%5.3lf - %5.3lf, %5.3lf + %5.3lf);\n",
+                                   p_S.m_fillColor.c_str( ), p_StopLeft.m_x, cor3, p_StopLeft.m_y,
+                                   cor3, p_StopLeft.m_x + p_S.length( ) * CHAR_WIDTH, cor3,
+                                   p_StopLeft.m_y - CHAR_HEIGHT, cor3 );
 
     for( u32 i = 0; i < p_S.length( ); ++i ) {
         double cor1 = i ? .04 : .05, cor2 = ( i + 1 < p_S.length( ) ) ? .04 : .05;
@@ -174,8 +216,8 @@ void print_string_vertical( FILE* p_out, const stylized_string& p_S, tikz_point 
                                    "\\fill[rounded corners=2pt, %s] "
                                    "(%5.3lf + %5.3lf, %5.3lf - %5.3lf) rectangle"
                                    "(%5.3lf - %5.3lf, %5.3lf + %5.3lf);\n",
-                                   p_S.m_color.to_flavor_bg( ).c_str( ), p_StopLeft.m_x, cor3,
-                                   p_StopLeft.m_y, cor3, p_StopLeft.m_x + CHAR_WIDTH, cor3,
+                                   p_S.m_fillColor.c_str( ), p_StopLeft.m_x, cor3, p_StopLeft.m_y,
+                                   cor3, p_StopLeft.m_x + CHAR_WIDTH, cor3,
                                    p_StopLeft.m_y - p_S.length( ) * CHAR_HEIGHT, cor3 );
 
     // for each character, print a small rectangle
@@ -197,8 +239,8 @@ void print_string_vertical( FILE* p_out, const stylized_string& p_S, tikz_point 
                                    "\\fill[rounded corners=1pt, %s] "
                                    "(%5.3lf + %5.3lf, %5.3lf - %5.3lf) rectangle"
                                    "(%5.3lf - %5.3lf, %5.3lf + %5.3lf);\n",
-                                   p_S.m_color.to_flavor_bg( ).c_str( ), p_StopLeft.m_x, cor3,
-                                   p_StopLeft.m_y, cor3, p_StopLeft.m_x + CHAR_WIDTH, cor3,
+                                   p_S.m_fillColor.c_str( ), p_StopLeft.m_x, cor3, p_StopLeft.m_y,
+                                   cor3, p_StopLeft.m_x + CHAR_WIDTH, cor3,
                                    p_StopLeft.m_y - p_S.length( ) * CHAR_HEIGHT, cor3 );
 
     for( u32 i = 0; i < p_S.length( ); ++i ) {
@@ -849,7 +891,7 @@ void print_graph_slices_p_labels( FILE* p_out, const std::deque<graph_slice>& p_
             // guide lines
             vertex_grid vg{ tikz_point{ p_sliceSpacing * i, 0.0 },
                             tikz_point{ CHAR_WIDTH, -CHAR_HEIGHT } };
-            if( fP.closed_begin( ) && i + 0U != frag.closed_end( ) ) {
+            if( fP.closed_begin( ) && i + 0LU != frag.closed_end( ) ) {
                 posP = tikz_point{ fragT.open_end( ) * CHAR_WIDTH
                                        + ( p_gs.size( ) - 1 ) * p_sliceSpacing + p_labelDis
                                        + CHAR_WIDTH * ( p_gs.size( ) - 1 - i ) / 6.25,

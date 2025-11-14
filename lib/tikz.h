@@ -8,8 +8,8 @@
 #define PRINT_MACRO \
     if( p_print ) printf
 
-typedef unsigned int        u32;
-typedef signed int          s32;
+typedef unsigned long       u32;
+typedef signed long         s32;
 typedef std::pair<u32, u32> point;
 
 constexpr std::string EMPTY_STR = "";
@@ -123,6 +123,12 @@ inline std::string textsize_small( const std::string& p_string ) {
 }
 inline std::string textsize_footnotesize( const std::string& p_string ) {
     return "{\\footnotesize " + p_string + "}";
+}
+inline std::string textsize_tiny( const std::string& p_string ) {
+    return "{\\tiny " + p_string + "}";
+}
+inline std::string textsize_large( const std::string& p_string ) {
+    return "{\\large " + p_string + "}";
 }
 
 FILE* new_document( const std::string& p_path, const std::string& p_fontPath = EMPTY_STR,

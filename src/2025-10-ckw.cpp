@@ -27,11 +27,13 @@ std::string MACRO_PATH = TEX_DIR + "macros";
 std::string PACKAGES       = "";
 std::string LIBRARIES      = "";
 std::string EXTRA_PREAMBLE = "";
+std::string PROGRAM_NAME   = "";
 
 #define NEW_DOC_SIMPLE( p_name )                                                                \
     new_document( OUT_DIR + ( p_name ), FONT_PATH, COLOR_PATH, MACRO_PATH, PACKAGES, LIBRARIES, \
                   EXTRA_PREAMBLE );                                                             \
-    fprintf( stderr, "%s\n", ( OUT_DIR + ( p_name ) ).c_str( ) );
+    fprintf( stderr, "[%s] Generating %s.\n", PROGRAM_NAME.c_str( ),                            \
+             ( OUT_DIR + ( p_name ) ).c_str( ) );
 
 void alignment_picture( const std::string& p_name      = "g01.tex",
                         breakpoint_repn    p_alignment = BP_P_T ) {
@@ -331,6 +333,7 @@ void slices_detail_picture( const std::string& p_name = "g04.tex", stylized_stri
 }
 
 int main( int p_argc, char* p_argv[] ) {
+    PROGRAM_NAME = p_argv[ 0 ];
     if( p_argc > 1 ) { OUT_DIR = std::string{ p_argv[ 1 ] }; }
     if( p_argc > 2 ) {
         TEX_DIR    = std::string{ p_argv[ 2 ] };
