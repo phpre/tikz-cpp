@@ -30,10 +30,10 @@ DEPENDS += $(LIB_OBJS:.o=.d)
 export LNAME := tikzcpp
 export LIBBIN := $(OUTLIBDIR)/lib$(LNAME).a
 
-.PHONY: generate_figures $(LIBBIN)
+.PHONY: generate_figures $(LNAME)
 .DEFAULT_GOAL = generate_figures
 
-$(LIBBIN): $(LIB_OBJS)
+$(LNAME): $(LIB_OBJS)
 	$(SILENTCMD)mkdir -p $(OUTLIBDIR)
 	$(SILENTCMD)mkdir -p $(OUTLIBINC)
 	$(SILENTCMD)rm -f "$(LIBBIN)"
@@ -59,7 +59,7 @@ SRCS := $(shell find $(SRCDIR) -name "*.cpp")
 BINS := $(SRCS:$(SRCDIR)/%.cpp=$(BINDIR)/%)
 OBJS := $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(LIBBIN)
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(LNAME)
 	$(SILENTCMD)mkdir -p $(OBJDIR)
 	$(SILENTMSG) CXX $(notdir $<)
 	$(SILENTCMD)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -I$(OUTLIBINC) -o $@ -c $<
@@ -84,35 +84,20 @@ PDFS := $(FIGS:%.tex=%.pdf)
 COMMIT_EPOCH = $(shell git log -1 --pretty=%ct)
 THIS_FILE := $(lastword $(MAKEFILE_LIST))
 
-generate_single_%: $(BINDIR)/%
-	@mkdir -p $(FIGDIR)
-	@mkdir -p $(OUTDIR)
-	@$< "$(FIGDIR)/$(notdir $<)_" "$(TEXDIR)/"
-	@$(MAKE) -f $(THIS_FILE) figures
-	cp $(FIGDIR)/$(notdir $<)_*.pdf $(OUTDIR)
-
 generate_figures_%: $(BINDIR)/%
 	@mkdir -p $(FIGDIR)
 	@mkdir -p $(OUTDIR)
-	@$< "$(FIGDIR)/$(notdir $<)_" "$(TEXDIR)/"
+	$(SILENTCMD)$< "$(FIGDIR)/$(notdir $<)_" "$(TEXDIR)/"
 
 $(FIGDIR)/%.pdf: $(FIGDIR)/%.tex
-	@SOURCE_DATE_EPOCH=$(COMMIT_EPOCH) latexmk -f -silent -pdf -lualatex -use-make -output-directory=$(FIGDIR) $< >/dev/null || true
+	$(SILENTCMD)SOURCE_DATE_EPOCH=$(COMMIT_EPOCH) latexmk -f -silent -pdf -lualatex -use-make -output-directory=$(FIGDIR) $< >/dev/null || true
 
 figures:	$(PDFS)
 	@echo "built ... $^"
 
 generate_figures: $(GEN_FIGS)
 	@$(MAKE) -f $(THIS_FILE) figures
-	cp $(FIGDIR)/*.pdf $(OUTDIR)
+	$(SILENTCMD)cp $(FIGDIR)/*.pdf $(OUTDIR)
 
 clean:
-	$(SILENTCMD)rm -r $(OBJLIBDIR) $(OBJDIR) $(BINDIR) $(FIGDIR) new_files.d || true
-
-include new_files.d
-
-new_files.d:
-	rm -f $@
-	$(eval FIGS := $(wildcard $(FIGDIR)/*.tex))
-	$(eval PDFS := $(FIGS:%.tex=%.pdf))
-	echo "figures: $(PDFS)" >>$@
+	$(SILENTCMD)rm -r $(OBJLIBDIR) $(OBJDIR) $(BINDIR) $(FIGDIR) || true

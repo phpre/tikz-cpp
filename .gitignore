@@ -1,6 +1,5 @@
 *.dSYM
 obj/
 figs/
-new_files.d
 out/
 lobj/
