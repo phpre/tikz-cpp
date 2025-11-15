@@ -5,6 +5,7 @@
 
 #include "fragmentco.h"
 #include "tikz.h"
+#include "wildcard.h"
 
 // breakpoint of an alignment P ~>> T, as seen from P.
 struct breakpoint {
@@ -56,7 +57,9 @@ inline breakpoint_repn trivial_alignment( fragmentco p_fragment ) {
     return res;
 }
 
-breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& p_T );
+// computes optimal (unweighted) edit distance alignment of P onto T
+breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& p_T,
+                                     const std::string& p_wildcard = WILDCARD );
 
 // compute A( P[ l .. r) )
 breakpoint_repn breakpoint_slice( const breakpoint_repn& p_brpts, fragmentco p_frag,

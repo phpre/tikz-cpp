@@ -2,9 +2,20 @@
 
 #include "breakpoint.h"
 
-breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& p_T ) {
+bool match( char p_P, char p_T, char p_wc ) {
+    if( !p_wc ) {
+        return p_P == p_T;
+    } else {
+        return p_P == p_wc || p_T == p_wc || p_P == p_T;
+    }
+}
+
+breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& p_T,
+                                     const std::string& p_wildcard ) {
     auto m = p_P.size( );
     auto n = p_T.size( );
+
+    char wc = ( p_wildcard == EMPTY_STR || !p_wildcard.length( ) ) ? 0 : p_wildcard[ 0 ];
 
     auto nw_dp = std::vector<std::vector<u32>>{ m + 1, std::vector<u32>( n + 1, 0 ) };
     for( u32 i = 0; i <= m; ++i ) { nw_dp[ i ][ 0 ] = i; }
@@ -13,7 +24,7 @@ breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& 
     for( u32 i = 1; i <= m; ++i ) {
         for( u32 j = 1; j <= n; ++j ) {
             nw_dp[ i ][ j ] = std::min( nw_dp[ i - 1 ][ j ] + 1, nw_dp[ i ][ j - 1 ] + 1 );
-            if( p_P[ i - 1 ] == p_T[ j - 1 ] ) {
+            if( match( p_P[ i - 1 ], p_T[ j - 1 ], wc ) ) {
                 nw_dp[ i ][ j ] = std::min( nw_dp[ i ][ j ], nw_dp[ i - 1 ][ j - 1 ] );
             } else {
                 nw_dp[ i ][ j ] = std::min( nw_dp[ i ][ j ], nw_dp[ i - 1 ][ j - 1 ] + 1 );
@@ -29,7 +40,8 @@ breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& 
         auto i = pos.first;
         auto j = pos.second;
 
-        if( i && j && nw_dp[ i ][ j ] == nw_dp[ i - 1 ][ j - 1 ] && p_P[ i - 1 ] == p_T[ j - 1 ] ) {
+        if( i && j && nw_dp[ i ][ j ] == nw_dp[ i - 1 ][ j - 1 ]
+            && match( p_P[ i - 1 ], p_T[ j - 1 ], wc ) ) {
             pos = point{ i - 1, j - 1 };
         } else if( i && j && nw_dp[ i ][ j ] == 1 + nw_dp[ i - 1 ][ j - 1 ] ) {
             pos = point{ i - 1, j - 1 };

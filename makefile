@@ -92,9 +92,9 @@ generate_figures_%: $(BINDIR)/%
 $(FIGDIR)/%.pdf: $(FIGDIR)/%.tex
 	$(SILENTMSG) "TEX $<"
 	$(SILENTCMD)SOURCE_DATE_EPOCH=$(COMMIT_EPOCH) latexmk -f -silent -pdf -lualatex -use-make -output-directory=$(FIGDIR) $< >/dev/null || true
+	$(SILENTMSG) "built ... $^"
 
 figures:	$(PDFS)
-	@echo "built ... $^"
 
 generate_figures: $(GEN_FIGS)
 	@$(MAKE) -f $(THIS_FILE) figures

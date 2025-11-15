@@ -37,8 +37,6 @@ std::string PROGRAM_NAME   = "";
 #define NEW_DOC_SIMPLE( p_name )                                                                \
     new_document( OUT_DIR + ( p_name ), FONT_PATH, COLOR_PATH, MACRO_PATH, PACKAGES, LIBRARIES, \
                   EXTRA_PREAMBLE );
-//    fprintf( stderr, "[%s] Generating %s.\n", PROGRAM_NAME.c_str( ),
-//             ( OUT_DIR + ( p_name ) ).c_str( ) );
 
 void alignment_picture( const std::string& p_name      = "g01.tex",
                         breakpoint_repn    p_alignment = BP_P_T ) {

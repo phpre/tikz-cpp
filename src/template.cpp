@@ -16,9 +16,7 @@ std::string PROGRAM_NAME   = "";
 
 #define NEW_DOC_SIMPLE( p_name )                                                                \
     new_document( OUT_DIR + ( p_name ), FONT_PATH, COLOR_PATH, MACRO_PATH, PACKAGES, LIBRARIES, \
-                  EXTRA_PREAMBLE );                                                             \
-    fprintf( stderr, "[%s] Generating %s.\n", PROGRAM_NAME.c_str( ),                            \
-             ( OUT_DIR + ( p_name ) ).c_str( ) );
+                  EXTRA_PREAMBLE );
 
 void picture_stub( const std::string& p_name = "g01.tex" ) {
     FILE* out = NEW_DOC_SIMPLE( p_name );
@@ -62,6 +60,20 @@ void picture_stub( const std::string& p_name = "g01.tex" ) {
             out, SI, tikz_point{ CHAR_WIDTH * ( 2.0 * i ), ( data.length( ) + 1 ) * CHAR_WIDTH } );
     }
 
+    finish_tikzpicture( out );
+    initialize_tikzpicture( out );
+
+    std::string T = "abab" + WILDCARD + "abcaab" + WILDCARD + "a" + WILDCARD + "a";
+    std::string P = "babcabcaccabaab";
+
+    auto T_NAME
+        = stylized_string{ T, "T", str_displ_t::FRAGMENT_WILDCARD }.add_wildcards( T, true );
+    auto P_NAME = stylized_string{ P, "P", str_displ_t::FRAGMENT_WILDCARD };
+
+    auto bp = compute_breakpoints( P, T, WILDCARD );
+
+    print_alignment( out, P_NAME, tikz_point{ 0.0, 0.0 }, T_NAME, tikz_point{ 0.0, 1.25 }, bp,
+                     true );
     finish_tikzpicture( out );
     finish_document( out );
 }
