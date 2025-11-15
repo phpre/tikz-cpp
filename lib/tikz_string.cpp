@@ -4,24 +4,27 @@
 
 void print_width_macro( FILE* p_out, double p_width, const std::string& p_text, u32 p_startIndent,
                         u32 p_indent ) {
-    INDENT_PRINT( p_startIndent )( p_out,
-                                   "\\pgfmathsetmacro\\twd{ %5.3lf * 1cm / width(\"%s\") }\n",
-                                   p_width, p_text.c_str( ) );
+    if( p_text == EMPTY_STR ) {
+        INDENT_PRINT( p_startIndent )(
+            p_out, "\\pgfmathsetmacro\\twd{ %5.3lf * 1cm / width(\" \") }\n", p_width );
+    } else {
+        INDENT_PRINT( p_startIndent )( p_out,
+                                       "\\pgfmathsetmacro\\twd{ %5.3lf * 1cm / width(\"%s\") }\n",
+                                       p_width, p_text.c_str( ) );
+    }
 }
 
 void print_single_character( FILE* p_out, const stylized_string& p_S, u32 p_pos,
-                             tikz_point p_center, std::string p_extraOptions, u32 p_startIndent,
-                             u32 p_indent ) {
-    auto text  = p_S.render_pos( p_pos );
-    auto ftext = p_S.resize_rendering( text );
-
-    print_width_macro( p_out, CHAR_WIDTH, text, p_startIndent, p_indent );
+                             std::pair<std::string, std::string> p_render, tikz_point p_center,
+                             std::string p_extraOptions, u32 p_startIndent, u32 p_indent ) {
+    print_width_macro( p_out, CHAR_WIDTH, p_render.first, p_startIndent, p_indent );
 
     if( p_S.m_annotation.count( p_pos )
         && p_S.m_annotation.at( p_pos ).m_textColor.is_non_empty( ) ) {
         p_extraOptions += ", color = " + p_S.m_annotation.at( p_pos ).m_textColor.to_string( );
     }
-    print_node( p_out, p_center, ftext, p_extraOptions, EMPTY_STR, p_startIndent, p_indent );
+    print_node( p_out, p_center, p_render.second, p_extraOptions, EMPTY_STR, p_startIndent,
+                p_indent );
 }
 
 void print_wildcard( FILE* p_out, const stylized_string& p_S, u32 p_pos, tikz_point p_center,
@@ -65,78 +68,103 @@ void print_wildcard( FILE* p_out, const stylized_string& p_S, u32 p_pos, tikz_po
 
 void print_string_inner( FILE* p_out, const stylized_string& p_S, tikz_point p_StopLeft,
                          u32 p_startIndent, u32 p_indent ) {
-    auto        posx     = p_StopLeft.m_x + ( p_S.length( ) * CHAR_WIDTH ) / 2.0;
     auto        posy     = p_StopLeft.m_y - CHAR_HEIGHT / 2.0;
     std::string extraopt = p_S.m_color.to_string( ) + ", inner sep = 2pt, xscale = {min(1, \\twd)}";
 
-    if( p_S.print_single_characters( ) ) {
-        for( u32 pos = p_S.m_fragment.closed_begin( ); pos < p_S.m_fragment.open_end( ); ++pos ) {
-            auto posxi = p_StopLeft.m_x + ( pos - p_S.m_fragment.closed_begin( ) ) * CHAR_WIDTH
-                         + CHAR_WIDTH / 2.0;
-            if( p_S.m_annotation.count( pos ) && p_S.m_annotation.at( pos ).is_wildcard( ) ) {
-                print_wildcard( p_out, p_S, pos, tikz_point{ posxi, posy }, p_startIndent,
-                                p_indent );
-            } else {
-                print_single_character( p_out, p_S, pos, tikz_point{ posxi, posy }, extraopt,
-                                        p_startIndent, p_indent );
-            }
-        }
-    } else {
+    if( p_S.m_labelAlign == AN_BEGIN ) {
+        extraopt += ", anchor = west";
+    } else if( p_S.m_labelAlign == AN_END ) {
+        extraopt += ", anchor = east";
+    }
+
+    u32 pos = p_S.m_fragment.closed_begin( );
+    while( pos < p_S.m_fragment.open_end( ) ) {
+        // get next fragment to render
+        auto next   = p_S.next( pos );
+        auto render = p_S.render_fragment( next );
+
+        auto posx = p_StopLeft.m_x + ( pos - p_S.m_fragment.closed_begin( ) ) * CHAR_WIDTH
+                    + ( next.second.length( ) * CHAR_WIDTH ) / 2.0;
+
         if( p_S.m_labelAlign == AN_BEGIN ) {
-            extraopt += ", anchor = west";
-            posx = p_StopLeft.m_x;
+            posx = p_StopLeft.m_x + ( pos - p_S.m_fragment.closed_begin( ) ) * CHAR_WIDTH;
         } else if( p_S.m_labelAlign == AN_END ) {
-            extraopt += ", anchor = east";
-            posx = p_StopLeft.m_x + ( p_S.length( ) * CHAR_WIDTH );
+            posx = p_StopLeft.m_x + ( pos - p_S.m_fragment.closed_begin( ) ) * CHAR_WIDTH
+                   + ( next.second.length( ) * CHAR_WIDTH );
         }
 
-        auto text  = p_S.render_complete( );
-        auto ftext = p_S.resize_rendering( text );
-        print_width_macro( p_out, p_S.length( ) * CHAR_WIDTH, text, p_startIndent, p_indent );
-        print_node( p_out, tikz_point{ posx, posy }, ftext, extraopt, EMPTY_STR, p_startIndent,
-                    p_indent );
+        switch( next.first ) {
+        case stylized_string::fragment_t::FT_CHARACTER: {
+            print_single_character( p_out, p_S, pos, render, tikz_point{ posx, posy }, extraopt,
+                                    p_startIndent, p_indent );
+            break;
+        }
+        case stylized_string::fragment_t::FT_WILDCARD: {
+            print_wildcard( p_out, p_S, pos, tikz_point{ posx, posy }, p_startIndent, p_indent );
+        }
+        default: {
+            print_width_macro( p_out, next.second.length( ) * CHAR_WIDTH, render.first,
+                               p_startIndent, p_indent );
+            print_node( p_out, tikz_point{ posx, posy }, render.second, extraopt, EMPTY_STR,
+                        p_startIndent, p_indent );
+            break;
+        }
+        }
+        pos = next.second.open_end( );
     }
 }
 
 void print_string_inner_vertical( FILE* p_out, const stylized_string& p_S, tikz_point p_StopLeft,
                                   u32 p_startIndent, u32 p_indent ) {
     auto        posx     = p_StopLeft.m_x + ( CHAR_WIDTH ) / 2.0;
-    auto        posy     = p_StopLeft.m_y - ( p_S.length( ) * CHAR_HEIGHT ) / 2.0;
     std::string extraopt = p_S.m_color.to_string( ) + ", inner sep = 2pt, xscale = {min(1, \\twd)}";
     std::string extraopt_rotate
         = p_S.m_color.to_string( ) + ", inner sep = 2pt, yscale = {min(1, \\twd)}, rotate = 90";
 
-    if( p_S.print_single_characters( ) ) {
-        for( u32 pos = p_S.m_fragment.closed_begin( ); pos < p_S.m_fragment.open_end( ); ++pos ) {
-            auto posyi = p_StopLeft.m_y - ( pos - p_S.m_fragment.closed_begin( ) ) * CHAR_HEIGHT
-                         - CHAR_HEIGHT / 2.0;
-            if( p_S.m_annotation.count( pos ) && p_S.m_annotation.at( pos ).is_wildcard( ) ) {
-                print_wildcard( p_out, p_S, pos, tikz_point{ posx, posyi }, p_startIndent,
-                                p_indent );
-            } else {
-                print_single_character( p_out, p_S, pos, tikz_point{ posx, posyi },
-                                        p_S.rotatable( ) ? extraopt_rotate : extraopt,
-                                        p_startIndent, p_indent );
-            }
-        }
-    } else {
+    if( p_S.m_labelAlign == AN_BEGIN ) {
+        extraopt += ", anchor = north";
+        extraopt_rotate += ", anchor = north";
+    } else if( p_S.m_labelAlign == AN_END ) {
+        extraopt += ", anchor = south";
+        extraopt_rotate += ", anchor = south";
+    }
+
+    u32 pos = p_S.m_fragment.closed_begin( );
+    while( pos < p_S.m_fragment.open_end( ) ) {
+        // get next fragment to render
+        auto next   = p_S.next( pos );
+        auto render = p_S.render_fragment( next );
+
+        auto posy = p_StopLeft.m_y - ( pos - p_S.m_fragment.closed_begin( ) ) * CHAR_HEIGHT
+                    - ( next.second.length( ) * CHAR_HEIGHT ) / 2.0;
+
         if( p_S.m_labelAlign == AN_BEGIN ) {
-            extraopt += ", anchor = north";
-            extraopt_rotate += ", anchor = north";
-            posy = p_StopLeft.m_y;
+            posy = p_StopLeft.m_y - ( pos - p_S.m_fragment.closed_begin( ) ) * CHAR_HEIGHT;
         } else if( p_S.m_labelAlign == AN_END ) {
-            extraopt += ", anchor = south";
-            extraopt_rotate += ", anchor = south";
-            posy = p_StopLeft.m_y - ( p_S.length( ) * CHAR_HEIGHT );
+            posy = p_StopLeft.m_y - ( pos - p_S.m_fragment.closed_begin( ) ) * CHAR_HEIGHT
+                   - ( next.second.length( ) * CHAR_HEIGHT );
         }
 
-        auto text  = p_S.render_complete( );
-        auto ftext = p_S.resize_rendering( text );
-        print_width_macro( p_out, p_S.rotatable( ) ? p_S.length( ) * CHAR_WIDTH : CHAR_WIDTH, text,
-                           p_startIndent, p_indent );
-        print_node( p_out, tikz_point{ posx, posy }, ftext,
-                    p_S.rotatable( ) ? extraopt_rotate : extraopt, EMPTY_STR, p_startIndent,
-                    p_indent );
+        switch( next.first ) {
+        case stylized_string::fragment_t::FT_CHARACTER: {
+            print_single_character( p_out, p_S, pos, render, tikz_point{ posx, posy }, extraopt,
+                                    p_startIndent, p_indent );
+            break;
+        }
+        case stylized_string::fragment_t::FT_WILDCARD: {
+            print_wildcard( p_out, p_S, pos, tikz_point{ posx, posy }, p_startIndent, p_indent );
+        }
+        default: {
+            print_width_macro( p_out,
+                               p_S.rotatable( ) ? next.second.length( ) * CHAR_WIDTH : CHAR_WIDTH,
+                               render.first, p_startIndent, p_indent );
+            print_node( p_out, tikz_point{ posx, posy }, render.second,
+                        p_S.rotatable( ) ? extraopt_rotate : extraopt, EMPTY_STR, p_startIndent,
+                        p_indent );
+            break;
+        }
+        }
+        pos = next.second.open_end( );
     }
 }
 
@@ -272,6 +300,8 @@ void print_string_vertical( FILE* p_out, const stylized_string& p_S, tikz_point 
     }
 }
 
+/*
+
 void print_separator( FILE* p_out, tikz_point p_PtopLeft, tikz_point p_TtopLeft, color p_color,
                       u32 p_startIndent, u32 p_indent ) {
     // make sure T is top, P is bottom
@@ -279,21 +309,20 @@ void print_separator( FILE* p_out, tikz_point p_PtopLeft, tikz_point p_TtopLeft,
 
     INDENT_PRINT( p_startIndent )(
         p_out,
-        "\\node[rotate = 45, outer sep = 0pt, inner sep = 1pt, fill = %s] at (%5.3lf, %5.3lf + %5.3lf) {};\n",
-        p_color.c_str( ), p_TtopLeft.m_x, p_TtopLeft.m_y, 1.5 * CHAR_GLOW );
-    INDENT_PRINT( p_startIndent )(
-        p_out,
-        "\\node[rotate = 45, outer sep = 0pt, inner sep = 1pt, fill = %s] at (%5.3lf, %5.3lf - %5.3lf) {};\n",
-        p_color.c_str( ), p_PtopLeft.m_x, p_PtopLeft.m_y - CHAR_HEIGHT, 1.5 * CHAR_GLOW );
+        "\\node[rotate = 45, outer sep = 0pt, inner sep = 1pt, fill = %s] at (%5.3lf, %5.3lf +
+%5.3lf) {};\n", p_color.c_str( ), p_TtopLeft.m_x, p_TtopLeft.m_y, 1.5 * CHAR_GLOW ); INDENT_PRINT(
+p_startIndent )( p_out,
+        "\\node[rotate = 45, outer sep = 0pt, inner sep = 1pt, fill = %s] at (%5.3lf, %5.3lf -
+%5.3lf) {};\n", p_color.c_str( ), p_PtopLeft.m_x, p_PtopLeft.m_y - CHAR_HEIGHT, 1.5 * CHAR_GLOW );
 
     INDENT_PRINT( p_startIndent )( p_out, "\\draw[%s, rounded corners=2pt, %s]\n", LW_LINE.c_str( ),
                                    p_color.c_str( ) );
     INDENT_PRINT( 1 + p_startIndent )(
         p_out,
-        "(%5.3lf, %5.3lf + %5.3lf) -- (%5.3lf, %5.3lf) -- (%5.3lf, %5.3lf) -- (%5.3lf, %5.3lf - %5.3lf);\n",
-        p_TtopLeft.m_x, p_TtopLeft.m_y, 1.5 * CHAR_GLOW, p_TtopLeft.m_x,
-        p_TtopLeft.m_y - CHAR_HEIGHT, p_PtopLeft.m_x, p_PtopLeft.m_y, p_PtopLeft.m_x,
-        p_PtopLeft.m_y - CHAR_HEIGHT, 1.5 * CHAR_GLOW );
+        "(%5.3lf, %5.3lf + %5.3lf) -- (%5.3lf, %5.3lf) -- (%5.3lf, %5.3lf) -- (%5.3lf, %5.3lf -
+%5.3lf);\n", p_TtopLeft.m_x, p_TtopLeft.m_y, 1.5 * CHAR_GLOW, p_TtopLeft.m_x, p_TtopLeft.m_y -
+CHAR_HEIGHT, p_PtopLeft.m_x, p_PtopLeft.m_y, p_PtopLeft.m_x, p_PtopLeft.m_y - CHAR_HEIGHT, 1.5 *
+CHAR_GLOW );
 }
 
 void print_matched_string_pair( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft,
@@ -306,8 +335,8 @@ void print_matched_string_pair( FILE* p_out, const stylized_string& p_P, tikz_po
     // top line
     INDENT_PRINT( 1 + p_startIndent )(
         p_out,
-        "(%5.3lf - %5.3lf, %5.3lf + %5.3lf) -- (%5.3lf + %5.3lf, %5.3lf + %5.3lf) -- (%5.3lf + %5.3lf, %5.3lf - %5.3lf)\n",
-        p_TtopLeft.m_x, CHAR_GLOW, p_TtopLeft.m_y, CHAR_GLOW, // top left
+        "(%5.3lf - %5.3lf, %5.3lf + %5.3lf) -- (%5.3lf + %5.3lf, %5.3lf + %5.3lf) -- (%5.3lf +
+%5.3lf, %5.3lf - %5.3lf)\n", p_TtopLeft.m_x, CHAR_GLOW, p_TtopLeft.m_y, CHAR_GLOW, // top left
         p_TtopLeft.m_x + p_T.length( ) * CHAR_WIDTH, CHAR_GLOW, p_TtopLeft.m_y,
         CHAR_GLOW, // top
                    // right
@@ -316,8 +345,8 @@ void print_matched_string_pair( FILE* p_out, const stylized_string& p_P, tikz_po
     );
     INDENT_PRINT( 1 + p_startIndent )(
         p_out,
-        "-- (%5.3lf + %5.3lf, %5.3lf + %5.3lf) -- (%5.3lf + %5.3lf, %5.3lf - %5.3lf) -- (%5.3lf - %5.3lf, %5.3lf - %5.3lf)\n",
-        p_PtopLeft.m_x + p_P.length( ) * CHAR_WIDTH, CHAR_GLOW, p_PtopLeft.m_y,
+        "-- (%5.3lf + %5.3lf, %5.3lf + %5.3lf) -- (%5.3lf + %5.3lf, %5.3lf - %5.3lf) -- (%5.3lf -
+%5.3lf, %5.3lf - %5.3lf)\n", p_PtopLeft.m_x + p_P.length( ) * CHAR_WIDTH, CHAR_GLOW, p_PtopLeft.m_y,
         0 * CHAR_GLOW, // bot-mid right
         p_PtopLeft.m_x + p_P.length( ) * CHAR_WIDTH, CHAR_GLOW, p_PtopLeft.m_y - CHAR_HEIGHT,
         CHAR_GLOW,                                                         // bot right
@@ -601,7 +630,7 @@ void print_alignment_on_coordinates( FILE* p_out, const vertex_grid& p_vg,
             = point{ prevpos.first + ( !!prev.m_charP ), prevpos.second + ( !!prev.m_charT ) };
 
         if( preva != curpos ) {
-            if( true /* print single step of matching edge */ ) {
+            if( true ) { //  print single step of matching edge
                 auto pp = point{ curpos.first - 1, curpos.second - 1 };
                 while( pp != preva ) {
                     print_selected_arrow( p_out, p_vg.label_for_pos( pp.second, pp.first ),
@@ -953,3 +982,5 @@ void print_graph_slices_p_labels( FILE* p_out, const std::deque<graph_slice>& p_
         print_string_vertical( p_out, strP, posP, p_startIndent, p_indent );
     }
 }
+
+*/

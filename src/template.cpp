@@ -24,28 +24,42 @@ void picture_stub( const std::string& p_name = "g01.tex" ) {
     FILE* out = NEW_DOC_SIMPLE( p_name );
     initialize_tikzpicture( out );
 
-    std::string longstr  = "hello world!";
-    std::string shortstr = "S";
+    std::string data = "hello world!";
+    std::string name = "S";
 
-    for( u32 i = 0; i < 8; ++i ) {
-        auto S = stylized_string{ i ? shortstr : longstr, fragmentco{ 0, longstr.size( ) },
-                                  static_cast<str_displ_t>( i ) }
-                     .add_wildcards( WILDCARD + WILDCARD + "llo" + WILDCARD + "world!", true );
+    std::deque<std::string> optname{ "rotatable",      "show positions",  "show characters",
+                                     "show wildcards", "group positions", "use typewriter" };
+
+    for( u32 j = 1, i2 = 0; j < SDT_MAX; j <<= 1, ++i2 ) {
+        print_node( out,
+                    tikz_point{ ( data.length( ) + 1 + i2 ) * CHAR_WIDTH, CHAR_HEIGHT * ( .5 ) },
+                    optname[ i2 ], "rotate=90, anchor = west" );
+    }
+
+    for( u32 i = 0; i < SDT_MAX; i += 2 ) {
+        auto S = stylized_string{ data, name, i }.add_wildcards( std::deque<u32>{ 0, 1, 5 }, true );
         auto SI = S.color_invert( );
-        print_string( out, S, tikz_point{ .0, -CHAR_HEIGHT * 4.0 * i } );
-        print_string( out, SI, tikz_point{ .0, -CHAR_HEIGHT * ( 4.0 * i + 2 ) } );
+        print_string( out, S, tikz_point{ .0, -CHAR_HEIGHT * 1.0 * i } );
+        print_string( out, SI,
+                      tikz_point{ ( data.length( ) + 1 ) * -CHAR_WIDTH, -CHAR_HEIGHT * 1.0 * i } );
+
+        for( u32 j = 1, i2 = 0; j < SDT_MAX; j <<= 1, ++i2 ) {
+            print_node( out,
+                        tikz_point{ ( data.length( ) + 1 + i2 ) * CHAR_WIDTH,
+                                    -CHAR_HEIGHT * ( 1.0 * i + .5 ) },
+                        ( i & j ) ? "o" : "x" );
+        }
     }
 
     finish_tikzpicture( out );
     initialize_tikzpicture( out );
 
-    for( u32 i = 0; i < 8; ++i ) {
-        auto S = stylized_string{ i ? shortstr : longstr, fragmentco{ 0, longstr.size( ) },
-                                  static_cast<str_displ_t>( i ) }
-                     .add_wildcards( WILDCARD + WILDCARD + "llo" + WILDCARD + "world!", true );
+    for( u32 i = 0; i < SDT_MAX / 2; ++i ) {
+        auto S = stylized_string{ data, name, i }.add_wildcards( std::deque<u32>{ 0, 1, 5 }, true );
         auto SI = S.color_invert( );
-        print_string_vertical( out, S, tikz_point{ CHAR_WIDTH * 4.0 * i, .0 } );
-        print_string_vertical( out, SI, tikz_point{ CHAR_WIDTH * ( 4.0 * i + 2 ), .0 } );
+        print_string_vertical( out, S, tikz_point{ CHAR_WIDTH * 2.0 * i, .0 } );
+        print_string_vertical(
+            out, SI, tikz_point{ CHAR_WIDTH * ( 2.0 * i ), ( data.length( ) + 1 ) * CHAR_WIDTH } );
     }
 
     finish_tikzpicture( out );

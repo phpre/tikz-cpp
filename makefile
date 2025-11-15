@@ -90,6 +90,7 @@ generate_figures_%: $(BINDIR)/%
 	$(SILENTCMD)$< "$(FIGDIR)/$(notdir $<)_" "$(TEXDIR)/"
 
 $(FIGDIR)/%.pdf: $(FIGDIR)/%.tex
+	$(SILENTMSG) "TEX $<"
 	$(SILENTCMD)SOURCE_DATE_EPOCH=$(COMMIT_EPOCH) latexmk -f -silent -pdf -lualatex -use-make -output-directory=$(FIGDIR) $< >/dev/null || true
 
 figures:	$(PDFS)
@@ -101,3 +102,6 @@ generate_figures: $(GEN_FIGS)
 
 clean:
 	$(SILENTCMD)rm -r $(OBJLIBDIR) $(OBJDIR) $(BINDIR) $(FIGDIR) || true
+
+clean-lib:
+	$(SILENTCMD)rm -r $(OBJLIBDIR) || true
