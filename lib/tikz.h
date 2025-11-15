@@ -115,9 +115,8 @@ inline std::string text_typewriter( const std::string& p_string ) {
     return "\\texttt{" + p_string + "}";
 }
 
-inline std::string vsize_correction( const std::string& p_string ) {
-    return "\\vphantom{Ag|}" + p_string;
-}
+constexpr std::string VSIZE_CORRECTION = "\\vphantom{Ag|}";
+
 inline std::string textsize_small( const std::string& p_string ) {
     return "{\\small " + p_string + "}";
 }

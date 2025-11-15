@@ -213,26 +213,29 @@ struct stylized_string {
         switch( p_fragment.first ) {
         case fragment_t::FT_CHARACTER: {
             return { character( p_fragment.second.closed_begin( ) ),
-                     text_typewriter( character( p_fragment.second.closed_begin( ) ) ) };
+                     text_typewriter( VSIZE_CORRECTION
+                                      + character( p_fragment.second.closed_begin( ) ) ) };
         }
         case fragment_t::FT_FRAGMENT: {
             if( p_fragment.second.length( ) == 1 ) {
                 return { math_mode( m_name + pos_to_string( p_fragment.second.closed_begin( ) ) ),
-                         textsize_footnotesize( math_mode(
-                             m_name + pos_to_string( p_fragment.second.closed_begin( ) ) ) ) };
+                         textsize_footnotesize(
+                             math_mode( VSIZE_CORRECTION + m_name
+                                        + pos_to_string( p_fragment.second.closed_begin( ) ) ) ) };
             } else {
                 return { math_mode( m_name + frag_to_string( p_fragment.second ) ),
-                         textsize_footnotesize(
-                             math_mode( m_name + frag_to_string( p_fragment.second ) ) ) };
+                         textsize_footnotesize( math_mode(
+                             VSIZE_CORRECTION + m_name + frag_to_string( p_fragment.second ) ) ) };
             }
         }
         case fragment_t::FT_FULL: {
             if( m_displayStyle & str_displ_t::USE_TYPEWRITER ) {
-                return { m_name, text_typewriter( m_name ) };
+                return { m_name, text_typewriter( VSIZE_CORRECTION + m_name ) };
             } else {
-                return { math_mode( m_name ), m_name.length( ) < 3
-                                                  ? textsize_small( math_mode( m_name ) )
-                                                  : textsize_footnotesize( math_mode( m_name ) ) };
+                return { math_mode( m_name ),
+                         m_name.length( ) < 3
+                             ? textsize_small( math_mode( VSIZE_CORRECTION + m_name ) )
+                             : textsize_footnotesize( math_mode( VSIZE_CORRECTION + m_name ) ) };
             }
         }
         default:
