@@ -50,64 +50,39 @@ struct character_annotation {
 };
 typedef std::map<u32, character_annotation> string_annotation;
 
-// display modes
-// m_string = "P"
-// - P[ 0 ] or P[ 0 .. 5 ] (default)
-// - P
-// - P[ 0 ] P[ 1 ] P [ 2 ]
-//
-// m_string = "abcdefg"
-// - a b c d e
+typedef u32 displ_t;
+struct str_displ_t {
+    static constexpr displ_t IS_ROTATABLE = ( 1 << 0 );    // text should be rotated for
+                                                           // vertical strings
+    static constexpr displ_t SHOW_POSITIONS  = ( 1 << 1 ); // show individual position (S[ 1 ])
+    static constexpr displ_t SHOW_CHARACTERS = ( 1 << 2 ); // show character annotations
+    static constexpr displ_t SHOW_WILDCARDS  = ( 1 << 3 ); // show wildcard annotations
+    static constexpr displ_t GROUP_POSITIONS = ( 1 << 4 ); // group consecutive positions
+                                                           // (S[ 1 ], S[ 0 .. 3 ]
+    static constexpr displ_t USE_TYPEWRITER = ( 1 << 5 );  // use typewriter font to
+                                                           // display the name
+                                                           // (instead of math mode)
 
-typedef u32          displ_t;
-static constexpr u32 SDT_IS_ROTATABLE = ( 1 << 0 );    // text should be rotated for
-                                                       // vertical strings
-static constexpr u32 SDT_SHOW_POSITIONS  = ( 1 << 1 ); // show individual position (S[ 1 ])
-static constexpr u32 SDT_SHOW_CHARACTERS = ( 1 << 2 ); // show character annotations
-static constexpr u32 SDT_SHOW_WILDCARDS  = ( 1 << 3 ); // show wildcard annotations
-static constexpr u32 SDT_GROUP_POSITIONS = ( 1 << 4 ); // group consecutive positions
-                                                       // (S[ 1 ], S[ 0 .. 3 ]
-static constexpr u32 SDT_USE_TYPEWRITER = ( 1 << 5 );  // use typewriter font to
-                                                       // display the name
-                                                       // (instead of math mode
+    static constexpr displ_t MAX = ( 1 << 6 );
 
-static constexpr u32 SDT_MAX = ( 1 << 6 );
-
-enum str_displ_t {
-    SDT_CHARACTERS = 0,    // actual string
-    SDT_FRAGMENT,          // print name, combine consecutive positions
-    SDT_NAME,              // only ever print name of string (never rotate name)
-    SDT_NAME_ROTATE,       // only ever print name of string (rotate name if string is
-                           // printed vertically)
-    SDT_POSITION,          // name of a string, don't group positions
-    SDT_SINGLE_CHARACTER,  // string is just a single character
-    SDT_FRAGMENT_WILDCARD, // print name, combine consecutive positions, highlight
-                           // wildcards
-    SDT_POSITION_WILDCARD, // name of a string, don't group positions, highlight
-                           // wildcards
+    // helper aliases
+    static constexpr displ_t CHARACTERS       = SHOW_POSITIONS | SHOW_CHARACTERS;
+    static constexpr displ_t FRAGMENT         = SHOW_POSITIONS | GROUP_POSITIONS | IS_ROTATABLE;
+    static constexpr displ_t NAME             = GROUP_POSITIONS;
+    static constexpr displ_t NAME_ROTATE      = IS_ROTATABLE | GROUP_POSITIONS;
+    static constexpr displ_t POSITION         = SHOW_POSITIONS;
+    static constexpr displ_t SINGLE_CHARACTER = USE_TYPEWRITER;
+    static constexpr displ_t FRAGMENT_WILDCARD
+        = SHOW_POSITIONS | GROUP_POSITIONS | IS_ROTATABLE | SHOW_WILDCARDS;
+    static constexpr displ_t POSITION_WILDCARD = SHOW_POSITIONS | SHOW_WILDCARDS;
 };
-
-constexpr displ_t from_str_displ_t( str_displ_t p_type ) {
-    switch( p_type ) {
-    case SDT_FRAGMENT: return SDT_SHOW_POSITIONS | SDT_GROUP_POSITIONS | SDT_IS_ROTATABLE;
-    case SDT_NAME_ROTATE: return SDT_IS_ROTATABLE;
-    case SDT_POSITION: return SDT_SHOW_POSITIONS;
-    case SDT_CHARACTERS: return SDT_SHOW_POSITIONS | SDT_SHOW_CHARACTERS;
-    case SDT_SINGLE_CHARACTER: return SDT_USE_TYPEWRITER;
-    case SDT_FRAGMENT_WILDCARD:
-        return SDT_SHOW_POSITIONS | SDT_GROUP_POSITIONS | SDT_IS_ROTATABLE | SDT_SHOW_WILDCARDS;
-    case SDT_POSITION_WILDCARD: return SDT_SHOW_POSITIONS | SDT_SHOW_WILDCARDS;
-    default:
-    case SDT_NAME: return 0;
-    }
-}
 
 enum align_t { AN_CENTER = 0, AN_BEGIN = 1, AN_END = 2 };
 
 struct stylized_string {
     enum class fragment_t { FT_FULL, FT_FRAGMENT, FT_CHARACTER, FT_WILDCARD };
 
-    displ_t     m_displayStyle = from_str_displ_t( SDT_FRAGMENT );
+    displ_t     m_displayStyle = str_displ_t::FRAGMENT;
     fragmentco  m_fragment;
     align_t     m_labelAlign = AN_CENTER;
     color       m_color      = COLOR_TEXT;
@@ -118,7 +93,7 @@ struct stylized_string {
 
     // constructors for when individual characters should be printed
     stylized_string( const std::string& p_data, const std::string& p_name = EMPTY_STR,
-                     displ_t p_displayStyle = from_str_displ_t( SDT_CHARACTERS ),
+                     displ_t p_displayStyle = str_displ_t::CHARACTERS,
                      align_t p_labelAlign = AN_CENTER, color p_color = COLOR_TEXT,
                      color p_fillColor = COLOR_TEXT.to_flavor_bg( ) )
         : m_displayStyle{ p_displayStyle }, m_fragment{ 0, p_data.length( ) },
@@ -130,7 +105,7 @@ struct stylized_string {
     }
 
     stylized_string( const std::deque<std::string>& p_data, const std::string& p_name = EMPTY_STR,
-                     displ_t p_displayStyle = from_str_displ_t( SDT_CHARACTERS ),
+                     displ_t p_displayStyle = ( str_displ_t::CHARACTERS ),
                      align_t p_labelAlign = AN_CENTER, color p_color = COLOR_TEXT,
                      color p_fillColor = COLOR_TEXT.to_flavor_bg( ) )
         : m_displayStyle{ p_displayStyle }, m_fragment{ 0, p_data.size( ) },
@@ -141,12 +116,13 @@ struct stylized_string {
 
     // constructors
     stylized_string( const std::string& p_name, fragmentco p_fragment,
-                     str_displ_t p_displayStyle = SDT_FRAGMENT, align_t p_labelAlign = AN_CENTER,
-                     color p_color = COLOR_TEXT, color p_fillColor = COLOR_TEXT.to_flavor_bg( ),
+                     displ_t p_displayStyle = str_displ_t::FRAGMENT,
+                     align_t p_labelAlign = AN_CENTER, color p_color = COLOR_TEXT,
+                     color             p_fillColor  = COLOR_TEXT.to_flavor_bg( ),
                      string_annotation p_annotation = { } )
-        : m_displayStyle{ p_displayStyle }, m_fragment{ p_fragment }, m_labelAlign{ p_labelAlign },
-          m_color{ p_color }, m_fillColor{ p_fillColor }, m_name{ p_name },
-          m_annotation{ p_annotation } {
+        : m_displayStyle{ ( p_displayStyle ) }, m_fragment{ p_fragment },
+          m_labelAlign{ p_labelAlign }, m_color{ p_color }, m_fillColor{ p_fillColor },
+          m_name{ p_name }, m_annotation{ p_annotation } {
     }
 
     inline std::string operator[]( u32 p_pos ) const {
@@ -197,7 +173,7 @@ struct stylized_string {
     }
 
     inline bool rotatable( ) const {
-        return m_displayStyle & SDT_IS_ROTATABLE;
+        return m_displayStyle & str_displ_t::IS_ROTATABLE;
     }
 
     inline std::pair<fragment_t, fragmentco> next( u32 p_closedBegin ) const {
@@ -207,24 +183,24 @@ struct stylized_string {
 
         u32  end = p_closedBegin;
         auto tp  = fragment_t::FT_FRAGMENT;
-        if( !( m_displayStyle & SDT_SHOW_POSITIONS ) ) { tp = fragment_t::FT_FULL; }
+        if( !( m_displayStyle & str_displ_t::SHOW_POSITIONS ) ) { tp = fragment_t::FT_FULL; }
 
         while( end < m_fragment.open_end( ) ) {
-            if( ( m_displayStyle & SDT_SHOW_WILDCARDS ) && has_wildcard( end ) ) {
+            if( ( m_displayStyle & str_displ_t::SHOW_WILDCARDS ) && has_wildcard( end ) ) {
                 if( end == p_closedBegin ) {
                     return { fragment_t::FT_WILDCARD,
                              fragmentco{ p_closedBegin, p_closedBegin + 1 } };
                 }
                 break;
             }
-            if( ( m_displayStyle & SDT_SHOW_CHARACTERS ) && has_character( end ) ) {
+            if( ( m_displayStyle & str_displ_t::SHOW_CHARACTERS ) && has_character( end ) ) {
                 if( end == p_closedBegin ) {
                     return { fragment_t::FT_CHARACTER,
                              fragmentco{ p_closedBegin, p_closedBegin + 1 } };
                 }
                 break;
             }
-            if( !( m_displayStyle & SDT_GROUP_POSITIONS ) ) {
+            if( !( m_displayStyle & str_displ_t::GROUP_POSITIONS ) ) {
                 return { tp, fragmentco{ p_closedBegin, p_closedBegin + 1 } };
             }
             ++end;
@@ -251,7 +227,7 @@ struct stylized_string {
             }
         }
         case fragment_t::FT_FULL: {
-            if( m_displayStyle & SDT_USE_TYPEWRITER ) {
+            if( m_displayStyle & str_displ_t::USE_TYPEWRITER ) {
                 return { m_name, text_typewriter( m_name ) };
             } else {
                 return { math_mode( m_name ), m_name.length( ) < 3
@@ -386,8 +362,8 @@ vertex_grid print_alignment_graph( FILE* p_out, const std::string& p_P, fragment
                                    u32 p_startIndent = 1, u32 p_indent = 4 );
 
 void print_alignment_on_coordinates( FILE* p_out, const vertex_grid& p_vg,
-                                     const breakpoint_repn& p_brpnt, u32 p_startIndent = 1,
-                                     u32 p_indent = 4 );
+                                     const breakpoint_repn& p_brpnt, bool p_singleStep = true,
+                                     u32 p_startIndent = 1, u32 p_indent = 4 );
 
 void print_graph_slice_on_coordinates( FILE* p_out, const vertex_grid& p_vg,
                                        const graph_slice& p_gs, color p_color,

@@ -33,16 +33,16 @@ void graph_slice::merge_right( const graph_slice& p_other ) {
 }
 
 gs_flag_t merge_flags( gs_flag_t p_a, gs_flag_t p_b ) {
-    gs_flag_t res = gs_flag_t::GSF_NONE;
+    gs_flag_t res = graph_slice::GSF_NONE;
 
-    if( !!( p_a & gs_flag_t::GSF_PURE ) && !!( p_b & gs_flag_t::GSF_PURE ) ) {
-        res |= gs_flag_t::GSF_PURE;
+    if( !!( p_a & graph_slice::GSF_PURE ) && !!( p_b & graph_slice::GSF_PURE ) ) {
+        res |= graph_slice::GSF_PURE;
     }
-    if( !!( p_a & gs_flag_t::GSF_TOP ) && !!( p_b & gs_flag_t::GSF_TOP ) ) {
-        res |= gs_flag_t::GSF_TOP;
+    if( !!( p_a & graph_slice::GSF_TOP ) && !!( p_b & graph_slice::GSF_TOP ) ) {
+        res |= graph_slice::GSF_TOP;
     }
-    if( !!( p_a & gs_flag_t::GSF_BOT ) && !!( p_b & gs_flag_t::GSF_BOT ) ) {
-        res |= gs_flag_t::GSF_BOT;
+    if( !!( p_a & graph_slice::GSF_BOT ) && !!( p_b & graph_slice::GSF_BOT ) ) {
+        res |= graph_slice::GSF_BOT;
     }
 
     return res;
@@ -59,14 +59,14 @@ std::deque<graph_slice> graph_slice::from_alignment( const breakpoint_repn& p_br
         graph_slice gi{ };
         gi.m_originalFragP = fpi;
 
-        gi.m_flags = gs_flag_t::GSF_PRIMITIVE;
-        if( fP.closed_begin( ) == fragP.closed_begin( ) ) { gi.m_flags |= gs_flag_t::GSF_TOP; }
-        if( fP.open_end( ) == fragP.open_end( ) ) { gi.m_flags |= gs_flag_t::GSF_BOT; }
+        gi.m_flags = graph_slice::GSF_PRIMITIVE;
+        if( fP.closed_begin( ) == fragP.closed_begin( ) ) { gi.m_flags |= graph_slice::GSF_TOP; }
+        if( fP.open_end( ) == fragP.open_end( ) ) { gi.m_flags |= graph_slice::GSF_BOT; }
 
         // slice is pure if p_brpnt is trivial on fragmentco{ i, i + 1 }, that is,
         // contains no edit operations and only the dummy entries at start/end
         if( breakpoint_slice( p_brpnt, fragmentco{ i, i + 1 } ).size( ) == 2 ) {
-            gi.m_flags |= gs_flag_t::GSF_PURE;
+            gi.m_flags |= graph_slice::GSF_PURE;
         }
 
         gi.m_topFrontier.push_back( { fT.closed_begin( ), fP.closed_begin( ) } );
@@ -109,30 +109,30 @@ graph_slice::top_pure_bot_decomp( const std::deque<graph_slice>& p_primitiveSlic
     std::deque<graph_slice> res;
 
     u32 pos = 0;
-    if( !!( p_primitiveSlices.front( ).m_flags & gs_flag_t::GSF_TOP ) ) {
+    if( !!( p_primitiveSlices.front( ).m_flags & graph_slice::GSF_TOP ) ) {
         graph_slice top = p_primitiveSlices.front( );
         while( ++pos < p_primitiveSlices.size( )
-               && !!( p_primitiveSlices[ pos ].m_flags & gs_flag_t::GSF_TOP ) ) {
+               && !!( p_primitiveSlices[ pos ].m_flags & graph_slice::GSF_TOP ) ) {
             top.merge_right( p_primitiveSlices[ pos ] );
         }
         res.push_back( top );
     }
 
     while( pos < p_primitiveSlices.size( )
-           && !( p_primitiveSlices[ pos ].m_flags & gs_flag_t::GSF_BOT ) ) {
-        if( !!( p_primitiveSlices[ pos ].m_flags & gs_flag_t::GSF_PURE ) ) {
+           && !( p_primitiveSlices[ pos ].m_flags & graph_slice::GSF_BOT ) ) {
+        if( !!( p_primitiveSlices[ pos ].m_flags & graph_slice::GSF_PURE ) ) {
             graph_slice pure = p_primitiveSlices[ pos ];
             while( ++pos < p_primitiveSlices.size( )
-                   && !( p_primitiveSlices[ pos ].m_flags & gs_flag_t::GSF_BOT )
-                   && !!( p_primitiveSlices[ pos ].m_flags & gs_flag_t::GSF_PURE ) ) {
+                   && !( p_primitiveSlices[ pos ].m_flags & graph_slice::GSF_BOT )
+                   && !!( p_primitiveSlices[ pos ].m_flags & graph_slice::GSF_PURE ) ) {
                 pure.merge_right( p_primitiveSlices[ pos ] );
             }
             res.push_back( pure );
         } else {
             graph_slice impure = p_primitiveSlices[ pos ];
             while( ++pos < p_primitiveSlices.size( )
-                   && !( p_primitiveSlices[ pos ].m_flags & gs_flag_t::GSF_BOT )
-                   && !( p_primitiveSlices[ pos ].m_flags & gs_flag_t::GSF_PURE ) ) {
+                   && !( p_primitiveSlices[ pos ].m_flags & graph_slice::GSF_BOT )
+                   && !( p_primitiveSlices[ pos ].m_flags & graph_slice::GSF_PURE ) ) {
                 impure.merge_right( p_primitiveSlices[ pos ] );
             }
             res.push_back( impure );
@@ -140,10 +140,10 @@ graph_slice::top_pure_bot_decomp( const std::deque<graph_slice>& p_primitiveSlic
     }
 
     if( pos < p_primitiveSlices.size( )
-        && !!( p_primitiveSlices[ pos ].m_flags & gs_flag_t::GSF_BOT ) ) {
+        && !!( p_primitiveSlices[ pos ].m_flags & graph_slice::GSF_BOT ) ) {
         graph_slice bot = p_primitiveSlices[ pos ];
         while( ++pos < p_primitiveSlices.size( )
-               && !!( p_primitiveSlices[ pos ].m_flags & gs_flag_t::GSF_BOT ) ) {
+               && !!( p_primitiveSlices[ pos ].m_flags & graph_slice::GSF_BOT ) ) {
             bot.merge_right( p_primitiveSlices[ pos ] );
         }
         res.push_back( bot );

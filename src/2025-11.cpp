@@ -17,16 +17,15 @@ std::string PROGRAM_NAME   = "";
 
 #define NEW_DOC_SIMPLE( p_name )                                                                \
     new_document( OUT_DIR + ( p_name ), FONT_PATH, COLOR_PATH, MACRO_PATH, PACKAGES, LIBRARIES, \
-                  EXTRA_PREAMBLE );                                                             \
-    fprintf( stderr, "[%s] Generating %s.\n", PROGRAM_NAME.c_str( ),                            \
-             ( OUT_DIR + ( p_name ) ).c_str( ) );
+                  EXTRA_PREAMBLE );
 
 std::string T = "abab" + WILDCARD + "abcaab" + WILDCARD + "a" + WILDCARD + "ab";
 std::string P = "abcab";
 
-const stylized_string T_NAME{ std::string{ "T" }, str_displ_t::SDT_POSITION_WILDCARD };
-const stylized_string T_WC = T_NAME.add_wildcards( T );
-const stylized_string P_NAME{ std::string{ "P" }, str_displ_t::SDT_FRAGMENT };
+const stylized_string T_NAME{ T, std::string{ "T" },
+                              str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
+const stylized_string T_WC = T_NAME.add_wildcards( T, true );
+const stylized_string P_NAME{ P, std::string{ "P" }, str_displ_t::FRAGMENT };
 
 void wildcards_picture( const std::string& p_name = "g01.tex" ) {
     FILE* out = NEW_DOC_SIMPLE( p_name );

@@ -5,39 +5,17 @@
 #include "breakpoint.h"
 #include "tikz.h"
 
-enum class gs_flag_t : u32 {
-    GSF_NONE      = 0,
-    GSF_PURE      = ( 1 << 0 ),
-    GSF_TOP       = ( 1 << 1 ),
-    GSF_BOT       = ( 1 << 2 ),
-    GSF_PRIMITIVE = ( 1 << 3 ),
-};
-
-constexpr bool operator!( gs_flag_t p_a ) {
-    return !static_cast<u32>( p_a );
-}
-constexpr gs_flag_t operator|( gs_flag_t p_a, gs_flag_t p_b ) {
-    return static_cast<gs_flag_t>( static_cast<u32>( p_a ) | static_cast<u32>( p_b ) );
-}
-constexpr gs_flag_t operator&( gs_flag_t p_a, gs_flag_t p_b ) {
-    return static_cast<gs_flag_t>( static_cast<u32>( p_a ) & static_cast<u32>( p_b ) );
-}
-constexpr gs_flag_t operator^( gs_flag_t p_a, gs_flag_t p_b ) {
-    return static_cast<gs_flag_t>( static_cast<u32>( p_a ) ^ static_cast<u32>( p_b ) );
-}
-inline gs_flag_t& operator|=( gs_flag_t& p_a, gs_flag_t p_b ) {
-    return (gs_flag_t&) ( (u32&) ( p_a ) |= static_cast<u32>( p_b ) );
-}
-inline gs_flag_t& operator&=( gs_flag_t& p_a, gs_flag_t p_b ) {
-    return (gs_flag_t&) ( (u32&) ( p_a ) &= static_cast<u32>( p_b ) );
-}
-inline gs_flag_t& operator^=( gs_flag_t& p_a, gs_flag_t p_b ) {
-    return (gs_flag_t&) ( (u32&) ( p_a ) ^= static_cast<u32>( p_b ) );
-}
-
+typedef u32 gs_flag_t;
 gs_flag_t merge_flags( gs_flag_t p_a, gs_flag_t p_b );
 
 struct graph_slice {
+    static constexpr gs_flag_t GSF_NONE      = 0;
+    static constexpr gs_flag_t GSF_PURE      = ( 1 << 0 );
+    static constexpr gs_flag_t GSF_TOP       = ( 1 << 1 );
+    static constexpr gs_flag_t GSF_BOT       = ( 1 << 2 );
+    static constexpr gs_flag_t GSF_PRIMITIVE = ( 1 << 3 );
+
+
     gs_flag_t  m_flags;
     fragmentco m_originalFragP;
 

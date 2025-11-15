@@ -12,18 +12,23 @@ constexpr std::string P = "AbAAbcdAAAdAAbddAAaAAA";
 constexpr std::string T2 = "ABCDEFGHaJKLMcOPQRSc";
 constexpr std::string P2 = "ABCDEFGHIJKLMNOPQRST";
 
-const stylized_string S_NAME{ std::string{ "S" }, str_displ_t::SDT_FRAGMENT };
-const stylized_string T_NAME{ std::string{ "T" }, str_displ_t::SDT_FRAGMENT };
-const stylized_string P_NAME{ std::string{ "P" }, str_displ_t::SDT_FRAGMENT };
+const stylized_string S_NAME{ std::string{ "S" }, fragmentco{ 0, 0 } };
+const stylized_string T_NAME2{ std::string{ "T" }, fragmentco{ 0, T.size( ) } };
+const stylized_string P_NAME2{ std::string{ "P" }, fragmentco{ 0, P.size( ) } };
+
+const stylized_string T_NAME{ T, std::string{ "T" }, str_displ_t::FRAGMENT };
+const stylized_string P_NAME{ P, std::string{ "P" }, str_displ_t::FRAGMENT };
+const stylized_string T2_NAME{ T2, std::string{ "T" }, str_displ_t::FRAGMENT };
+const stylized_string P2_NAME{ P2, std::string{ "P" }, str_displ_t::FRAGMENT };
 
 const breakpoint_repn BP_P_T   = compute_breakpoints( P, T );
 const breakpoint_repn BP_P2_T2 = compute_breakpoints( P2, T2 );
 
-std::string OUT_DIR    = "../figs/";
-std::string TEX_DIR    = "../tex/";
-std::string FONT_PATH  = TEX_DIR + "font";
-std::string COLOR_PATH = TEX_DIR + "color";
-std::string MACRO_PATH = TEX_DIR + "macros";
+std::string OUT_DIR        = "../figs/";
+std::string TEX_DIR        = "../tex/";
+std::string FONT_PATH      = TEX_DIR + "font";
+std::string COLOR_PATH     = TEX_DIR + "color";
+std::string MACRO_PATH     = TEX_DIR + "macros";
 std::string PACKAGES       = "";
 std::string LIBRARIES      = "";
 std::string EXTRA_PREAMBLE = "";
@@ -31,16 +36,16 @@ std::string PROGRAM_NAME   = "";
 
 #define NEW_DOC_SIMPLE( p_name )                                                                \
     new_document( OUT_DIR + ( p_name ), FONT_PATH, COLOR_PATH, MACRO_PATH, PACKAGES, LIBRARIES, \
-                  EXTRA_PREAMBLE );                                                             \
-    fprintf( stderr, "[%s] Generating %s.\n", PROGRAM_NAME.c_str( ),                            \
-             ( OUT_DIR + ( p_name ) ).c_str( ) );
+                  EXTRA_PREAMBLE );
+//    fprintf( stderr, "[%s] Generating %s.\n", PROGRAM_NAME.c_str( ),
+//             ( OUT_DIR + ( p_name ) ).c_str( ) );
 
 void alignment_picture( const std::string& p_name      = "g01.tex",
                         breakpoint_repn    p_alignment = BP_P_T ) {
     FILE* out = NEW_DOC_SIMPLE( p_name );
     initialize_tikzpicture( out );
 
-    print_alignment( out, P_NAME, tikz_point{ 0.0, 0.0 }, T_NAME, tikz_point{ 0.0, 1.25 },
+    print_alignment( out, P_NAME2, tikz_point{ 0.0, 0.0 }, T_NAME2, tikz_point{ 0.0, 1.25 },
                      p_alignment, true );
     finish_tikzpicture( out );
 
@@ -82,13 +87,13 @@ void alignment_picture( const std::string& p_name      = "g01.tex",
     finish_document( out );
 }
 
-void alignment_graph_picture( const std::string& p_name = "g02.tex",
-                              stylized_string    p_Tname
-                              = stylized_string{ T_NAME.m_data, str_displ_t::SDT_POSITION },
-                              stylized_string p_Pname
-                              = stylized_string{ P_NAME.m_data, str_displ_t::SDT_POSITION },
-                              fragmentco      p_fragment  = fragmentco{ 0, 11 },
-                              breakpoint_repn p_alignment = BP_P_T ) {
+void alignment_graph_picture(
+    const std::string& p_name = "g02.tex",
+    stylized_string    p_Tname
+    = stylized_string{ T_NAME.m_name, T_NAME.m_fragment, str_displ_t::POSITION },
+    stylized_string p_Pname
+    = stylized_string{ P_NAME.m_name, P_NAME.m_fragment, str_displ_t::POSITION },
+    fragmentco p_fragment = fragmentco{ 0, 11 }, breakpoint_repn p_alignment = BP_P_T ) {
     FILE* out = NEW_DOC_SIMPLE( p_name );
 
     initialize_tikzpicture( out, "yscale = .93" );
@@ -109,7 +114,7 @@ void alignment_graph_picture( const std::string& p_name = "g02.tex",
     initialize_tikzpicture( out, "yscale = .93" );
     {
         print_string_vertical(
-            out, stylized_string{ "P\\position{p}", str_displ_t::SDT_NAME }.slice( { 0, 1 } ),
+            out, stylized_string{ "P\\position{p}", fragmentco{ 0, 1 }, str_displ_t::NAME },
             tikz_point{ -CHAR_WIDTH - .4, -.5 * CHAR_HEIGHT } );
 
         auto p_indent = 4;
@@ -136,7 +141,7 @@ void alignment_graph_picture( const std::string& p_name = "g02.tex",
     initialize_tikzpicture( out, "yscale = .93" );
     {
         print_string( out,
-                      stylized_string{ "T\\position{t}", str_displ_t::SDT_NAME }.slice( { 0, 1 } ),
+                      stylized_string{ "T\\position{t}", fragmentco{ 0, 1 }, str_displ_t::NAME },
                       tikz_point{ .5 * CHAR_WIDTH, CHAR_HEIGHT + .4 } );
 
         auto p_indent = 4;
@@ -163,10 +168,10 @@ void alignment_graph_picture( const std::string& p_name = "g02.tex",
     initialize_tikzpicture( out, "yscale = .93" );
     {
         print_string( out,
-                      stylized_string{ "T\\position{t}", str_displ_t::SDT_NAME }.slice( { 0, 1 } ),
+                      stylized_string{ "T\\position{t}", fragmentco{ 0, 1 }, str_displ_t::NAME },
                       tikz_point{ .5 * CHAR_WIDTH, CHAR_HEIGHT + .4 } );
         print_string_vertical(
-            out, stylized_string{ "P\\position{p}", str_displ_t::SDT_NAME }.slice( { 0, 1 } ),
+            out, stylized_string{ "P\\position{p}", fragmentco{ 0, 1 }, str_displ_t::NAME },
             tikz_point{ -CHAR_WIDTH - .4, -.5 * CHAR_HEIGHT } );
 
         auto p_indent = 4;
@@ -208,8 +213,8 @@ void slices_picture( const std::string& p_name = "g03.tex", stylized_string p_Pn
                      const std::string& p_T = T ) {
     FILE* out = NEW_DOC_SIMPLE( p_name );
 
-    auto pname_s = stylized_string{ p_Pname.m_data, str_displ_t::SDT_NAME };
-    auto tname_s = stylized_string{ p_Tname.m_data, str_displ_t::SDT_NAME };
+    auto pname_s = stylized_string{ p_Pname.m_name, p_Pname.m_fragment, str_displ_t::NAME };
+    auto tname_s = stylized_string{ p_Tname.m_name, p_Tname.m_fragment, str_displ_t::NAME };
 
     auto align = breakpoint_slice( p_alignment, p_fragment );
 
@@ -279,8 +284,8 @@ void slices_detail_picture( const std::string& p_name = "g04.tex", stylized_stri
                             breakpoint_repn p_alignment = BP_P_T, const std::string& p_P = P,
                             const std::string& p_T = T ) {
     FILE* out     = NEW_DOC_SIMPLE( p_name );
-    auto  pname_s = stylized_string{ p_Pname.m_data, str_displ_t::SDT_NAME };
-    auto  tname_s = stylized_string{ p_Tname.m_data, str_displ_t::SDT_NAME };
+    auto  pname_s = stylized_string{ p_Pname.m_name, p_Pname.m_fragment, str_displ_t::NAME };
+    auto  tname_s = stylized_string{ p_Tname.m_name, p_Tname.m_fragment, str_displ_t::NAME };
 
     auto align = breakpoint_slice( p_alignment, p_fragment );
 
@@ -302,7 +307,7 @@ void slices_detail_picture( const std::string& p_name = "g04.tex", stylized_stri
 
             auto pos = tikz_point{ frag.closed_begin( ) * CHAR_WIDTH, i * -1.19 * CHAR_HEIGHT };
 
-            auto str = stylized_string{ label, str_displ_t::SDT_NAME }.slice( frag );
+            auto str = stylized_string{ label, frag, str_displ_t::NAME };
             str.highlight_position( i - frag.closed_begin( ), SEP_COL.deemphasize_weak( ) );
             print_string( out, str, pos );
         }
