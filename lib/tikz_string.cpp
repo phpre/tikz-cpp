@@ -51,7 +51,7 @@ void print_wildcard( FILE* p_out, const stylized_string& p_S, u32 p_pos, tikz_po
                     EMPTY_STR, p_startIndent, p_indent );
     } else {
         // wildcard lozenge
-        print_node( p_out, p_center, "$\\vardiamondsuit$", bgcol.c_str( ), EMPTY_STR, p_startIndent,
+        print_node( p_out, p_center, "$\\wcsymbol$", bgcol.c_str( ), EMPTY_STR, p_startIndent,
                     p_indent );
     }
     // print wildcard index
