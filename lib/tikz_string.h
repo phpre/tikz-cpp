@@ -336,13 +336,14 @@ void print_string_vertical( FILE* p_out, const stylized_string& p_S, tikz_point 
 // assumes T is on top, P on bottom
 void print_matched_string_pair( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft,
                                 const stylized_string& p_T, tikz_point p_TtopLeft, color p_bgColor,
-                                u32 p_startIndent = 1, u32 p_indent = 4 );
+                                bool p_compress = false, u32 p_startIndent = 1, u32 p_indent = 4 );
 
 // Prints alignment P to T
 std::pair<tikz_point, tikz_point>
 print_alignment( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft,
                  const stylized_string& p_T, tikz_point p_TtopLeft, const breakpoint_repn& p_brpnt,
-                 bool p_printBreakpoints = true, u32 p_startIndent = 1, u32 p_indent = 4 );
+                 bool p_printBreakpoints = true, bool p_printExtraStringParts = false,
+                 bool p_compress = false, u32 p_startIndent = 1, u32 p_indent = 4 );
 
 void print_alignment_graph_label( FILE* p_out, const stylized_string& p_Pname,
                                   const stylized_string& p_Tname,

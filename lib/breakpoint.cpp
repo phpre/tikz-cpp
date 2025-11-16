@@ -1,5 +1,3 @@
-#include <vector>
-
 #include "breakpoint.h"
 
 bool match( char p_P, char p_T, char p_wc ) {
@@ -11,13 +9,13 @@ bool match( char p_P, char p_T, char p_wc ) {
 }
 
 breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& p_T,
-                                     const std::string& p_wildcard ) {
+                                     const std::string& p_wildcard, bool p_wcInOutput ) {
     auto m = p_P.size( );
     auto n = p_T.size( );
 
     char wc = ( p_wildcard == EMPTY_STR || !p_wildcard.length( ) ) ? 0 : p_wildcard[ 0 ];
 
-    auto nw_dp = std::vector<std::vector<u32>>{ m + 1, std::vector<u32>( n + 1, 0 ) };
+    auto nw_dp = std::deque<std::deque<u32>>{ m + 1, std::deque<u32>( n + 1, 0 ) };
     for( u32 i = 0; i <= m; ++i ) { nw_dp[ i ][ 0 ] = i; }
     for( u32 j = 0; j <= n; ++j ) { nw_dp[ 0 ][ j ] = j; }
 
@@ -43,6 +41,10 @@ breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& 
         if( i && j && nw_dp[ i ][ j ] == nw_dp[ i - 1 ][ j - 1 ]
             && match( p_P[ i - 1 ], p_T[ j - 1 ], wc ) ) {
             pos = point{ i - 1, j - 1 };
+
+            if( p_wcInOutput && ( p_P[ i - 1 ] == wc || p_T[ j - 1 ] == wc ) ) {
+                res.push_front( breakpoint{ pos, p_P[ i - 1 ], p_T[ j - 1 ] } );
+            }
         } else if( i && j && nw_dp[ i ][ j ] == 1 + nw_dp[ i - 1 ][ j - 1 ] ) {
             pos = point{ i - 1, j - 1 };
             res.push_front( breakpoint{ pos, p_P[ i - 1 ], p_T[ j - 1 ] } );
@@ -60,6 +62,56 @@ breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& 
 
     res.push_front( breakpoint{ pos } );
 
+    return res;
+}
+
+std::deque<breakpoint_repn> compute_occs_with_mism( const std::string& p_P, const std::string& p_T,
+                                                    u32 p_threshold, const std::string& p_wildcard,
+                                                    bool p_wcInOutput ) {
+    std::deque<breakpoint_repn> res{ };
+
+    auto m  = p_P.size( );
+    auto n  = p_T.size( );
+    char wc = ( p_wildcard == EMPTY_STR || !p_wildcard.length( ) ) ? 0 : p_wildcard[ 0 ];
+
+    for( u32 i = 0; i <= n - m; ++i ) {
+        breakpoint_repn cur{ };
+        u32             mism = 0;
+        cur.push_back( breakpoint{ 0, i } );
+
+        for( u32 j = 0; j < m && mism <= p_threshold; ++j ) {
+            if( !match( p_P[ j ], p_T[ i + j ], wc ) ) {
+                cur.push_back( breakpoint{ j, i + j, p_P[ j ], p_T[ i + j ] } );
+                ++mism;
+            }
+            if( p_wcInOutput && ( p_P[ j ] == wc || p_T[ i + j ] == wc ) ) {
+                cur.push_back( breakpoint{ j, i + j, p_P[ j ], p_T[ i + j ] } );
+            }
+        }
+        cur.push_back( breakpoint{ m, m + i } );
+
+        if( mism <= p_threshold ) { res.push_back( cur ); }
+    }
+
+    return res;
+}
+
+std::deque<breakpoint_repn> compute_occs_with_edits( const std::string& p_P, const std::string& p_T,
+                                                     u32 p_threshold, const std::string& p_wildcard,
+                                                     bool p_wcInOutput ) {
+    // compute starting positions of occurrences, for each starting position one alignment
+    std::deque<breakpoint_repn> res{ };
+
+    auto m = p_P.size( );
+    auto n = p_T.size( );
+
+    if( n > 3 * m / 2 ) {
+        for( u32 i = 0; i < n - m; i += m / 2 ) {
+            res.append_range( compute_occs_with_mism( p_P, p_T.substr( i, 3 * m / 2 ), p_threshold,
+                                                      p_wildcard ) );
+        }
+        return res;
+    }
     return res;
 }
 

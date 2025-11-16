@@ -59,7 +59,23 @@ inline breakpoint_repn trivial_alignment( fragmentco p_fragment ) {
 
 // computes optimal (unweighted) edit distance alignment of P onto T
 breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& p_T,
-                                     const std::string& p_wildcard = WILDCARD );
+                                     const std::string& p_wildcard   = WILDCARD,
+                                     bool               p_wcInOutput = true );
+
+std::deque<breakpoint_repn> compute_occs_with_edits( const std::string& p_P, const std::string& p_T,
+                                                     u32                p_threshold,
+                                                     const std::string& p_wildcard   = WILDCARD,
+                                                     bool               p_wcInOutput = true );
+
+std::deque<breakpoint_repn> compute_occs_with_mism( const std::string& p_P, const std::string& p_T,
+                                                    u32                p_threshold,
+                                                    const std::string& p_wildcard   = WILDCARD,
+                                                    bool               p_wcInOutput = true );
+
+inline std::deque<breakpoint_repn> compute_occs( const std::string& p_P, const std::string& p_T,
+                                                 const std::string& p_wildcard = WILDCARD ) {
+    return compute_occs_with_mism( p_P, p_T, 0, p_wildcard );
+}
 
 // compute A( P[ l .. r) )
 breakpoint_repn breakpoint_slice( const breakpoint_repn& p_brpts, fragmentco p_frag,

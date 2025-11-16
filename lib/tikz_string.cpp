@@ -51,8 +51,8 @@ void print_wildcard( FILE* p_out, const stylized_string& p_S, u32 p_pos, tikz_po
                     EMPTY_STR, p_startIndent, p_indent );
     } else {
         // wildcard lozenge
-        print_node( p_out, p_center, "$\\wcsymbol$", bgcol.c_str( ), EMPTY_STR, p_startIndent,
-                    p_indent );
+        print_node( p_out, p_center, math_mode( WILDCARD_SYMBOL_FILLED ), bgcol.c_str( ), EMPTY_STR,
+                    p_startIndent, p_indent );
     }
     // print wildcard index
     if( wc.m_showId ) {
@@ -329,43 +329,61 @@ void print_separator( FILE* p_out, tikz_point p_PtopLeft, tikz_point p_TtopLeft,
 
 void print_matched_string_pair( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft,
                                 const stylized_string& p_T, tikz_point p_TtopLeft, color p_bgColor,
-                                u32 p_startIndent, u32 p_indent ) {
+                                bool p_compress, u32 p_startIndent, u32 p_indent ) {
     // print glow bubble
-    INDENT_PRINT( p_startIndent )( p_out, "\\draw[%s, rounded corners = 2pt, %s, fill = %s]\n",
-                                   LW_THIN_OUTLINE.c_str( ), p_bgColor.c_str( ),
-                                   p_bgColor.to_bg( ).c_str( ) );
-    // top line
-    INDENT_PRINT( 1 + p_startIndent )(
-        p_out,
-        "(%5.3lf - %5.3lf, %5.3lf + %5.3lf) "
-        "-- (%5.3lf + %5.3lf, %5.3lf + %5.3lf) "
-        "-- (%5.3lf + %5.3lf, %5.3lf - %5.3lf)\n",
-        p_TtopLeft.m_x, CHAR_GLOW, p_TtopLeft.m_y, CHAR_GLOW, // top left
-        p_TtopLeft.m_x + p_T.length( ) * CHAR_WIDTH, CHAR_GLOW, p_TtopLeft.m_y,
-        CHAR_GLOW, // top
-                   // right
-        p_TtopLeft.m_x + p_T.length( ) * CHAR_WIDTH, CHAR_GLOW, p_TtopLeft.m_y - CHAR_HEIGHT,
-        0 * CHAR_GLOW // top-mid right
-    );
-    INDENT_PRINT( 1 + p_startIndent )(
-        p_out,
-        "-- (%5.3lf + %5.3lf, %5.3lf + %5.3lf) "
-        "-- (%5.3lf + %5.3lf, %5.3lf - %5.3lf) "
-        "-- (%5.3lf - %5.3lf, %5.3lf - %5.3lf)\n",
-        p_PtopLeft.m_x + p_P.length( ) * CHAR_WIDTH, CHAR_GLOW, p_PtopLeft.m_y,
-        0 * CHAR_GLOW, // bot-mid right
-        p_PtopLeft.m_x + p_P.length( ) * CHAR_WIDTH, CHAR_GLOW, p_PtopLeft.m_y - CHAR_HEIGHT,
-        CHAR_GLOW,                                                         // bot right
-        p_PtopLeft.m_x, CHAR_GLOW, p_PtopLeft.m_y - CHAR_HEIGHT, CHAR_GLOW // bot left
-    );
+    if( !p_compress ) {
+        INDENT_PRINT( p_startIndent )( p_out, "\\draw[%s, rounded corners = 2pt, %s, fill = %s]\n",
+                                       LW_THIN_OUTLINE.c_str( ), p_bgColor.c_str( ),
+                                       p_bgColor.to_bg( ).c_str( ) );
+    } else {
+        INDENT_PRINT( p_startIndent )( p_out, "\\draw[%s, rounded corners = 2pt, %s, fill = %s]\n",
+                                       LW_VERY_THIN_OUTLINE.c_str( ), p_bgColor.c_str( ),
+                                       p_bgColor.to_bg( ).c_str( ) );
+    }
+
+    auto glowx = p_compress ? 0 : CHAR_GLOW;
+    auto glowy = p_compress ? -CHAR_GLOW : CHAR_GLOW;
+
     INDENT_PRINT( 1 + p_startIndent )( p_out,
-                                       "-- (%5.3lf - %5.3lf, %5.3lf + %5.3lf) "
-                                       "-- (%5.3lf - %5.3lf, %5.3lf - %5.3lf) -- cycle;\n",
-                                       p_PtopLeft.m_x, CHAR_GLOW, p_PtopLeft.m_y,
-                                       0 * CHAR_GLOW, // bot-mid left
-                                       p_TtopLeft.m_x, CHAR_GLOW, p_TtopLeft.m_y - CHAR_HEIGHT,
-                                       0 * CHAR_GLOW // top-mid left
+                                       "(%5.3lf - %5.3lf, %5.3lf + %5.3lf) "
+                                       "-- (%5.3lf - %5.3lf, %5.3lf - %5.3lf)\n",
+                                       p_PtopLeft.m_x, glowx, p_PtopLeft.m_y,
+                                       0 * glowy, // bot-mid left
+                                       p_TtopLeft.m_x, glowx, p_TtopLeft.m_y - CHAR_HEIGHT,
+                                       0 * glowy // top-mid left
     );
+
+    // top line
+    if( !p_compress || p_T.length( ) ) {
+        INDENT_PRINT( 1 + p_startIndent )(
+            p_out,
+            "-- (%5.3lf - %5.3lf, %5.3lf + %5.3lf) "
+            "-- (%5.3lf + %5.3lf, %5.3lf + %5.3lf) "
+            "-- (%5.3lf + %5.3lf, %5.3lf - %5.3lf)\n",
+            p_TtopLeft.m_x, glowx, p_TtopLeft.m_y, glowy, // top left
+            p_TtopLeft.m_x + p_T.length( ) * CHAR_WIDTH, glowx, p_TtopLeft.m_y,
+            glowy, // top
+                   // right
+            p_TtopLeft.m_x + p_T.length( ) * CHAR_WIDTH, glowx, p_TtopLeft.m_y - CHAR_HEIGHT,
+            0 * glowy // top-mid right
+        );
+    }
+
+    if( !p_compress || p_P.length( ) ) {
+        INDENT_PRINT( 1 + p_startIndent )(
+            p_out,
+            "-- (%5.3lf + %5.3lf, %5.3lf + %5.3lf) "
+            "-- (%5.3lf + %5.3lf, %5.3lf - %5.3lf) "
+            "-- (%5.3lf - %5.3lf, %5.3lf - %5.3lf)\n",
+            p_PtopLeft.m_x + p_P.length( ) * CHAR_WIDTH, glowx, p_PtopLeft.m_y,
+            0 * glowy, // bot-mid right
+            p_PtopLeft.m_x + p_P.length( ) * CHAR_WIDTH, glowx, p_PtopLeft.m_y - CHAR_HEIGHT,
+            glowy,                                                     // bot right
+            p_PtopLeft.m_x, glowx, p_PtopLeft.m_y - CHAR_HEIGHT, glowy // bot left
+        );
+    }
+
+    INDENT_PRINT( 1 + p_startIndent )( p_out, "-- cycle;\n" );
 
     if( p_P.length( ) == p_T.length( ) ) {
         // print "matching edges"
@@ -398,23 +416,31 @@ void print_matched_string_pair( FILE* p_out, const stylized_string& p_P, tikz_po
         }
     }
 
-    if( p_P.length( ) ) { print_string( p_out, p_P, p_PtopLeft, p_startIndent, p_indent ); }
-    if( p_T.length( ) ) { print_string( p_out, p_T, p_TtopLeft, p_startIndent, p_indent ); }
+    if( !p_compress && p_P.length( ) ) {
+        print_string( p_out, p_P, p_PtopLeft, p_startIndent, p_indent );
+    }
+    if( !p_compress && p_T.length( ) ) {
+        print_string( p_out, p_T, p_TtopLeft, p_startIndent, p_indent );
+    }
 }
 
-std::string char_or_empty( char p_char ) {
+std::string char_or_empty( char p_char, const std::string& p_wildcard ) {
     if( !p_char ) { return "\\varepsilon"; }
+    char wc = ( p_wildcard == EMPTY_STR || !p_wildcard.length( ) ) ? 0 : p_wildcard[ 0 ];
+    if( p_char == wc ) { return math_mode( WILDCARD_SYMBOL ); }
     return text_typewriter( std::string{ p_char } );
 }
 
-std::string to_stringT( const breakpoint& p_bp ) {
+std::string to_stringT( const breakpoint& p_bp, const std::string& p_wildcard ) {
     return textsize_footnotesize( math_mode( std::string{ "(" } + std::to_string( p_bp.m_posT )
-                                             + ", " + char_or_empty( p_bp.m_charT ) + ")" ) );
+                                             + ", " + char_or_empty( p_bp.m_charT, p_wildcard )
+                                             + ")" ) );
 }
 
-std::string to_stringP( const breakpoint& p_bp ) {
+std::string to_stringP( const breakpoint& p_bp, const std::string& p_wildcard ) {
     return textsize_footnotesize( math_mode( std::string{ "(" } + std::to_string( p_bp.m_posP )
-                                             + ", " + char_or_empty( p_bp.m_charP ) + ")" ) );
+                                             + ", " + char_or_empty( p_bp.m_charP, p_wildcard )
+                                             + ")" ) );
 }
 
 color color_for_bp( const breakpoint& p_bp ) {
@@ -436,22 +462,68 @@ color color_for_bp( const breakpoint& p_bp ) {
 std::pair<tikz_point, tikz_point>
 print_alignment( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft,
                  const stylized_string& p_T, tikz_point p_TtopLeft, const breakpoint_repn& p_brpnt,
-                 bool p_printBreakpoints, u32 p_startIndent, u32 p_indent ) {
+                 bool p_printBreakpoints, bool p_printExtraStringParts, bool p_compress,
+                 u32 p_startIndent, u32 p_indent ) {
     double pxpos = p_PtopLeft.m_x, txpos = p_TtopLeft.m_x;
+    double sepWidth = 3 * CHAR_GLOW, extraGlow = 3.5 * CHAR_GLOW, smallGlow = 2 * CHAR_GLOW;
+
+    stylized_string pnew{ p_P.m_name, p_P.m_fragment,
+                          p_P.m_displayStyle | str_displ_t::SHOW_CHARACTERS };
+    stylized_string tnew{ p_T.m_name, p_T.m_fragment,
+                          p_T.m_displayStyle | str_displ_t::SHOW_CHARACTERS };
+
+    for( u32 i = p_P.m_fragment.closed_begin( ); i < p_P.m_fragment.open_end( ); ++i ) {
+        if( p_P.has_wildcard( i ) ) { pnew.annotation_at_pos( i ) = p_P.annotation_at_pos( i ); }
+    }
+    for( u32 i = p_T.m_fragment.closed_begin( ); i < p_T.m_fragment.open_end( ); ++i ) {
+        if( p_T.has_wildcard( i ) ) { tnew.annotation_at_pos( i ) = p_T.annotation_at_pos( i ); }
+    }
+
+    if( p_compress ) {
+        sepWidth = extraGlow = smallGlow = 0;
+        p_printBreakpoints               = false;
+    }
+    double pxinit = pxpos, txinit = txpos;
+
+    if( p_printExtraStringParts ) {
+        auto fragP = fragmentco{ p_P.m_fragment.closed_begin( ), p_brpnt.front( ).m_posP };
+        auto fragT = fragmentco{ p_T.m_fragment.closed_begin( ), p_brpnt.front( ).m_posT };
+        if( fragP.length( ) ) {
+            if( !p_compress ) {
+                print_string( p_out, p_P.slice( fragP ), tikz_point{ pxpos, p_PtopLeft.m_y },
+                              p_startIndent, p_indent );
+            }
+            pxpos += CHAR_WIDTH * fragP.length( ) + smallGlow;
+        } else {
+            pxpos += CHAR_WIDTH * fragT.length( ) + smallGlow;
+            pxinit = pxpos;
+        }
+        if( fragT.length( ) ) {
+            if( !p_compress ) {
+                print_string( p_out, p_T.slice( fragT ), tikz_point{ txpos, p_TtopLeft.m_y },
+                              p_startIndent, p_indent );
+            }
+            txpos += CHAR_WIDTH * fragT.length( ) + smallGlow;
+        } else {
+            txpos += CHAR_WIDTH * fragP.length( ) + smallGlow;
+            txinit = txpos;
+        }
+    }
+
     double last = pxpos, lastt = txpos;
-    double sepWidth = 3 * CHAR_GLOW, extraGlow = 3.5 * CHAR_GLOW;
     u32    shiftP = 0, shiftT = 0;
 
     if( p_printBreakpoints ) {
         // initial dummy breakpoint
-        print_separator( p_out, p_PtopLeft, p_TtopLeft, SEP_COL.deemphasize( ), p_startIndent,
+        print_separator( p_out, tikz_point{ pxpos, p_PtopLeft.m_y },
+                         tikz_point{ txpos, p_TtopLeft.m_y }, SEP_COL.deemphasize( ), p_startIndent,
                          p_indent );
-        print_text( p_out, to_stringP( p_brpnt.front( ) ),
-                    tikz_point{ p_PtopLeft.m_x - 3 * CHAR_GLOW,
-                                p_PtopLeft.m_y - CHAR_HEIGHT - 3 * CHAR_GLOW },
-                    "anchor = north west", SEP_COL, p_startIndent, p_indent );
-        print_text( p_out, to_stringT( p_brpnt.front( ) ),
-                    tikz_point{ p_TtopLeft.m_x - 3 * CHAR_GLOW, p_TtopLeft.m_y + 3 * CHAR_GLOW },
+        print_text(
+            p_out, to_stringP( p_brpnt.front( ), WILDCARD ),
+            tikz_point{ pxpos - 3 * CHAR_GLOW, p_PtopLeft.m_y - CHAR_HEIGHT - 3 * CHAR_GLOW },
+            "anchor = north west", SEP_COL, p_startIndent, p_indent );
+        print_text( p_out, to_stringT( p_brpnt.front( ), WILDCARD ),
+                    tikz_point{ txpos - 3 * CHAR_GLOW, p_TtopLeft.m_y + 3 * CHAR_GLOW },
                     "anchor = south west", SEP_COL, p_startIndent, p_indent );
         pxpos += sepWidth;
         txpos += sepWidth;
@@ -466,7 +538,7 @@ print_alignment( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft,
             // matched fragment
             print_matched_string_pair(
                 p_out, p_P.slice( fragP ), tikz_point{ pxpos, p_PtopLeft.m_y }, p_T.slice( fragT ),
-                tikz_point{ txpos, p_TtopLeft.m_y }, MAT_COL, p_startIndent, p_indent );
+                tikz_point{ txpos, p_TtopLeft.m_y }, MAT_COL, p_compress, p_startIndent, p_indent );
             pxpos += CHAR_WIDTH * fragP.length( ) + extraGlow;
             txpos += CHAR_WIDTH * fragT.length( ) + extraGlow;
         }
@@ -522,10 +594,10 @@ print_alignment( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft,
                              col.deemphasize( ), p_startIndent, p_indent );
             pxpos += sepWidth;
             txpos += sepWidth;
-            print_text( p_out, to_stringP( p_brpnt[ i ] ),
+            print_text( p_out, to_stringP( p_brpnt[ i ], WILDCARD ),
                         tikz_point{ posx, p_PtopLeft.m_y - CHAR_HEIGHT - sepWidth - extray },
                         anchorp, col, p_startIndent, p_indent );
-            print_text( p_out, to_stringT( p_brpnt[ i ] ),
+            print_text( p_out, to_stringT( p_brpnt[ i ], WILDCARD ),
                         tikz_point{ posxt, p_TtopLeft.m_y + sepWidth + extrayt }, anchort, col,
                         p_startIndent, p_indent );
         }
@@ -537,12 +609,27 @@ print_alignment( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft,
             if( bp.m_charT && bp.m_charP ) { // substitution
                 shiftP = 1;
                 shiftT = 1;
+
+                pnew[ bp.m_posP ] = std::string{ bp.m_charP };
+                tnew[ bp.m_posT ] = std::string{ bp.m_charT };
+                if( !pnew.has_wildcard( bp.m_posP ) ) {
+                    pnew.highlight_position( bp.m_posP, color_for_bp( bp ) );
+                }
+                if( !tnew.has_wildcard( bp.m_posT ) ) {
+                    tnew.highlight_position( bp.m_posT, color_for_bp( bp ) );
+                }
             } else if( bp.m_charT ) { // insertion
                 shiftT = 1;
                 shiftP = 0;
+
+                tnew[ bp.m_posT ] = std::string{ bp.m_charT };
+                tnew.highlight_position( bp.m_posT, color_for_bp( bp ) );
             } else if( bp.m_charP ) { // deletion
                 shiftP = 1;
                 shiftT = 0;
+
+                pnew[ bp.m_posP ] = std::string{ bp.m_charP };
+                pnew.highlight_position( bp.m_posP, color_for_bp( bp ) );
             }
             print_matched_string_pair(
                 p_out,
@@ -553,10 +640,43 @@ print_alignment( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft,
                 p_T.slice( { bp.m_posT, bp.m_posT + shiftT } )
                     .replace_data( str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS,
                                    std::string{ bp.m_charT }, bp.m_posT ),
-                tikz_point{ txpos, p_TtopLeft.m_y }, color_for_bp( bp ), p_startIndent, p_indent );
+                tikz_point{ txpos, p_TtopLeft.m_y }, color_for_bp( bp ), p_compress, p_startIndent,
+                p_indent );
             pxpos += shiftP * CHAR_WIDTH + extraGlow;
             txpos += shiftT * CHAR_WIDTH + extraGlow;
         }
+    }
+
+    if( !p_compress && p_printExtraStringParts ) {
+        auto fragP = fragmentco{ p_brpnt.back( ).m_posP, p_P.m_fragment.open_end( ) };
+        auto fragT = fragmentco{ p_brpnt.back( ).m_posT, p_T.m_fragment.open_end( ) };
+        auto corr  = smallGlow - extraGlow;
+        if( p_printBreakpoints ) { corr = smallGlow - sepWidth; }
+        if( fragP.length( ) ) {
+            pxpos += corr;
+            if( !p_compress ) {
+                print_string( p_out, p_P.slice( fragP ), tikz_point{ pxpos, p_PtopLeft.m_y },
+                              p_startIndent, p_indent );
+            }
+            pxpos += CHAR_WIDTH * fragP.length( );
+        } else {
+            pxpos += CHAR_WIDTH * fragT.length( ) + corr;
+        }
+        if( fragT.length( ) ) {
+            txpos += corr;
+            if( !p_compress ) {
+                print_string( p_out, p_T.slice( fragT ), tikz_point{ txpos, p_TtopLeft.m_y },
+                              p_startIndent, p_indent );
+            }
+            txpos += CHAR_WIDTH * fragT.length( );
+        } else {
+            txpos += CHAR_WIDTH * fragP.length( ) + corr;
+        }
+    }
+
+    if( p_compress ) {
+        print_string( p_out, pnew, tikz_point{ pxinit, p_PtopLeft.m_y }, p_startIndent, p_indent );
+        print_string( p_out, tnew, tikz_point{ txinit, p_TtopLeft.m_y }, p_startIndent, p_indent );
     }
 
     return { tikz_point{ pxpos, p_PtopLeft.m_y }, tikz_point{ txpos, p_TtopLeft.m_y } };

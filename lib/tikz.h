@@ -101,6 +101,7 @@ constexpr std::string RECT_CONN     = " rectangle ";
 constexpr std::string CIRC_CONN     = " circle ";
 constexpr std::string ARR_TIP_LATEX = "-latex";
 
+constexpr std::string LW_VERY_THIN_OUTLINE  = "line width = .5pt";
 constexpr std::string LW_THIN_OUTLINE       = "line width = .75pt";
 constexpr std::string LW_OUTLINE            = "line width = 1pt";
 constexpr std::string LW_SUPPORT_LINE       = "line width = .5pt";
@@ -115,7 +116,9 @@ inline std::string text_typewriter( const std::string& p_string ) {
     return "\\texttt{" + p_string + "}";
 }
 
-constexpr std::string VSIZE_CORRECTION = "\\vphantom{Ag|}";
+constexpr std::string VSIZE_CORRECTION       = "\\vphantom{Ag|}";
+constexpr std::string WILDCARD_SYMBOL_FILLED = "\\wcsymbolf";
+constexpr std::string WILDCARD_SYMBOL        = "\\wcsymbol";
 
 inline std::string textsize_small( const std::string& p_string ) {
     return "{\\small " + p_string + "}";

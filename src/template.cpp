@@ -18,62 +18,109 @@ std::string PROGRAM_NAME   = "";
     new_document( OUT_DIR + ( p_name ), FONT_PATH, COLOR_PATH, MACRO_PATH, PACKAGES, LIBRARIES, \
                   EXTRA_PREAMBLE );
 
-void picture_stub( const std::string& p_name = "g01.tex" ) {
-    FILE* out = NEW_DOC_SIMPLE( p_name );
-    initialize_tikzpicture( out );
-
+void picture_string( const std::string& p_name = "g01.tex" ) {
+    FILE*       out  = NEW_DOC_SIMPLE( p_name );
     std::string data = "hello world!";
     std::string name = "S";
 
-    std::deque<std::string> optname{ "rotatable",      "show positions",  "show characters",
-                                     "show wildcards", "group positions", "use typewriter" };
-
-    for( u32 j = 1, i2 = 0; j < str_displ_t::MAX; j <<= 1, ++i2 ) {
-        print_node( out,
-                    tikz_point{ ( data.length( ) + 1 + i2 ) * CHAR_WIDTH, CHAR_HEIGHT * ( .5 ) },
-                    optname[ i2 ], "rotate=90, anchor = west" );
-    }
-
-    for( u32 i = 0; i < str_displ_t::MAX; i += 2 ) {
-        auto S = stylized_string{ data, name, i }.add_wildcards( std::deque<u32>{ 0, 1, 5 }, true );
-        auto SI = S.color_invert( );
-        print_string( out, S, tikz_point{ .0, -CHAR_HEIGHT * 1.0 * i } );
-        print_string( out, SI,
-                      tikz_point{ ( data.length( ) + 1 ) * -CHAR_WIDTH, -CHAR_HEIGHT * 1.0 * i } );
+    initialize_tikzpicture( out );
+    {
+        std::deque<std::string> optname{ "rotatable",      "show positions",  "show characters",
+                                         "show wildcards", "group positions", "use typewriter" };
 
         for( u32 j = 1, i2 = 0; j < str_displ_t::MAX; j <<= 1, ++i2 ) {
-            print_node( out,
-                        tikz_point{ ( data.length( ) + 1 + i2 ) * CHAR_WIDTH,
-                                    -CHAR_HEIGHT * ( 1.0 * i + .5 ) },
-                        ( i & j ) ? "o" : "x" );
+            print_node(
+                out, tikz_point{ ( data.length( ) + 1 + i2 ) * CHAR_WIDTH, CHAR_HEIGHT * ( .5 ) },
+                optname[ i2 ], "rotate=90, anchor = west" );
+        }
+
+        for( u32 i = 0; i < str_displ_t::MAX; i += 2 ) {
+            auto S  = stylized_string{ data, name, i }.add_wildcards( std::deque<u32>{ 0, 1, 5 },
+                                                                      true );
+            auto SI = S.color_invert( );
+            print_string( out, S, tikz_point{ .0, -CHAR_HEIGHT * 1.0 * i } );
+            print_string(
+                out, SI,
+                tikz_point{ ( data.length( ) + 1 ) * -CHAR_WIDTH, -CHAR_HEIGHT * 1.0 * i } );
+
+            for( u32 j = 1, i2 = 0; j < str_displ_t::MAX; j <<= 1, ++i2 ) {
+                print_node( out,
+                            tikz_point{ ( data.length( ) + 1 + i2 ) * CHAR_WIDTH,
+                                        -CHAR_HEIGHT * ( 1.0 * i + .5 ) },
+                            ( i & j ) ? "o" : "x" );
+            }
         }
     }
-
     finish_tikzpicture( out );
-    initialize_tikzpicture( out );
 
-    for( u32 i = 0; i < str_displ_t::MAX / 2; ++i ) {
-        auto S = stylized_string{ data, name, i }.add_wildcards( std::deque<u32>{ 0, 1, 5 }, true );
-        auto SI = S.color_invert( );
-        print_string_vertical( out, S, tikz_point{ CHAR_WIDTH * 2.0 * i, .0 } );
-        print_string_vertical(
-            out, SI, tikz_point{ CHAR_WIDTH * ( 2.0 * i ), ( data.length( ) + 1 ) * CHAR_WIDTH } );
+    initialize_tikzpicture( out );
+    {
+
+        for( u32 i = 0; i < str_displ_t::MAX / 2; ++i ) {
+            auto S  = stylized_string{ data, name, i }.add_wildcards( std::deque<u32>{ 0, 1, 5 },
+                                                                      true );
+            auto SI = S.color_invert( );
+            print_string_vertical( out, S, tikz_point{ CHAR_WIDTH * 2.0 * i, .0 } );
+            print_string_vertical(
+                out, SI,
+                tikz_point{ CHAR_WIDTH * ( 2.0 * i ), ( data.length( ) + 1 ) * CHAR_WIDTH } );
+        }
     }
-
     finish_tikzpicture( out );
+    finish_document( out );
+}
+
+void picture_alignment( const std::string& p_name = "g02.tex" ) {
+    FILE* out = NEW_DOC_SIMPLE( p_name );
     initialize_tikzpicture( out );
+    {
+        std::string T = "abab" + WILDCARD + "abcaab" + WILDCARD + "a" + WILDCARD + "a";
+        std::string P = "babcabcaccabaab";
 
-    std::string T = "abab" + WILDCARD + "abcaab" + WILDCARD + "a" + WILDCARD + "a";
-    std::string P = "babcabcaccabaab";
+        auto T_NAME
+            = stylized_string{ T, "T", str_displ_t::FRAGMENT_WILDCARD }.add_wildcards( T, true );
+        auto P_NAME = stylized_string{ P, "P", str_displ_t::FRAGMENT_WILDCARD };
 
-    auto T_NAME
-        = stylized_string{ T, "T", str_displ_t::FRAGMENT_WILDCARD }.add_wildcards( T, true );
-    auto P_NAME = stylized_string{ P, "P", str_displ_t::FRAGMENT_WILDCARD };
+        auto bp = compute_breakpoints( P, T, WILDCARD );
 
-    auto bp = compute_breakpoints( P, T, WILDCARD );
+        print_alignment( out, P_NAME, tikz_point{ 0.0, 0.0 }, T_NAME, tikz_point{ 0.0, 1.25 }, bp );
 
-    print_alignment( out, P_NAME, tikz_point{ 0.0, 0.0 }, T_NAME, tikz_point{ 0.0, 1.25 }, bp,
-                     true );
+        print_alignment( out, P_NAME, tikz_point{ 0.0, 3.5 }, T_NAME, tikz_point{ 0.0, 4.75 }, bp,
+                         false, false, true );
+
+        print_alignment( out, P_NAME, tikz_point{ 0.0, 6.5 }, T_NAME, tikz_point{ 0.0, 7.75 }, bp,
+                         false );
+    }
+    finish_tikzpicture( out );
+
+    initialize_tikzpicture( out );
+    {
+        std::string T = "b" + WILDCARD + WILDCARD + WILDCARD + "a" + WILDCARD + "ab" + WILDCARD
+                        + WILDCARD + "a" + WILDCARD + "a";
+        std::string P = "bcaaa";
+
+        auto T_NAME
+            = stylized_string{ T, "T", str_displ_t::FRAGMENT_WILDCARD }.add_wildcards( T, true );
+        auto P_NAME = stylized_string{ P, "P", str_displ_t::FRAGMENT_WILDCARD };
+
+        auto bps = compute_occs( P, T, WILDCARD );
+
+        for( u32 y = 0; y < bps.size( ); ++y ) {
+            fprintf( stderr, "occ %lu at %lu\n", y, bps[ y ][ 0 ].m_posT );
+
+            for( auto bp : bps[ y ] ) {
+                fprintf( stderr, "(%lu, %c) (%lu, %c)\n", bp.m_posT, bp.m_charT, bp.m_posP,
+                         bp.m_charP );
+            }
+
+            print_alignment( out, P_NAME, tikz_point{ 0.0, -3.0 * y }, T_NAME,
+                             tikz_point{ 0.0, -3.0 * y + 1 }, bps[ y ], false, true, true );
+
+            print_alignment( out, P_NAME, tikz_point{ ( 2 + T.length( ) ) * CHAR_WIDTH, -3.0 * y },
+                             T_NAME, tikz_point{ ( 2 + T.length( ) ) * CHAR_WIDTH, -3.0 * y + 1 },
+                             bps[ y ], true, true );
+        }
+    }
     finish_tikzpicture( out );
     finish_document( out );
 }
@@ -88,5 +135,6 @@ int main( int p_argc, char* p_argv[] ) {
         MACRO_PATH = TEX_DIR + "macros";
     }
 
-    picture_stub( );
+    picture_string( );
+    picture_alignment( );
 }
