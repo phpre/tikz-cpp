@@ -106,6 +106,27 @@ void picture_alignment( const std::string& p_name = "g02.tex" ) {
         auto bps = compute_occs( P, T, WILDCARD );
 
         for( u32 y = 0; y < bps.size( ); ++y ) {
+            print_alignment( out, P_NAME, tikz_point{ 0.0, -3.0 * y }, T_NAME,
+                             tikz_point{ 0.0, -3.0 * y + 1 }, bps[ y ], false, true, true );
+
+            print_alignment( out, P_NAME, tikz_point{ ( 2 + T.length( ) ) * CHAR_WIDTH, -3.0 * y },
+                             T_NAME, tikz_point{ ( 2 + T.length( ) ) * CHAR_WIDTH, -3.0 * y + 1 },
+                             bps[ y ], true, true );
+        }
+    }
+    finish_tikzpicture( out );
+
+    initialize_tikzpicture( out );
+    {
+        std::string T = "aabaabcaabaabba";
+        std::string P = "bcaaa";
+
+        auto T_NAME = stylized_string{ T, "T", str_displ_t::FRAGMENT_WILDCARD };
+        auto P_NAME = stylized_string{ P, "P", str_displ_t::FRAGMENT_WILDCARD };
+
+        auto bps = compute_occs_with_edits( P, T, 2 );
+
+        for( u32 y = 0; y < bps.size( ); ++y ) {
             fprintf( stderr, "occ %lu at %lu\n", y, bps[ y ][ 0 ].m_posT );
 
             for( auto bp : bps[ y ] ) {
@@ -122,6 +143,7 @@ void picture_alignment( const std::string& p_name = "g02.tex" ) {
         }
     }
     finish_tikzpicture( out );
+
     finish_document( out );
 }
 

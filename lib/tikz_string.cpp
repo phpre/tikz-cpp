@@ -406,12 +406,14 @@ void print_matched_string_pair( FILE* p_out, const stylized_string& p_P, tikz_po
 
             if( !match ) {
                 // if they don't, draw a big cross symbolizing the replacement
-                print_cross( p_out,
-                             tikz_point{ ( p_TtopLeft.m_x + ( i + .5 ) * CHAR_WIDTH + p_PtopLeft.m_x
-                                           + ( i + .5 ) * CHAR_WIDTH )
-                                             / 2.0,
-                                         ( p_TtopLeft.m_y - CHAR_HEIGHT - p_PtopLeft.m_y ) / 2.0 },
-                             p_bgColor.deemphasize_weak( ), p_startIndent, p_indent );
+                print_cross(
+                    p_out,
+                    tikz_point{ ( p_TtopLeft.m_x + ( i + .5 ) * CHAR_WIDTH + p_PtopLeft.m_x
+                                  + ( i + .5 ) * CHAR_WIDTH )
+                                    / 2.0,
+                                p_PtopLeft.m_y
+                                    + ( p_TtopLeft.m_y - CHAR_HEIGHT - p_PtopLeft.m_y ) / 2.0 },
+                    p_bgColor.deemphasize_weak( ), p_startIndent, p_indent );
             }
         }
     }
