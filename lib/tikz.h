@@ -10,7 +10,14 @@
 #include "tikz_point.h"
 
 namespace TIKZ {
+    typedef std::deque<std::pair<u32, std::string>> render_t;
+
     const extern std::string CROSS_STYLE;
+
+    constexpr std::string OPT_COLOR           = "text";
+    constexpr std::string OPT_FILL            = "fill";
+    constexpr std::string OPT_DRAW            = "draw";
+    constexpr std::string OPT_ROUNDED_CORNERS = "rounded corners";
 
     constexpr std::string LINE_CONN     = " -- ";
     constexpr std::string RECT_CONN     = " rectangle ";

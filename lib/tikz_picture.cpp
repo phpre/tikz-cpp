@@ -2,28 +2,61 @@
 
 namespace TIKZ {
     picture::picture( kv_store p_options )
-        : _packages{ }, _libraries{ }, _globalMacros{ }, _localMacros{ }, _options{ p_options },
+        : m_packages{ }, m_libraries{ }, m_globalMacros{ }, _localMacros{ }, _options{ p_options },
           _content{ } {
     }
 
-    std::string picture::to_string( u32 p_time ) const {
-        std::string result = EMPTY_STR;
+    render_t picture::render( u32 p_time, u32 p_startIndent ) const {
+        render_t result{ };
 
-        // for( auto cmd : _content ) { result += cmd->to_string( p_time ); }
+        for( const auto& [ name, str ] : _localMacros ) {
+            result.push_back( { p_startIndent, str } );
+        }
 
-        if( result == EMPTY_STR ) {
+        if( _content.empty( ) ) {
             // picture is empty
             return result;
         }
 
-        std::string env = "\\begin{tikzpicture}[";
-        for( const auto& [ k, v ] : _options ) {
-            env += k;
-            if( v != EMPTY_STR ) { env += " = " + v; }
-            env += ",";
+        for( const auto& cmd : _content ) {
+            result.append_range( cmd->render( p_time, p_startIndent + 1 ) );
         }
-        env += "]\n";
 
-        return env + result + "\\end{tikzpicture}\n";
+        std::string env = "\\begin{tikzpicture}";
+        if( !_options.empty( ) ) {
+            env += "[";
+            env += kv_to_string( _options );
+            env += "]";
+        }
+
+        result.push_front( { p_startIndent, env } );
+        result.push_back( { p_startIndent, "\\end{tikzpicture}" } );
+
+        return result;
+    }
+
+    void picture::add_package( const std::string& p_package ) {
+        m_packages.insert( p_package );
+    }
+
+    void picture::add_library( const std::string& p_library ) {
+        m_libraries.insert( p_library );
+    }
+
+    void picture::add_global_macro( const std::string& p_name, const std::string& p_content ) {
+        m_globalMacros[ p_name ] = p_content;
+    }
+
+    void picture::add_local_macro( const std::string& p_name, const std::string& p_content ) {
+        _localMacros[ p_name ] = p_content;
+    }
+
+    void picture::add_command( std::shared_ptr<command> p_command ) {
+        if( !p_command ) { return; }
+
+        m_libraries.insert_range( p_command->m_libraries );
+        m_packages.insert_range( p_command->m_packages );
+
+        _content.emplace_back( p_command );
     }
 } // namespace TIKZ

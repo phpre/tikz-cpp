@@ -11,13 +11,12 @@
 
 namespace TIKZ {
     struct command {
-        std::set<u32>         m_time;      // time points at which this command is active
+        std::set<u32>         m_times;     // time points at which this command is active
         std::set<std::string> m_libraries; // dependencies
+        std::set<std::string> m_packages;  // dependencies
         kv_store              m_options;
 
-        virtual std::string to_string( u32 p_time = 0, u32 p_startIndent = 1,
-                                       u32 p_indent = 4 ) const
-            = 0;
+        virtual render_t render( u32 p_time = 0, u32 p_startIndent = 1 ) const = 0;
 
         inline virtual ~command( ) {
         }
@@ -28,36 +27,35 @@ namespace TIKZ {
         std::string   m_name    = EMPTY_STR;
         std::string   m_content = EMPTY_STR;
 
-        static inline node_command place_text( const std::string& p_text, tikz_position p_position,
-                                               color           p_textColor,
-                                               const kv_store& p_options = { } ) {
-            return { };
-        }
+        static node_command place_text( const std::string& p_text, tikz_position p_position,
+                                        const std::string& p_name = EMPTY_STR,
+                                        const kv_store&    p_options
+                                        = { { OPT_COLOR, COLOR_TEXT.to_string( ) } } );
 
-        virtual inline std::string to_string( u32 p_time = 0, u32 p_startIndent = 1,
-                                              u32 p_indent = 4 ) const {
-            return EMPTY_STR;
+        virtual render_t render( u32 p_time, u32 p_startIndent, bool p_internal ) const;
+
+        virtual inline render_t render( u32 p_time = 0, u32 p_startIndent = 1 ) const {
+            return render( p_time, p_startIndent, false );
         }
     };
 
+    /*
     struct path_command : public command {
-        virtual inline std::string to_string( u32 p_time = 0, u32 p_startIndent = 1,
-                                              u32 p_indent = 4 ) const {
-            return EMPTY_STR;
+        virtual render_t render( u32 p_time = 0, u32 p_startIndent = 1 ) const {
+            return { };
         }
     };
 
     struct math_command : public command {
-        virtual inline std::string to_string( u32 p_time = 0, u32 p_startIndent = 1,
-                                              u32 p_indent = 4 ) const {
-            return EMPTY_STR;
+        virtual render_t render( u32 p_time = 0, u32 p_startIndent = 1 ) const {
+            return { };
         }
     };
 
     struct scope_command : public command {
-        virtual inline std::string to_string( u32 p_time = 0, u32 p_startIndent = 1,
-                                              u32 p_indent = 4 ) const {
-            return EMPTY_STR;
+        virtual render_t render( u32 p_time = 0, u32 p_startIndent = 1 ) const {
+            return { };
         }
     };
+    */
 } // namespace TIKZ

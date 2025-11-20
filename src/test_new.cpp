@@ -3,6 +3,7 @@
 
 #include "tikz.h"
 #include "tikz_document.h"
+#include "tikz_picture.h"
 #include "tikz_string.h"
 
 std::string OUT_DIR      = "../figs/";
@@ -14,12 +15,13 @@ std::string PROGRAM_NAME = "";
 
 void picture_string( const std::string& p_name = "g01.tex" ) {
     TIKZ::document out{ };
+    TIKZ::picture  p1{ };
 
-    auto res = out.to_string( FONT_PATH, COLOR_PATH, MACRO_PATH );
+    p1.add_command( std::make_shared<TIKZ::node_command>(
+        TIKZ::node_command::place_text( "Hello world!", TIKZ::tikz_point{ 0.0, 0.0 } ) ) );
 
-    auto f = TIKZ::open_or_abort( OUT_DIR + p_name );
-    fprintf( f, "%s\n", res.c_str( ) );
-    fclose( f );
+    out.add_picture( p1 );
+    TIKZ::document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 
     /*
     FILE*       out  = NEW_DOC_SIMPLE( p_name );

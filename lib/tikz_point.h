@@ -34,7 +34,7 @@ namespace TIKZ {
                                                       double                            p_amount );
 
     class tikz_position {
-        enum class type { POINT, NAME };
+        enum class type { POINT, POLAR, NAME };
         type _type = type::POINT;
 
         tikz_point  _point{ 0.0, 0.0 };
@@ -45,11 +45,20 @@ namespace TIKZ {
             : _type{ type::POINT }, _point{ p_point } {
         }
 
+        inline tikz_position( double p_angle, double p_length )
+            : _type{ type::POLAR }, _point{ p_angle, p_length } {
+        }
+
         inline tikz_position( const std::string& p_name ) : _type{ type::NAME }, _name{ p_name } {
         }
 
         inline std::string to_string( ) const {
             switch( _type ) {
+            case type::POLAR: {
+                char buffer[ 30 ] = { 0 };
+                snprintf( buffer, 29, "%5.3lf: %5.3lf", _point.m_x, _point.m_y );
+                return std::string{ buffer };
+            }
             case type::POINT:
             default: {
                 char buffer[ 30 ] = { 0 };

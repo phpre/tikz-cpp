@@ -1,7 +1,7 @@
 #include "tikz.h"
+#include "tikz_document.h"
 
 namespace TIKZ {
-
     const std::string CROSS_STYLE
         = "\\tikzset{cross/.style={cross out, draw, minimum size=2*(#1-\\pgflinewidth), inner sep=0pt, outer sep=0pt}}\n";
 
@@ -18,6 +18,14 @@ namespace TIKZ {
         return this->mix( COLOR_BLACK, p_amount );
     }
 
+    FILE* open_or_abort( const std::string& p_path ) {
+        return document::open_or_abort( p_path );
+    }
+
+    void indent( FILE* p_out, u32 p_indentLevel, u32 p_indent ) {
+        document::indent( p_out, p_indentLevel, p_indent );
+    }
+
     void initialize_tikzpicture( FILE* p_out, const std::string& p_options ) {
         fprintf( p_out,
                  "\\begin{page}\n"
@@ -27,12 +35,6 @@ namespace TIKZ {
     void finish_tikzpicture( FILE* p_out ) {
         fprintf( p_out, "\\end{tikzpicture}\n"
                         "\\end{page}\n" );
-    }
-
-    void indent( FILE* p_out, u32 p_indentLevel, u32 p_indent ) {
-        char buffer[ 10 ] = { 0 };
-        snprintf( buffer, 9, "%%%lu s", p_indentLevel * p_indent );
-        fprintf( p_out, buffer, "" );
     }
 
     void print_coordinate( FILE* p_out, const std::string& p_position, const std::string& p_name,
