@@ -15,8 +15,12 @@ namespace TIKZ {
         std::set<std::string> m_libraries; // dependencies
         kv_store              m_options;
 
-        virtual void print( FILE* p_out, u32 p_time = 0, u32 p_startIndent = 1, u32 p_indent = 4 )
+        virtual std::string to_string( u32 p_time = 0, u32 p_startIndent = 1,
+                                       u32 p_indent = 4 ) const
             = 0;
+
+        inline virtual ~command( ) {
+        }
     };
 
     struct node_command : public command {
@@ -29,11 +33,31 @@ namespace TIKZ {
                                                const kv_store& p_options = { } ) {
             return { };
         }
+
+        virtual inline std::string to_string( u32 p_time = 0, u32 p_startIndent = 1,
+                                              u32 p_indent = 4 ) const {
+            return EMPTY_STR;
+        }
     };
 
-    struct path_command : public command {};
+    struct path_command : public command {
+        virtual inline std::string to_string( u32 p_time = 0, u32 p_startIndent = 1,
+                                              u32 p_indent = 4 ) const {
+            return EMPTY_STR;
+        }
+    };
 
-    struct math_command : public command {};
+    struct math_command : public command {
+        virtual inline std::string to_string( u32 p_time = 0, u32 p_startIndent = 1,
+                                              u32 p_indent = 4 ) const {
+            return EMPTY_STR;
+        }
+    };
 
-    struct scope_command : public command {};
+    struct scope_command : public command {
+        virtual inline std::string to_string( u32 p_time = 0, u32 p_startIndent = 1,
+                                              u32 p_indent = 4 ) const {
+            return EMPTY_STR;
+        }
+    };
 } // namespace TIKZ

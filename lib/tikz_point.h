@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cstdio>
 #include <string>
 
 namespace TIKZ {
@@ -32,8 +33,31 @@ namespace TIKZ {
     std::pair<tikz_point, tikz_point> translate_down( std::pair<tikz_point, tikz_point> p_pos,
                                                       double                            p_amount );
 
-    union tikz_position {
-        tikz_point  m_point;
-        std::string m_name;
+    class tikz_position {
+        enum class type { POINT, NAME };
+        type _type = type::POINT;
+
+        tikz_point  _point{ 0.0, 0.0 };
+        std::string _name = EMPTY_STR;
+
+      public:
+        inline tikz_position( tikz_point p_point = tikz_point{ 0.0, 0.0 } )
+            : _type{ type::POINT }, _point{ p_point } {
+        }
+
+        inline tikz_position( const std::string& p_name ) : _type{ type::NAME }, _name{ p_name } {
+        }
+
+        inline std::string to_string( ) const {
+            switch( _type ) {
+            case type::POINT:
+            default: {
+                char buffer[ 30 ] = { 0 };
+                snprintf( buffer, 29, "%5.3lf, %5.3lf", _point.m_x, _point.m_y );
+                return std::string{ buffer };
+            }
+            case type::NAME: return _name;
+            }
+        }
     };
 } // namespace TIKZ

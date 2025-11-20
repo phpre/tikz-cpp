@@ -6,11 +6,13 @@
 #include <string>
 
 #include "defines.h"
-#include "tikz_point.h"
 #include "tikz_command.h"
+#include "tikz_point.h"
 
 namespace TIKZ {
     class picture {
+        std::set<u32> _times;
+
         std::set<std::string> _packages;
         std::set<std::string> _libraries;
 
@@ -22,6 +24,8 @@ namespace TIKZ {
 
       public:
         picture( kv_store p_options = { } );
+
+        std::string to_string( u32 p_time = 0 ) const;
 
         void add_package( const std::string& p_package );
         void add_library( const std::string& p_library );

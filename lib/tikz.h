@@ -10,6 +10,7 @@
 #include "tikz_point.h"
 
 namespace TIKZ {
+    const extern std::string CROSS_STYLE;
 
     constexpr std::string LINE_CONN     = " -- ";
     constexpr std::string RECT_CONN     = " rectangle ";
@@ -47,6 +48,8 @@ namespace TIKZ {
     inline std::string textsize_large( const std::string& p_string ) {
         return "{\\large " + p_string + "}";
     }
+
+    FILE* open_or_abort( const std::string& p_path );
 
     FILE* new_document( const std::string& p_path, const std::string& p_fontPath = EMPTY_STR,
                         const std::string& p_colorPath     = EMPTY_STR,

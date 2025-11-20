@@ -15,6 +15,8 @@ namespace TIKZ {
         std::set<std::string> _packages;
         std::set<std::string> _libraries;
 
+        std::map<std::string, std::string> _globalStyles;
+
         kv_store            _macros;
         std::deque<picture> _pictures;
 
@@ -23,8 +25,9 @@ namespace TIKZ {
 
         void add_picture( const picture& p_picture );
 
-        bool output( const std::string& p_path, const std::string& p_fontPath = EMPTY_STR,
-                     const std::string& p_colorPath = EMPTY_STR,
-                     const std::string& p_macroPath = EMPTY_STR );
+        std::string to_string( const std::string&   p_fontPath  = EMPTY_STR,
+                               const std::string&   p_colorPath = EMPTY_STR,
+                               const std::string&   p_macroPath = EMPTY_STR,
+                               const std::set<u32>& p_times     = { 0 } ) const;
     };
 } // namespace TIKZ
