@@ -3,7 +3,7 @@
 
 #include "tikz.h"
 #include "tikz_string.h"
-#include "wildcard.h"
+using namespace TIKZ;
 
 std::string OUT_DIR        = "../figs/";
 std::string TEX_DIR        = "../tex/";

@@ -3,6 +3,7 @@
 
 #include "tikz.h"
 #include "tikz_string.h"
+using namespace TIKZ;
 
 std::string OUT_DIR        = "../figs/";
 std::string TEX_DIR        = "../tex/";
@@ -127,13 +128,6 @@ void picture_alignment( const std::string& p_name = "g02.tex" ) {
         auto bps = compute_occs_with_edits( P, T, 2 );
 
         for( u32 y = 0; y < bps.size( ); ++y ) {
-            fprintf( stderr, "occ %lu at %lu\n", y, bps[ y ][ 0 ].m_posT );
-
-            for( auto bp : bps[ y ] ) {
-                fprintf( stderr, "(%lu, %c) (%lu, %c)\n", bp.m_posT, bp.m_charT, bp.m_posP,
-                         bp.m_charP );
-            }
-
             print_alignment( out, P_NAME, tikz_point{ 0.0, -3.0 * y }, T_NAME,
                              tikz_point{ 0.0, -3.0 * y + 1 }, bps[ y ], false, true, true );
 

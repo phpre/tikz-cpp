@@ -5,6 +5,7 @@
 #include "tikz.h"
 #include "tikz_graph.h"
 #include "tikz_string.h"
+using namespace TIKZ;
 
 constexpr std::string T = "AAAcdaAAAaacAAaddAAAAA";
 constexpr std::string P = "AbAAbcdAAAdAAbddAAaAAA";

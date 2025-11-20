@@ -3,10 +3,10 @@
 #include <deque>
 
 #include "breakpoint.h"
-#include "tikz.h"
+#include "defines.h"
 
 typedef u32 gs_flag_t;
-gs_flag_t merge_flags( gs_flag_t p_a, gs_flag_t p_b );
+gs_flag_t   merge_flags( gs_flag_t p_a, gs_flag_t p_b );
 
 struct graph_slice {
     static constexpr gs_flag_t GSF_NONE      = 0;
@@ -14,7 +14,6 @@ struct graph_slice {
     static constexpr gs_flag_t GSF_TOP       = ( 1 << 1 );
     static constexpr gs_flag_t GSF_BOT       = ( 1 << 2 );
     static constexpr gs_flag_t GSF_PRIMITIVE = ( 1 << 3 );
-
 
     gs_flag_t  m_flags;
     fragmentco m_originalFragP;

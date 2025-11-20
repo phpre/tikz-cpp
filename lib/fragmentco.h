@@ -1,5 +1,5 @@
 #pragma once
-#include "tikz.h"
+#include "defines.h"
 
 struct fragmentco {
     u32 m_begin; // inclusive

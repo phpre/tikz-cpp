@@ -3,9 +3,8 @@
 #include <deque>
 #include <string>
 
+#include "defines.h"
 #include "fragmentco.h"
-#include "tikz.h"
-#include "wildcard.h"
 
 // breakpoint of an alignment P ~>> T, as seen from P.
 struct breakpoint {
