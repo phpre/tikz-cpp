@@ -22,7 +22,7 @@ namespace TIKZ {
         std::deque<std::shared_ptr<command>> _content;
 
       public:
-        picture( kv_store p_options = { } );
+        picture( kv_store p_options = OPT::TEXT_COLOR );
 
         render_t render( u64 p_time = 0, u64 p_startIndent = 1 ) const;
 
@@ -34,7 +34,6 @@ namespace TIKZ {
         void add_command( std::shared_ptr<command> p_command );
 
         void place_text( const std::string& p_text, tikz_position p_position,
-                         const kv_store&    p_options = OPT::TEXT_COLOR,
-                         const std::string& p_name    = EMPTY_STR );
+                         const kv_store& p_options = { }, const std::string& p_name = EMPTY_STR );
     };
 } // namespace TIKZ

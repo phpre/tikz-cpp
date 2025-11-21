@@ -24,12 +24,12 @@ namespace TIKZ {
         if( !m_options.empty( ) ) {
             result += "[";
             result += m_options.to_string( );
-            result += "] ";
+            result += "]";
         }
 
-        if( m_name != EMPTY_STR ) { result += "(" + m_name + ") "; }
-        result += "at (" + m_position.to_string( ) + ") ";
-        result += "{" + m_content + "}";
+        if( m_name != EMPTY_STR ) { result += " (" + m_name + ")"; }
+        result += " at (" + m_position.to_string( ) + ")";
+        result += " {" + m_content + "}";
 
         if( !p_internal ) { result += ";"; }
 

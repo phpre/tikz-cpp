@@ -18,9 +18,10 @@ void picture_string( const std::string& p_name = "g01.tex" ) {
     TIKZ::picture  p1{ };
 
     p1.place_text( "Hello world!", TIKZ::tikz_point{ 0.0, 0.0 },
-                   TIKZ::OPT::TEXT_COLOR | TIKZ::OPT::FILL( TIKZ::COLOR_C1.to_bg( ) ) );
+                   TIKZ::OPT::TEXT_COLOR( TIKZ::COLOR_C2 )
+                       | TIKZ::OPT::FILL( TIKZ::COLOR_C1.to_bg( ) ) );
+    p1.place_text( "Hello world!", TIKZ::tikz_point{ 0.0, 1.0 } );
 
-    out.add_picture( p1 );
     out.add_picture( p1 );
     TIKZ::document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 

@@ -29,7 +29,7 @@ namespace TIKZ {
         std::string   m_content = EMPTY_STR;
 
         static node_command place_text( const std::string& p_text, tikz_position p_position,
-                                        const kv_store&    p_options = OPT::TEXT_COLOR,
+                                        const kv_store&    p_options = { },
                                         const std::string& p_name    = EMPTY_STR );
 
         virtual render_t render( u64 p_time, u64 p_startIndent, bool p_internal ) const;
