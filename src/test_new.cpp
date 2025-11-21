@@ -21,6 +21,7 @@ void picture_string( const std::string& p_name = "g01.tex" ) {
                    TIKZ::OPT::TEXT_COLOR | TIKZ::OPT::FILL( TIKZ::COLOR_C1.to_bg( ) ) );
 
     out.add_picture( p1 );
+    out.add_picture( p1 );
     TIKZ::document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 
     /*

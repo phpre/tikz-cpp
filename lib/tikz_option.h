@@ -36,9 +36,9 @@ namespace TIKZ {
 
         inline std::string to_string( ) const {
             std::string res = "";
-            for( const auto& op : m_options ) {
-                res += op.to_string( );
-                res += ",";
+            for( u64 i = 0; i < m_options.size( ); ++i ) {
+                res += m_options[ i ].to_string( );
+                if( i + 1 < m_options.size( ) ) { res += ", "; }
             }
             return res;
         }
