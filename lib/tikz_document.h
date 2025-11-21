@@ -16,8 +16,8 @@ namespace TIKZ {
         std::set<std::string> _libraries;
 
         std::map<std::string, std::string> _globalStyles;
+        std::map<std::string, std::string> _macros;
 
-        kv_store            _macros;
         std::deque<picture> _pictures;
 
       public:
@@ -28,11 +28,11 @@ namespace TIKZ {
         render_t render( const std::string&   p_fontPath  = EMPTY_STR,
                          const std::string&   p_colorPath = EMPTY_STR,
                          const std::string&   p_macroPath = EMPTY_STR,
-                         const std::set<u32>& p_times     = { 0 } ) const;
+                         const std::set<u64>& p_times     = { 0 } ) const;
 
         static FILE* open_or_abort( const std::string& p_path );
-        static void  indent( FILE* p_out, u32 p_indentLevel = 1, u32 p_indent = 4 );
+        static void  indent( FILE* p_out, u64 p_indentLevel = 1, u64 p_indent = 4 );
         static bool output( const std::string& p_path, const std::string& p_name, render_t p_render,
-                            u32 p_indent = 4 );
+                            u64 p_indent = 4 );
     };
 } // namespace TIKZ

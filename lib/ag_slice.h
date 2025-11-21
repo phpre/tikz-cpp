@@ -5,7 +5,7 @@
 #include "breakpoint.h"
 #include "defines.h"
 
-typedef u32 gs_flag_t;
+typedef u64 gs_flag_t;
 gs_flag_t   merge_flags( gs_flag_t p_a, gs_flag_t p_b );
 
 struct graph_slice {
@@ -47,18 +47,18 @@ struct graph_slice {
         return fragmentco{ top_left( ).first, bottom_right( ).first };
     }
 
-    inline u32 width( ) const {
+    inline u64 width( ) const {
         return fragment_t( ).length( );
     }
 
-    inline u32 height( ) const {
+    inline u64 height( ) const {
         return fragment_p( ).length( );
     }
 
     void merge_left( const graph_slice& p_other );
     void merge_right( const graph_slice& p_other );
 
-    static std::deque<graph_slice> from_alignment( const breakpoint_repn& p_brpnt, u32 p_d );
+    static std::deque<graph_slice> from_alignment( const breakpoint_repn& p_brpnt, u64 p_d );
     static graph_slice             merged_slice( const std::deque<graph_slice>& p_primitiveSlices,
                                                  fragmentco                     p_fragment );
     static std::deque<graph_slice>

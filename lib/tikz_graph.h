@@ -100,62 +100,62 @@ namespace TIKZ {
                    + ( tikz_point{ 0, m_distance.m_y } * p_posY );
         }
 
-        void print_coordinates( FILE* p_out, u32 p_sizeX, u32 p_sizeY, s32 p_startX = 0,
+        void print_coordinates( FILE* p_out, u64 p_sizeX, u64 p_sizeY, s32 p_startX = 0,
                                 s32 p_startY = 0, const std::string& p_extraOptions = EMPTY_STR,
-                                u32 p_startIndent = 1, u32 p_indent = 4 ) const;
+                                u64 p_startIndent = 1, u64 p_indent = 4 ) const;
 
         void print_vertex_on_coordinates( FILE* p_out, const vertex& p_vertex, s32 p_posX = 0,
                                           s32                p_posY         = 0,
                                           const std::string& p_extraOptions = EMPTY_STR,
-                                          u32 p_startIndent = 1, u32 p_indent = 4 ) const;
+                                          u64 p_startIndent = 1, u64 p_indent = 4 ) const;
 
-        void print_vertices_on_coordinates( FILE* p_out, const vertex& p_vertex, u32 p_sizeX,
-                                            u32 p_sizeY, s32 p_startX = 0, s32 p_startY = 0,
+        void print_vertices_on_coordinates( FILE* p_out, const vertex& p_vertex, u64 p_sizeX,
+                                            u64 p_sizeY, s32 p_startX = 0, s32 p_startY = 0,
                                             const std::string& p_extraOptions = EMPTY_STR,
-                                            u32 p_startIndent = 1, u32 p_indent = 4 ) const;
+                                            u64 p_startIndent = 1, u64 p_indent = 4 ) const;
 
-        void print_diagonal_on_coordinates( FILE* p_out, const vertex& p_vertex, u32 p_length,
+        void print_diagonal_on_coordinates( FILE* p_out, const vertex& p_vertex, u64 p_length,
                                             s32 p_startX = 0, s32 p_startY = 0,
                                             const std::string& p_extraOptions = EMPTY_STR,
-                                            u32 p_startIndent = 1, u32 p_indent = 4 ) const;
+                                            u64 p_startIndent = 1, u64 p_indent = 4 ) const;
 
         void print_new_vertex( FILE* p_out, const vertex& p_vertex, s32 p_posX = 0, s32 p_posY = 0,
-                               const std::string& p_extraOptions = EMPTY_STR, u32 p_startIndent = 1,
-                               u32 p_indent = 4 ) const;
+                               const std::string& p_extraOptions = EMPTY_STR, u64 p_startIndent = 1,
+                               u64 p_indent = 4 ) const;
 
-        void print_vertices( FILE* p_out, const vertex& p_vertex, u32 p_sizeX, u32 p_sizeY,
+        void print_vertices( FILE* p_out, const vertex& p_vertex, u64 p_sizeX, u64 p_sizeY,
                              s32 p_startX = 0, s32 p_startY = 0,
-                             const std::string& p_extraOptions = EMPTY_STR, u32 p_startIndent = 1,
-                             u32 p_indent = 4 ) const;
+                             const std::string& p_extraOptions = EMPTY_STR, u64 p_startIndent = 1,
+                             u64 p_indent = 4 ) const;
 
-        void print_diagonal( FILE* p_out, const vertex& p_vertex, u32 p_length, s32 p_startX = 0,
+        void print_diagonal( FILE* p_out, const vertex& p_vertex, u64 p_length, s32 p_startX = 0,
                              s32 p_startY = 0, const std::string& p_extraOptions = EMPTY_STR,
-                             u32 p_startIndent = 1, u32 p_indent = 4 ) const;
+                             u64 p_startIndent = 1, u64 p_indent = 4 ) const;
     };
 
     void print_vertex( FILE* p_out, const std::string& p_position, const vertex& p_vertex,
                        const std::string& p_name         = EMPTY_STR,
-                       const std::string& p_extraOptions = EMPTY_STR, u32 p_startIndent = 1,
-                       u32 p_indent = 4 );
+                       const std::string& p_extraOptions = EMPTY_STR, u64 p_startIndent = 1,
+                       u64 p_indent = 4 );
 
     void print_vertex( FILE* p_out, tikz_point p_position, const vertex& p_vertex,
                        const std::string& p_name         = EMPTY_STR,
-                       const std::string& p_extraOptions = EMPTY_STR, u32 p_startIndent = 1,
-                       u32 p_indent = 4 );
+                       const std::string& p_extraOptions = EMPTY_STR, u64 p_startIndent = 1,
+                       u64 p_indent = 4 );
 
     void print_arrow( FILE* p_out, const std::string& p_startPos, const std::string& p_endPos,
                       const std::string& p_lineWidth = LW_SUPPORT_LINE, color p_color = COLOR_TEXT,
-                      u32 p_startIndent = 1, u32 p_indent = 4 );
+                      u64 p_startIndent = 1, u64 p_indent = 4 );
     void print_arrow( FILE* p_out, tikz_point p_startPos, tikz_point p_endPos,
                       const std::string& p_lineWidth = LW_SUPPORT_LINE, color p_color = COLOR_TEXT,
-                      u32 p_startIndent = 1, u32 p_indent = 4 );
+                      u64 p_startIndent = 1, u64 p_indent = 4 );
 
     void print_selected_arrow( FILE* p_out, const std::string& p_startPos,
                                const std::string& p_endPos, color p_lineColor, color p_fillColor,
-                               double p_angle = 0, u32 p_startIndent = 1, u32 p_indent = 4 );
+                               double p_angle = 0, u64 p_startIndent = 1, u64 p_indent = 4 );
 
     void print_selected_arrow( FILE* p_out, tikz_point p_startPos, tikz_point p_endPos,
                                color p_lineColor, color p_fillColor, double p_angle = 0,
-                               u32 p_startIndent = 1, u32 p_indent = 4 );
+                               u64 p_startIndent = 1, u64 p_indent = 4 );
 
 } // namespace TIKZ

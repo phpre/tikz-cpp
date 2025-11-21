@@ -31,7 +31,7 @@ void wildcards_picture( const std::string& p_name = "g01.tex" ) {
     FILE* out = NEW_DOC_SIMPLE( p_name );
     initialize_tikzpicture( out );
 
-    print_string( out, T_WC.slice( fragmentco{ 0, static_cast<u32>( T.size( ) ) } ),
+    print_string( out, T_WC.slice( fragmentco{ 0, static_cast<u64>( T.size( ) ) } ),
                   tikz_point{ 0, 0 } );
 
     finish_tikzpicture( out );

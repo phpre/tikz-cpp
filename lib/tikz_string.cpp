@@ -4,7 +4,7 @@
 namespace TIKZ {
 
     void print_width_macro( FILE* p_out, double p_width, const std::string& p_text,
-                            u32 p_startIndent, u32 p_indent ) {
+                            u64 p_startIndent, u64 p_indent ) {
         if( p_text == EMPTY_STR ) {
             INDENT_PRINT( p_startIndent )(
                 p_out, "\\pgfmathsetmacro\\twd{ %5.3lf * 1cm / width(\" \") }\n", p_width );
@@ -15,9 +15,9 @@ namespace TIKZ {
         }
     }
 
-    void print_single_character( FILE* p_out, const stylized_string& p_S, u32 p_pos,
+    void print_single_character( FILE* p_out, const stylized_string& p_S, u64 p_pos,
                                  std::pair<std::string, std::string> p_render, tikz_point p_center,
-                                 std::string p_extraOptions, u32 p_startIndent, u32 p_indent ) {
+                                 std::string p_extraOptions, u64 p_startIndent, u64 p_indent ) {
         print_width_macro( p_out, CHAR_WIDTH, p_render.first, p_startIndent, p_indent );
 
         if( p_S.m_annotation.count( p_pos )
@@ -28,8 +28,8 @@ namespace TIKZ {
                     p_indent );
     }
 
-    void print_wildcard( FILE* p_out, const stylized_string& p_S, u32 p_pos, tikz_point p_center,
-                         u32 p_startIndent, u32 p_indent ) {
+    void print_wildcard( FILE* p_out, const stylized_string& p_S, u64 p_pos, tikz_point p_center,
+                         u64 p_startIndent, u64 p_indent ) {
         double cor1 = p_pos ? .005 : 0, cor2 = ( p_pos + 1 < p_S.length( ) ) ? .005 : 0;
         auto   col = p_S.m_color;
         col.replace_if_non_empty( p_S.annotation_at_pos( p_pos ).m_textColor );
@@ -69,7 +69,7 @@ namespace TIKZ {
     }
 
     void print_string_inner( FILE* p_out, const stylized_string& p_S, tikz_point p_StopLeft,
-                             u32 p_startIndent, u32 p_indent ) {
+                             u64 p_startIndent, u64 p_indent ) {
         auto        posy = p_StopLeft.m_y - CHAR_HEIGHT / 2.0;
         std::string extraopt
             = p_S.m_color.to_string( ) + ", inner sep = 2pt, xscale = {min(1, \\twd)}";
@@ -80,7 +80,7 @@ namespace TIKZ {
             extraopt += ", anchor = east";
         }
 
-        u32 pos = p_S.m_fragment.closed_begin( );
+        u64 pos = p_S.m_fragment.closed_begin( );
         while( pos < p_S.m_fragment.open_end( ) ) {
             // get next fragment to render
             auto next   = p_S.next( pos );
@@ -119,7 +119,7 @@ namespace TIKZ {
     }
 
     void print_string_inner_vertical( FILE* p_out, const stylized_string& p_S,
-                                      tikz_point p_StopLeft, u32 p_startIndent, u32 p_indent ) {
+                                      tikz_point p_StopLeft, u64 p_startIndent, u64 p_indent ) {
         auto        posx = p_StopLeft.m_x + ( CHAR_WIDTH ) / 2.0;
         std::string extraopt
             = p_S.m_color.to_string( ) + ", inner sep = 2pt, xscale = {min(1, \\twd)}";
@@ -134,7 +134,7 @@ namespace TIKZ {
             extraopt_rotate += ", anchor = south";
         }
 
-        u32 pos = p_S.m_fragment.closed_begin( );
+        u64 pos = p_S.m_fragment.closed_begin( );
         while( pos < p_S.m_fragment.open_end( ) ) {
             // get next fragment to render
             auto next   = p_S.next( pos );
@@ -176,7 +176,7 @@ namespace TIKZ {
 
     // Prints a string S
     void print_string( FILE* p_out, const stylized_string& p_S, tikz_point p_StopLeft,
-                       u32 p_startIndent, u32 p_indent ) {
+                       u64 p_startIndent, u64 p_indent ) {
         if( !p_S.length( ) ) { return; }
 
         double cor3 = -0.035;
@@ -189,7 +189,7 @@ namespace TIKZ {
             p_StopLeft.m_x + p_S.length( ) * CHAR_WIDTH, cor3, p_StopLeft.m_y - CHAR_HEIGHT, cor3 );
 
         // for each character, print a small rectangle
-        for( u32 i = 0; i < p_S.length( ); ++i ) {
+        for( u64 i = 0; i < p_S.length( ); ++i ) {
             double cor1 = i ? .01 : 0, cor2 = ( i + 1 < p_S.length( ) ) ? .01 : 0;
             auto   col = p_S.m_color;
             col.replace_if_non_empty( p_S.annotation_at_pos( i ).m_textColor );
@@ -212,7 +212,7 @@ namespace TIKZ {
             p_S.m_fillColor.c_str( ), p_StopLeft.m_x, cor3, p_StopLeft.m_y, cor3,
             p_StopLeft.m_x + p_S.length( ) * CHAR_WIDTH, cor3, p_StopLeft.m_y - CHAR_HEIGHT, cor3 );
 
-        for( u32 i = 0; i < p_S.length( ); ++i ) {
+        for( u64 i = 0; i < p_S.length( ); ++i ) {
             double cor1 = i ? .04 : .05, cor2 = ( i + 1 < p_S.length( ) ) ? .04 : .05;
             auto   ann = p_S.annotation_at_pos( i );
             if( ann.m_bgColor.is_non_empty( ) ) {
@@ -231,7 +231,7 @@ namespace TIKZ {
 
         double cor4 = .02;
         // add little dots to highlight parts between characters
-        for( u32 i = 1; i < p_S.length( ); ++i ) {
+        for( u64 i = 1; i < p_S.length( ); ++i ) {
             INDENT_PRINT( p_startIndent )(
                 p_out,
                 "\\node[fill, circle, inner sep =0.1pt, %s] at (%5.3lf, %5.3lf - %5.3lf) {};\n",
@@ -246,7 +246,7 @@ namespace TIKZ {
 
     // Prints a string S vertically
     void print_string_vertical( FILE* p_out, const stylized_string& p_S, tikz_point p_StopLeft,
-                                u32 p_startIndent, u32 p_indent ) {
+                                u64 p_startIndent, u64 p_indent ) {
         if( !p_S.length( ) ) { return; }
         double cor3 = -0.035;
         INDENT_PRINT( p_startIndent )( p_out,
@@ -258,7 +258,7 @@ namespace TIKZ {
                                        p_StopLeft.m_y - p_S.length( ) * CHAR_HEIGHT, cor3 );
 
         // for each character, print a small rectangle
-        for( u32 i = 0; i < p_S.length( ); ++i ) {
+        for( u64 i = 0; i < p_S.length( ); ++i ) {
             double cor1 = i ? .01 : 0, cor2 = ( i + 1 < p_S.length( ) ) ? .01 : 0;
             auto   col = p_S.m_color;
             col.replace_if_non_empty( p_S.annotation_at_pos( i ).m_textColor );
@@ -280,7 +280,7 @@ namespace TIKZ {
                                        p_StopLeft.m_y, cor3, p_StopLeft.m_x + CHAR_WIDTH, cor3,
                                        p_StopLeft.m_y - p_S.length( ) * CHAR_HEIGHT, cor3 );
 
-        for( u32 i = 0; i < p_S.length( ); ++i ) {
+        for( u64 i = 0; i < p_S.length( ); ++i ) {
             double cor1 = i ? .04 : 0.05, cor2 = ( i + 1 < p_S.length( ) ) ? .04 : .05;
             auto   ann = p_S.annotation_at_pos( i );
             if( ann.m_bgColor.is_non_empty( ) ) {
@@ -299,7 +299,7 @@ namespace TIKZ {
 
         double cor4 = .02;
         // add little dots to highlight parts between characters
-        for( u32 i = 1; i < p_S.length( ); ++i ) {
+        for( u64 i = 1; i < p_S.length( ); ++i ) {
             INDENT_PRINT( p_startIndent )(
                 p_out,
                 "\\node[fill, circle, inner sep = 0.1pt, %s] at (%5.3lf + %5.3lf, %5.3lf) {};\n",
@@ -313,7 +313,7 @@ namespace TIKZ {
     }
 
     void print_separator( FILE* p_out, tikz_point p_PtopLeft, tikz_point p_TtopLeft, color p_color,
-                          u32 p_startIndent, u32 p_indent ) {
+                          u64 p_startIndent, u64 p_indent ) {
         // make sure T is top, P is bottom
         if( p_PtopLeft.m_y > p_TtopLeft.m_y ) { std::swap( p_PtopLeft, p_TtopLeft ); }
 
@@ -341,8 +341,8 @@ namespace TIKZ {
 
     void print_matched_string_pair( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft,
                                     const stylized_string& p_T, tikz_point p_TtopLeft,
-                                    color p_bgColor, bool p_compress, u32 p_startIndent,
-                                    u32 p_indent ) {
+                                    color p_bgColor, bool p_compress, u64 p_startIndent,
+                                    u64 p_indent ) {
         // print glow bubble
         if( !p_compress ) {
             INDENT_PRINT( p_startIndent )(
@@ -402,14 +402,14 @@ namespace TIKZ {
             // print "matching edges"
             INDENT_PRINT( p_startIndent )( p_out, "\\draw[%s, %s]\n", LW_SUPPORT_LINE.c_str( ),
                                            p_bgColor.deemphasize( ).c_str( ) );
-            for( u32 i = 0; i < p_P.length( ); ++i ) {
+            for( u64 i = 0; i < p_P.length( ); ++i ) {
                 INDENT_PRINT( 1 + p_startIndent )(
                     p_out, "(%5.3lf, %5.3lf) -- (%5.3lf, %5.3lf)\n",
                     p_TtopLeft.m_x + ( i + .5 ) * CHAR_WIDTH, p_TtopLeft.m_y - CHAR_HEIGHT,
                     p_PtopLeft.m_x + ( i + .5 ) * CHAR_WIDTH, p_PtopLeft.m_y );
             }
             INDENT_PRINT( p_startIndent )( p_out, ";\n" );
-            for( u32 i = 0; i < p_P.length( ); ++i ) {
+            for( u64 i = 0; i < p_P.length( ); ++i ) {
                 // if characters are printed, check that they actually match
                 bool match = p_P.has_wildcard( i + p_P.m_fragment.closed_begin( ) )
                              || p_T.has_wildcard( i + p_T.m_fragment.closed_begin( ) );
@@ -477,7 +477,7 @@ namespace TIKZ {
     std::pair<tikz_point, tikz_point> print_alignment(
         FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft, const stylized_string& p_T,
         tikz_point p_TtopLeft, const breakpoint_repn& p_brpnt, bool p_printBreakpoints,
-        bool p_printExtraStringParts, bool p_compress, u32 p_startIndent, u32 p_indent ) {
+        bool p_printExtraStringParts, bool p_compress, u64 p_startIndent, u64 p_indent ) {
         double pxpos = p_PtopLeft.m_x, txpos = p_TtopLeft.m_x;
         double sepWidth = 3 * CHAR_GLOW, extraGlow = 3.5 * CHAR_GLOW, smallGlow = 2 * CHAR_GLOW;
 
@@ -486,12 +486,12 @@ namespace TIKZ {
         stylized_string tnew{ p_T.m_name, p_T.m_fragment,
                               p_T.m_displayStyle | str_displ_t::SHOW_CHARACTERS };
 
-        for( u32 i = p_P.m_fragment.closed_begin( ); i < p_P.m_fragment.open_end( ); ++i ) {
+        for( u64 i = p_P.m_fragment.closed_begin( ); i < p_P.m_fragment.open_end( ); ++i ) {
             if( p_P.has_wildcard( i ) ) {
                 pnew.annotation_at_pos( i ) = p_P.annotation_at_pos( i );
             }
         }
-        for( u32 i = p_T.m_fragment.closed_begin( ); i < p_T.m_fragment.open_end( ); ++i ) {
+        for( u64 i = p_T.m_fragment.closed_begin( ); i < p_T.m_fragment.open_end( ); ++i ) {
             if( p_T.has_wildcard( i ) ) {
                 tnew.annotation_at_pos( i ) = p_T.annotation_at_pos( i );
             }
@@ -529,7 +529,7 @@ namespace TIKZ {
         }
 
         double last = pxpos, lastt = txpos;
-        u32    shiftP = 0, shiftT = 0;
+        u64    shiftP = 0, shiftT = 0;
 
         if( p_printBreakpoints ) {
             // initial dummy breakpoint
@@ -547,7 +547,7 @@ namespace TIKZ {
             txpos += sepWidth;
         }
 
-        for( u32 i = 1; i < p_brpnt.size( ); ++i ) {
+        for( u64 i = 1; i < p_brpnt.size( ); ++i ) {
             auto bp = p_brpnt[ i ], prevbp = p_brpnt[ i - 1 ];
             auto fragP = fragmentco{ prevbp.m_posP + shiftP, bp.m_posP };
             auto fragT = fragmentco{ prevbp.m_posT + shiftT, bp.m_posT };
@@ -705,7 +705,7 @@ namespace TIKZ {
 
     void print_alignment_graph_label( FILE* p_out, const stylized_string& p_P,
                                       const stylized_string& p_T, tikz_point p_gridTopLeft,
-                                      u32 p_startIndent, u32 p_indent ) {
+                                      u64 p_startIndent, u64 p_indent ) {
         print_string( p_out, p_T, p_gridTopLeft + tikz_point{ .0, CHAR_HEIGHT + .25 },
                       p_startIndent, p_indent );
         print_string_vertical( p_out, p_P, p_gridTopLeft + tikz_point{ -CHAR_WIDTH - .25, .0 },
@@ -715,14 +715,14 @@ namespace TIKZ {
     vertex_grid print_alignment_graph( FILE* p_out, const std::string& p_P, fragmentco p_fragP,
                                        const std::string& p_T, fragmentco p_fragT,
                                        tikz_point p_gridCellSize, tikz_point p_gridTopLeft,
-                                       color p_color, u32 p_startIndent, u32 p_indent ) {
+                                       color p_color, u64 p_startIndent, u64 p_indent ) {
         vertex_grid vg{ p_gridTopLeft, p_gridCellSize };
         vg.print_vertices( p_out, vertex::unselected_vertex( p_color ), p_fragT.length( ) + 1,
                            p_fragP.length( ) + 1, p_fragT.closed_begin( ), p_fragP.closed_begin( ),
                            EMPTY_STR, p_startIndent, p_indent );
 
-        for( u32 x = p_fragT.closed_begin( ); x <= p_fragT.open_end( ); ++x ) {
-            for( u32 y = p_fragP.closed_begin( ); y <= p_fragP.open_end( ); ++y ) {
+        for( u64 x = p_fragT.closed_begin( ); x <= p_fragT.open_end( ); ++x ) {
+            for( u64 y = p_fragP.closed_begin( ); y <= p_fragP.open_end( ); ++y ) {
                 if( x > p_fragT.closed_begin( ) ) {
                     print_arrow( p_out, vg.label_for_pos( x - 1, y ), vg.label_for_pos( x, y ),
                                  LW_SUPPORT_LINE, INS_COL.deemphasize_strong( ) );
@@ -749,14 +749,14 @@ namespace TIKZ {
 
     vertex_grid print_alignment_graph_simple( FILE* p_out, fragmentco p_fragP, fragmentco p_fragT,
                                               tikz_point p_gridCellSize, tikz_point p_gridTopLeft,
-                                              color p_color, u32 p_startIndent, u32 p_indent ) {
+                                              color p_color, u64 p_startIndent, u64 p_indent ) {
         vertex_grid vg{ p_gridTopLeft, p_gridCellSize };
         vg.print_vertices( p_out, vertex::unselected_vertex( p_color ), p_fragT.length( ) + 1,
                            p_fragP.length( ) + 1, p_fragT.closed_begin( ), p_fragP.closed_begin( ),
                            EMPTY_STR, p_startIndent, p_indent );
 
-        for( u32 x = p_fragT.closed_begin( ); x <= p_fragT.open_end( ); ++x ) {
-            for( u32 y = p_fragP.closed_begin( ); y <= p_fragP.open_end( ); ++y ) {
+        for( u64 x = p_fragT.closed_begin( ); x <= p_fragT.open_end( ); ++x ) {
+            for( u64 y = p_fragP.closed_begin( ); y <= p_fragP.open_end( ); ++y ) {
                 if( x > p_fragT.closed_begin( ) ) {
                     print_arrow( p_out, vg.label_for_pos( x - 1, y ), vg.label_for_pos( x, y ),
                                  LW_SUPPORT_LINE, p_color.deemphasize( ) );
@@ -776,8 +776,8 @@ namespace TIKZ {
 
     void print_alignment_on_coordinates( FILE* p_out, const vertex_grid& p_vg,
                                          const breakpoint_repn& p_brpnt, bool p_singleStep,
-                                         u32 p_startIndent, u32 p_indent ) {
-        for( u32 i = p_brpnt.size( ) - 1; i; --i ) {
+                                         u64 p_startIndent, u64 p_indent ) {
+        for( u64 i = p_brpnt.size( ) - 1; i; --i ) {
             auto curpos  = p_brpnt[ i ].position( );
             auto prev    = p_brpnt[ i - 1 ];
             auto prevpos = prev.position( );
@@ -825,8 +825,8 @@ namespace TIKZ {
     void print_graph_slice_on_coordinates( FILE* p_out, const vertex_grid& p_vg,
                                            const graph_slice& p_gs, color p_color,
                                            color p_portalColor, color p_innerPortalColor,
-                                           color p_topColor, color p_bottomColor, u32 p_startIndent,
-                                           u32 p_indent ) {
+                                           color p_topColor, color p_bottomColor, u64 p_startIndent,
+                                           u64 p_indent ) {
         double vtxsz = 1.25;
         double inner = .5;
         if( p_color.is_non_empty( ) ) {
@@ -841,7 +841,7 @@ namespace TIKZ {
                     p_out, "\\draw[%s, rounded corners = 1.25pt, %s, fill = %s]\n",
                     LW_OUTLINE.c_str( ), p_color.c_str( ), p_color.to_bg( ).c_str( ) );
                 // top line
-                for( u32 i = 0; i < p_gs.m_topFrontier.size( ); ++i ) {
+                for( u64 i = 0; i < p_gs.m_topFrontier.size( ); ++i ) {
                     const auto& pt   = p_gs.m_topFrontier[ i ];
                     auto        tp   = p_vg.point_for_pos( pt.first, pt.second );
                     double      corx = corX;
@@ -859,7 +859,7 @@ namespace TIKZ {
                 }
 
                 // bottom line
-                for( u32 i = 0; i < p_gs.m_bottomFrontier.size( ); ++i ) {
+                for( u64 i = 0; i < p_gs.m_bottomFrontier.size( ); ++i ) {
                     const auto& pt   = p_gs.m_bottomFrontier[ i ];
                     auto        tp   = p_vg.point_for_pos( pt.first, pt.second );
                     double      corx = -corX;
@@ -906,7 +906,7 @@ namespace TIKZ {
             auto portal
                 = vertex::marked_vertex( p_topColor, vtxsz, .75, vertex::ST_CIRCLE, portal_inner );
             auto [ x, y ] = p_gs.m_topFrontier.front( );
-            u32 xm        = x;
+            u64 xm        = x;
             for( const auto& pt : p_gs.m_topFrontier ) {
                 if( pt.second == y ) {
                     xm = pt.first;
@@ -925,7 +925,7 @@ namespace TIKZ {
             auto portal       = vertex::marked_vertex( p_bottomColor, vtxsz, .75, vertex::ST_CIRCLE,
                                                        portal_inner );
             auto [ x, y ]     = p_gs.m_bottomFrontier.front( );
-            u32 xm            = x;
+            u64 xm            = x;
             for( const auto& pt : p_gs.m_bottomFrontier ) {
                 if( pt.second == y ) {
                     xm = pt.first;
@@ -944,12 +944,12 @@ namespace TIKZ {
                                       color p_innerPortalColor, color p_topVertexColor,
                                       color p_bottomVertexColor, color p_pureColor,
                                       color p_impureColor, color p_leftColor, color p_rightColor,
-                                      double p_sliceSpacing, u32 p_startIndent, u32 p_indent ) {
+                                      double p_sliceSpacing, u64 p_startIndent, u64 p_indent ) {
         fragmentco frag{ p_gs.front( ).fragment_p( ).closed_begin( ),
                          p_gs.back( ).fragment_p( ).open_end( ) };
         auto       align = breakpoint_slice( p_alignment, frag );
 
-        for( u32 i = 0; i < p_gs.size( ); ++i ) {
+        for( u64 i = 0; i < p_gs.size( ); ++i ) {
             const auto& slice = p_gs[ i ];
             auto        fP    = slice.fragment_p( );
             auto        fPo   = slice.original_fragment_p( );
@@ -979,19 +979,19 @@ namespace TIKZ {
                              breakpoint_repn p_alignment, const std::string& p_P,
                              const std::string& p_T, color p_portalVertexColor,
                              color p_innerPortalColor, color p_topVertexColor,
-                             color p_bottomVertexColor, double p_sliceSpacing, u32 p_startIndent,
-                             u32 p_indent ) {
+                             color p_bottomVertexColor, double p_sliceSpacing, u64 p_startIndent,
+                             u64 p_indent ) {
         fragmentco frag{ p_gs.front( ).fragment_p( ).closed_begin( ),
                          p_gs.back( ).fragment_p( ).open_end( ) };
         auto       align = breakpoint_slice( p_alignment, frag );
 
-        for( u32 i = 0; i < p_gs.size( ); ++i ) {
+        for( u64 i = 0; i < p_gs.size( ); ++i ) {
             const auto& slice = p_gs[ i ];
             auto        fP    = slice.fragment_p( );
             auto        fPo   = slice.original_fragment_p( );
 
             vertex_grid vg;
-            for( u32 j = 1; j < slice.m_topFrontier.size( ); ++j ) {
+            for( u64 j = 1; j < slice.m_topFrontier.size( ); ++j ) {
 
                 auto fp2 = fragmentco{
                     slice.m_topFrontier[ j - 1 ].second,
@@ -1019,11 +1019,11 @@ namespace TIKZ {
     void print_graph_slices_t_labels( FILE* p_out, const std::deque<graph_slice>& p_gs,
                                       const stylized_string& p_Tname,
                                       const stylized_string& p_Pname, bool p_labelEqualParts,
-                                      double p_labelDis, double p_sliceSpacing, u32 p_startIndent,
-                                      u32 p_indent ) {
+                                      double p_labelDis, double p_sliceSpacing, u64 p_startIndent,
+                                      u64 p_indent ) {
         fragmentco frag{ p_gs.front( ).fragment_p( ).closed_begin( ),
                          p_gs.back( ).fragment_p( ).open_end( ) };
-        for( u32 i = 0; i < p_gs.size( ); ++i ) {
+        for( u64 i = 0; i < p_gs.size( ); ++i ) {
             const auto& slice = p_gs[ i ];
             auto        fT    = slice.fragment_t( );
             auto        fPo   = slice.original_fragment_p( );
@@ -1046,9 +1046,9 @@ namespace TIKZ {
         }
     }
 
-    void print_graph_slices_p_labels( FILE* p_out, const std::deque<graph_slice>& p_gs, u32 p_d,
+    void print_graph_slices_p_labels( FILE* p_out, const std::deque<graph_slice>& p_gs, u64 p_d,
                                       bool p_guideLines, double p_labelDis, double p_sliceSpacing,
-                                      u32 p_startIndent, u32 p_indent ) {
+                                      u64 p_startIndent, u64 p_indent ) {
 
         fragmentco frag{ p_gs.front( ).fragment_p( ).closed_begin( ),
                          p_gs.back( ).fragment_p( ).open_end( ) };
@@ -1118,7 +1118,7 @@ namespace TIKZ {
             }
         }
 
-        for( u32 i = 0; i < p_gs.size( ); ++i ) {
+        for( u64 i = 0; i < p_gs.size( ); ++i ) {
             const auto& slice = p_gs[ i ];
             auto        fP    = slice.fragment_p( );
             auto        fPo   = slice.original_fragment_p( );

@@ -8,12 +8,12 @@
 
 // breakpoint of an alignment P ~>> T, as seen from P.
 struct breakpoint {
-    u32  m_posP;
-    u32  m_posT;
+    u64  m_posP;
+    u64  m_posT;
     char m_charP;
     char m_charT;
 
-    breakpoint( u32 p_posP, u32 p_posT, char p_charP = 0, char p_charT = 0 )
+    breakpoint( u64 p_posP, u64 p_posT, char p_charP = 0, char p_charT = 0 )
         : m_posP{ p_posP }, m_posT{ p_posT }, m_charP{ p_charP }, m_charT{ p_charT } {
     }
 
@@ -62,12 +62,12 @@ breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& 
                                      bool               p_wcInOutput = true );
 
 std::deque<breakpoint_repn> compute_occs_with_edits( const std::string& p_P, const std::string& p_T,
-                                                     u32                p_threshold,
+                                                     u64                p_threshold,
                                                      const std::string& p_wildcard   = WILDCARD,
                                                      bool               p_wcInOutput = true );
 
 std::deque<breakpoint_repn> compute_occs_with_mism( const std::string& p_P, const std::string& p_T,
-                                                    u32                p_threshold,
+                                                    u64                p_threshold,
                                                     const std::string& p_wildcard   = WILDCARD,
                                                     bool               p_wcInOutput = true );
 

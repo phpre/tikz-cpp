@@ -48,11 +48,11 @@ gs_flag_t merge_flags( gs_flag_t p_a, gs_flag_t p_b ) {
     return res;
 }
 
-std::deque<graph_slice> graph_slice::from_alignment( const breakpoint_repn& p_brpnt, u32 p_d ) {
+std::deque<graph_slice> graph_slice::from_alignment( const breakpoint_repn& p_brpnt, u64 p_d ) {
     fragmentco              fragP{ p_brpnt.front( ).m_posP, p_brpnt.back( ).m_posP };
     std::deque<graph_slice> res{ };
 
-    for( u32 i = fragP.closed_begin( ); i < fragP.open_end( ); ++i ) {
+    for( u64 i = fragP.closed_begin( ); i < fragP.open_end( ); ++i ) {
         auto        fP  = fragP.d_slice( p_d, i );
         auto        fpi = fragmentco{ i, i + 1 };
         auto        fT  = align_fragment( p_brpnt, fpi );
@@ -78,14 +78,14 @@ std::deque<graph_slice> graph_slice::from_alignment( const breakpoint_repn& p_br
         if( i ) {
             auto vb = fP.closed_begin( );
             auto ve = fragP.d_slice( p_d, i - 1 ).open_end( );
-            for( u32 y = vb; y <= ve; ++y ) {
+            for( u64 y = vb; y <= ve; ++y ) {
                 gi.m_leftPortals.push_back( { fT.closed_begin( ), y } );
             }
         }
         if( i < fragP.closed_end( ) ) {
             auto vb = fragP.d_slice( p_d, i + 1 ).closed_begin( );
             auto ve = fP.open_end( );
-            for( u32 y = vb; y <= ve; ++y ) {
+            for( u64 y = vb; y <= ve; ++y ) {
                 gi.m_rightPortals.push_back( { fT.open_end( ), y } );
             }
         }
@@ -98,7 +98,7 @@ std::deque<graph_slice> graph_slice::from_alignment( const breakpoint_repn& p_br
 graph_slice graph_slice::merged_slice( const std::deque<graph_slice>& p_primitiveSlices,
                                        fragmentco                     p_fragment ) {
     graph_slice res = p_primitiveSlices[ p_fragment.closed_begin( ) ];
-    for( u32 i = p_fragment.open_begin( ); i < p_fragment.open_end( ); ++i ) {
+    for( u64 i = p_fragment.open_begin( ); i < p_fragment.open_end( ); ++i ) {
         res.merge_right( p_primitiveSlices[ i ] );
     }
     return res;
@@ -108,7 +108,7 @@ std::deque<graph_slice>
 graph_slice::top_pure_bot_decomp( const std::deque<graph_slice>& p_primitiveSlices ) {
     std::deque<graph_slice> res;
 
-    u32 pos = 0;
+    u64 pos = 0;
     if( !!( p_primitiveSlices.front( ).m_flags & graph_slice::GSF_TOP ) ) {
         graph_slice top = p_primitiveSlices.front( );
         while( ++pos < p_primitiveSlices.size( )

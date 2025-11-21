@@ -32,14 +32,14 @@ namespace TIKZ {
         return out;
     }
 
-    void document::indent( FILE* p_out, u32 p_indentLevel, u32 p_indent ) {
+    void document::indent( FILE* p_out, u64 p_indentLevel, u64 p_indent ) {
         char buffer[ 10 ] = { 0 };
-        snprintf( buffer, 9, "%%%lu s", p_indentLevel * p_indent );
+        snprintf( buffer, 9, "%%%llu s", p_indentLevel * p_indent );
         fprintf( p_out, buffer, "" );
     }
 
     bool document::output( const std::string& p_path, const std::string& p_name, render_t p_render,
-                           u32 p_indent ) {
+                           u64 p_indent ) {
         FILE* doc = open_or_abort( p_path + p_name );
         if( !doc ) { return false; }
 
@@ -54,7 +54,7 @@ namespace TIKZ {
 
     render_t document::render( const std::string& p_fontPath, const std::string& p_colorPath,
                                const std::string&   p_macroPath,
-                               const std::set<u32>& p_times ) const {
+                               const std::set<u64>& p_times ) const {
         render_t result{ };
 
         result.push_back( { 0, "\\documentclass[multi=page]{standalone}" } );

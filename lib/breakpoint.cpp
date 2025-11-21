@@ -15,12 +15,12 @@ breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& 
 
     char wc = ( p_wildcard == EMPTY_STR || !p_wildcard.length( ) ) ? 0 : p_wildcard[ 0 ];
 
-    auto nw_dp = std::deque<std::deque<u32>>{ m + 1, std::deque<u32>( n + 1, 0 ) };
-    for( u32 i = 0; i <= m; ++i ) { nw_dp[ i ][ 0 ] = i; }
-    for( u32 j = 0; j <= n; ++j ) { nw_dp[ 0 ][ j ] = j; }
+    auto nw_dp = std::deque<std::deque<u64>>{ m + 1, std::deque<u64>( n + 1, 0 ) };
+    for( u64 i = 0; i <= m; ++i ) { nw_dp[ i ][ 0 ] = i; }
+    for( u64 j = 0; j <= n; ++j ) { nw_dp[ 0 ][ j ] = j; }
 
-    for( u32 i = 1; i <= m; ++i ) {
-        for( u32 j = 1; j <= n; ++j ) {
+    for( u64 i = 1; i <= m; ++i ) {
+        for( u64 j = 1; j <= n; ++j ) {
             nw_dp[ i ][ j ] = std::min( nw_dp[ i - 1 ][ j ] + 1, nw_dp[ i ][ j - 1 ] + 1 );
             if( match( p_P[ i - 1 ], p_T[ j - 1 ], wc ) ) {
                 nw_dp[ i ][ j ] = std::min( nw_dp[ i ][ j ], nw_dp[ i - 1 ][ j - 1 ] );
@@ -66,7 +66,7 @@ breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& 
 }
 
 std::deque<breakpoint_repn> compute_occs_with_mism( const std::string& p_P, const std::string& p_T,
-                                                    u32 p_threshold, const std::string& p_wildcard,
+                                                    u64 p_threshold, const std::string& p_wildcard,
                                                     bool p_wcInOutput ) {
     std::deque<breakpoint_repn> res{ };
 
@@ -74,12 +74,12 @@ std::deque<breakpoint_repn> compute_occs_with_mism( const std::string& p_P, cons
     auto n  = p_T.size( );
     char wc = ( p_wildcard == EMPTY_STR || !p_wildcard.length( ) ) ? 0 : p_wildcard[ 0 ];
 
-    for( u32 i = 0; i <= n - m; ++i ) {
+    for( u64 i = 0; i <= n - m; ++i ) {
         breakpoint_repn cur{ };
-        u32             mism = 0;
+        u64             mism = 0;
         cur.push_back( breakpoint{ 0, i } );
 
-        for( u32 j = 0; j < m && mism <= p_threshold; ++j ) {
+        for( u64 j = 0; j < m && mism <= p_threshold; ++j ) {
             if( !match( p_P[ j ], p_T[ i + j ], wc ) ) {
                 cur.push_back( breakpoint{ j, i + j, p_P[ j ], p_T[ i + j ] } );
                 ++mism;
@@ -97,7 +97,7 @@ std::deque<breakpoint_repn> compute_occs_with_mism( const std::string& p_P, cons
 }
 
 std::deque<breakpoint_repn> compute_occs_with_edits( const std::string& p_P, const std::string& p_T,
-                                                     u32 p_threshold, const std::string& p_wildcard,
+                                                     u64 p_threshold, const std::string& p_wildcard,
                                                      bool p_wcInOutput ) {
     // compute starting positions of occurrences, for each starting position one alignment
     std::deque<breakpoint_repn> ress{ };
@@ -106,12 +106,12 @@ std::deque<breakpoint_repn> compute_occs_with_edits( const std::string& p_P, con
     auto n  = p_T.size( );
     char wc = ( p_wildcard == EMPTY_STR || !p_wildcard.length( ) ) ? 0 : p_wildcard[ 0 ];
 
-    auto nw_dp = std::deque<std::deque<u32>>{ m + 1, std::deque<u32>( n + 1, 0 ) };
-    for( u32 i = 0; i <= m; ++i ) { nw_dp[ i ][ 0 ] = i; }
-    for( u32 j = 0; j <= n; ++j ) { nw_dp[ 0 ][ j ] = 0; }
+    auto nw_dp = std::deque<std::deque<u64>>{ m + 1, std::deque<u64>( n + 1, 0 ) };
+    for( u64 i = 0; i <= m; ++i ) { nw_dp[ i ][ 0 ] = i; }
+    for( u64 j = 0; j <= n; ++j ) { nw_dp[ 0 ][ j ] = 0; }
 
-    for( u32 i = 1; i <= m; ++i ) {
-        for( u32 j = 1; j <= n; ++j ) {
+    for( u64 i = 1; i <= m; ++i ) {
+        for( u64 j = 1; j <= n; ++j ) {
             nw_dp[ i ][ j ] = std::min( nw_dp[ i - 1 ][ j ] + 1, nw_dp[ i ][ j - 1 ] + 1 );
             if( match( p_P[ m - i ], p_T[ n - j ], wc ) ) {
                 nw_dp[ i ][ j ] = std::min( nw_dp[ i ][ j ], nw_dp[ i - 1 ][ j - 1 ] );
@@ -121,7 +121,7 @@ std::deque<breakpoint_repn> compute_occs_with_edits( const std::string& p_P, con
         }
     }
 
-    for( u32 t = 0; t <= n - m + p_threshold; ++t ) {
+    for( u64 t = 0; t <= n - m + p_threshold; ++t ) {
         if( nw_dp[ m ][ n - t ] > p_threshold ) { continue; }
 
         point           pos{ 0, t };
@@ -169,7 +169,7 @@ std::deque<breakpoint_repn> compute_occs_with_edits( const std::string& p_P, con
 breakpoint_repn breakpoint_slice( const breakpoint_repn& p_brpts, fragmentco p_frag,
                                   bool p_print ) {
     for( auto i : p_brpts ) {
-        PRINT_MACRO( "(%lu %c, %lu %c) ", i.m_posP, i.m_charP, i.m_posT, i.m_charT );
+        PRINT_MACRO( "(%llu %c, %llu %c) ", i.m_posP, i.m_charP, i.m_posT, i.m_charT );
     }
     PRINT_MACRO( "\n" );
 
@@ -186,20 +186,20 @@ breakpoint_repn breakpoint_slice( const breakpoint_repn& p_brpts, fragmentco p_f
     }
     if( result.empty( ) ) {
         result.push_front(
-            breakpoint{ p_frag.m_begin, static_cast<u32>( p_frag.m_begin - shift ), 0, 0 } );
+            breakpoint{ p_frag.m_begin, static_cast<u64>( p_frag.m_begin - shift ), 0, 0 } );
     } else if( !result.front( ).is_dummy( ) ) {
         result.push_front( breakpoint{
-            p_frag.m_begin, static_cast<u32>( p_frag.m_begin - result.front( ).shift_before( ) ), 0,
+            p_frag.m_begin, static_cast<u64>( p_frag.m_begin - result.front( ).shift_before( ) ), 0,
             0 } );
     }
     if( result.size( ) == 1 || !result.back( ).is_dummy( ) ) {
         result.push_back(
             breakpoint{ p_frag.m_end,
-                        static_cast<u32>( p_frag.m_end - result.back( ).shift_after( ) ), 0, 0 } );
+                        static_cast<u64>( p_frag.m_end - result.back( ).shift_after( ) ), 0, 0 } );
     }
 
     for( auto i : result ) {
-        PRINT_MACRO( "(%lu %c, %lu %c) ", i.m_posP, i.m_charP, i.m_posT, i.m_charT );
+        PRINT_MACRO( "(%llu %c, %llu %c) ", i.m_posP, i.m_charP, i.m_posT, i.m_charT );
     }
     PRINT_MACRO( "\n" );
 
@@ -210,7 +210,7 @@ fragmentco align_fragment( const breakpoint_repn& p_brpts, fragmentco p_frag, bo
     auto sl = breakpoint_slice( p_brpts, p_frag );
     PRINT_MACRO( "  " );
     for( auto i : sl ) {
-        PRINT_MACRO( "(%lu %c, %lu %c) ", i.m_posP, i.m_charP, i.m_posT, i.m_charT );
+        PRINT_MACRO( "(%llu %c, %llu %c) ", i.m_posP, i.m_charP, i.m_posT, i.m_charT );
     }
     PRINT_MACRO( "\n" );
 

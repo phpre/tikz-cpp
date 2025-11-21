@@ -208,7 +208,7 @@ void alignment_graph_picture(
 
 void slices_picture( const std::string& p_name = "g03.tex", stylized_string p_Pname = P_NAME,
                      stylized_string p_Tname = S_NAME, fragmentco p_fragment = fragmentco{ 0, 11 },
-                     u32 p_d = 1, breakpoint_repn p_alignment = BP_P_T, const std::string& p_P = P,
+                     u64 p_d = 1, breakpoint_repn p_alignment = BP_P_T, const std::string& p_P = P,
                      const std::string& p_T = T ) {
     FILE* out = NEW_DOC_SIMPLE( p_name );
 
@@ -279,7 +279,7 @@ void slices_picture( const std::string& p_name = "g03.tex", stylized_string p_Pn
 
 void slices_detail_picture( const std::string& p_name = "g04.tex", stylized_string p_Pname = P_NAME,
                             stylized_string p_Tname = S_NAME,
-                            fragmentco p_fragment = fragmentco{ 0, 11 }, u32 p_d = 1,
+                            fragmentco p_fragment = fragmentco{ 0, 11 }, u64 p_d = 1,
                             breakpoint_repn p_alignment = BP_P_T, const std::string& p_P = P,
                             const std::string& p_T = T ) {
     FILE* out     = NEW_DOC_SIMPLE( p_name );
@@ -294,7 +294,7 @@ void slices_detail_picture( const std::string& p_name = "g04.tex", stylized_stri
     {
         print_string( out, pname_s.slice( p_fragment ), tikz_point{ 0.0, 1.5 * CHAR_HEIGHT } );
 
-        for( u32 i = 0; i < p_fragment.open_end( ); ++i ) {
+        for( u64 i = 0; i < p_fragment.open_end( ); ++i ) {
             auto frag = p_fragment.d_slice( p_d, i );
 
             std::string label = std::string{ "P_{" } + std::to_string( p_d ) + ","

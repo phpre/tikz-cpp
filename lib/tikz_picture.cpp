@@ -6,7 +6,7 @@ namespace TIKZ {
           _content{ } {
     }
 
-    render_t picture::render( u32 p_time, u32 p_startIndent ) const {
+    render_t picture::render( u64 p_time, u64 p_startIndent ) const {
         render_t result{ };
 
         for( const auto& [ name, str ] : _localMacros ) {
@@ -25,7 +25,7 @@ namespace TIKZ {
         std::string env = "\\begin{tikzpicture}";
         if( !_options.empty( ) ) {
             env += "[";
-            env += kv_to_string( _options );
+            env += _options.to_string( );
             env += "]";
         }
 
@@ -58,5 +58,11 @@ namespace TIKZ {
         m_packages.insert_range( p_command->m_packages );
 
         _content.emplace_back( p_command );
+    }
+
+    void picture::place_text( const std::string& p_text, tikz_position p_position,
+                              const kv_store& p_options, const std::string& p_name ) {
+        _content.emplace_back( std::make_shared<TIKZ::node_command>(
+            TIKZ::node_command::place_text( p_text, p_position, p_options, p_name ) ) );
     }
 } // namespace TIKZ

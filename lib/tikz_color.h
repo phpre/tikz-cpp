@@ -15,9 +15,13 @@ namespace TIKZ {
         constexpr color( const std::string& p_name ) : m_name{ p_name } {
         }
 
-        color mix( color p_other, u32 p_amount ) const;
-        color lighten( u32 p_amount ) const;
-        color darken( u32 p_amount ) const;
+        color mix( color p_other, u64 p_amount ) const;
+        color lighten( u64 p_amount ) const;
+        color darken( u64 p_amount ) const;
+
+        inline operator std::string( ) const {
+            return to_string( );
+        }
 
         inline void replace_if_non_empty( const color& p_other ) {
             if( p_other.is_non_empty( ) ) { m_name = p_other.m_name; }

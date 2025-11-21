@@ -24,7 +24,7 @@ namespace TIKZ {
       public:
         picture( kv_store p_options = { } );
 
-        render_t render( u32 p_time = 0, u32 p_startIndent = 1 ) const;
+        render_t render( u64 p_time = 0, u64 p_startIndent = 1 ) const;
 
         void add_package( const std::string& p_package );
         void add_library( const std::string& p_library );
@@ -32,5 +32,9 @@ namespace TIKZ {
         void add_local_macro( const std::string& p_name, const std::string& p_content );
 
         void add_command( std::shared_ptr<command> p_command );
+
+        void place_text( const std::string& p_text, tikz_position p_position,
+                         const kv_store&    p_options = OPT::TEXT_COLOR,
+                         const std::string& p_name    = EMPTY_STR );
     };
 } // namespace TIKZ

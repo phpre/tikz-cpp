@@ -2,7 +2,7 @@
 
 namespace TIKZ {
     node_command node_command::place_text( const std::string& p_text, tikz_position p_position,
-                                           const std::string& p_name, const kv_store& p_options ) {
+                                           const kv_store& p_options, const std::string& p_name ) {
         node_command res{ };
         res.m_options  = p_options;
         res.m_position = p_position;
@@ -12,7 +12,7 @@ namespace TIKZ {
         return res;
     }
 
-    render_t node_command::render( u32 p_time, u32 p_startIndent, bool p_internal ) const {
+    render_t node_command::render( u64 p_time, u64 p_startIndent, bool p_internal ) const {
         if( p_time && !m_times.count( p_time ) ) { return { }; }
         if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
 
@@ -23,7 +23,7 @@ namespace TIKZ {
 
         if( !m_options.empty( ) ) {
             result += "[";
-            result += kv_to_string( m_options );
+            result += m_options.to_string( );
             result += "] ";
         }
 
