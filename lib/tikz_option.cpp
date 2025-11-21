@@ -46,5 +46,11 @@ namespace TIKZ {
         const tikz_option LW_THICK_SUPPORT_LINE{ "line width", ".75pt" };
 
         const tikz_option ARR_TIP_LATEX{ "-latex" };
+
+        const tikz_option ANCHOR{ "anchor", "center" };
+        const tikz_option ANCHOR_WEST{ "anchor", "west" };
+        const tikz_option ANCHOR_EAST{ "anchor", "east" };
+        const tikz_option ANCHOR_NORTH{ "anchor", "north" };
+        const tikz_option ANCHOR_SOUTH{ "anchor", "south" };
     } // namespace OPT
 } // namespace TIKZ

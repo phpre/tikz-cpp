@@ -14,32 +14,28 @@ std::string MACRO_PATH   = TEX_DIR + "macros";
 std::string PROGRAM_NAME = "";
 
 void picture_string( const std::string& p_name = "g01.tex" ) {
+    std::deque<std::string> optname{ "rotatable",      "show positions",  "show characters",
+                                     "show wildcards", "group positions", "use typewriter" };
+    std::string             data = "hello world!";
+    std::string             name = "S";
+
     TIKZ::document out{ };
     TIKZ::picture  p1{ };
-
-    p1.place_text( "Hello world!", TIKZ::tikz_point{ 0.0, 0.0 },
-                   TIKZ::OPT::TEXT_COLOR( TIKZ::COLOR_C2 )
-                       | TIKZ::OPT::FILL( TIKZ::COLOR_C1.to_bg( ) ) );
-    p1.place_text( "Hello world!", TIKZ::tikz_point{ 0.0, 1.0 } );
+    for( u64 j = 1, i2 = 0; j < TIKZ::str_displ_t::MAX; j <<= 1, ++i2 ) {
+        p1.place_text( optname[ i2 ],
+                       TIKZ::tikz_point{ ( data.length( ) + 1 + i2 ) * TIKZ::CHAR_WIDTH,
+                                         TIKZ::CHAR_HEIGHT * ( .5 ) },
+                       TIKZ::OPT::ROTATE( "90" ) | TIKZ::OPT::ANCHOR_WEST );
+    }
 
     out.add_picture( p1 );
     TIKZ::document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 
     /*
     FILE*       out  = NEW_DOC_SIMPLE( p_name );
-    std::string data = "hello world!";
-    std::string name = "S";
 
     initialize_tikzpicture( out );
     {
-        std::deque<std::string> optname{ "rotatable",      "show positions",  "show characters",
-                                         "show wildcards", "group positions", "use typewriter" };
-
-        for( u64 j = 1, i2 = 0; j < str_displ_t::MAX; j <<= 1, ++i2 ) {
-            print_node(
-                out, tikz_point{ ( data.length( ) + 1 + i2 ) * CHAR_WIDTH, CHAR_HEIGHT * ( .5 ) },
-                optname[ i2 ], "rotate=90, anchor = west" );
-        }
 
         for( u64 i = 0; i < str_displ_t::MAX; i += 2 ) {
             auto S  = stylized_string{ data, name, i }.add_wildcards( std::deque<u64>{ 0, 1, 5 },

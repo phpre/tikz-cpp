@@ -91,5 +91,11 @@ namespace TIKZ {
         extern const tikz_option LW_THICK_SUPPORT_LINE;
 
         extern const tikz_option ARR_TIP_LATEX;
+
+        extern const tikz_option ANCHOR;
+        extern const tikz_option ANCHOR_WEST;
+        extern const tikz_option ANCHOR_EAST;
+        extern const tikz_option ANCHOR_NORTH;
+        extern const tikz_option ANCHOR_SOUTH;
     } // namespace OPT
 } // namespace TIKZ
