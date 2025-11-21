@@ -174,6 +174,12 @@ namespace TIKZ {
         }
     }
 
+    void place_string( picture p_pic, const stylized_string& p_S, tikz_point p_StopLeft ) {
+    }
+
+    void place_string_vertical( picture p_pic, const stylized_string& p_S, tikz_point p_StopLeft ) {
+    }
+
     // Prints a string S
     void print_string( FILE* p_out, const stylized_string& p_S, tikz_point p_StopLeft,
                        u64 p_startIndent, u64 p_indent ) {
