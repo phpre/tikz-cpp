@@ -14,11 +14,7 @@ namespace TIKZ {
     class document {
         std::set<std::string> _packages;
         std::set<std::string> _libraries;
-
-        std::map<std::string, std::string> _globalStyles;
-        std::map<std::string, std::string> _macros;
-
-        std::deque<picture> _pictures;
+        std::deque<picture>   _pictures;
 
       public:
         document( );

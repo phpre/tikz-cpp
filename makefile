@@ -13,7 +13,8 @@ export CXX	:= g++
 export AR	:= ar
 
 
-CPPFLAGS := -std=c++23 -O3 -Wall -Wextra
+# CPPFLAGS := -std=c++23 -O3 -Wall -Wextra
+CPPFLAGS := -std=c++23 -g3 -glldb -Wall -Wextra
 
 ## build main library
 LIBDIR		:= lib
@@ -58,6 +59,8 @@ OUTDIR	:= out
 SRCS := $(shell find $(SRCDIR) -name "*.cpp")
 BINS := $(SRCS:$(SRCDIR)/%.cpp=$(BINDIR)/%)
 OBJS := $(SRCS:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
+
+.PRECIOUS: $(BINDIR)/% $(OBJDIR)/%.o
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(LNAME)
 	$(SILENTCMD)mkdir -p $(OBJDIR)

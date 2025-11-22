@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <string>
+#include "old.h"
 #include "tikz.h"
 
 namespace TIKZ {

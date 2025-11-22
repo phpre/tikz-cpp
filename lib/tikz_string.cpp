@@ -1,18 +1,48 @@
 #include "tikz.h"
+#include "tikz_command.h"
+#include "tikz_option.h"
+#include "tikz_picture.h"
 #include "tikz_string.h"
 
-namespace TIKZ {
+#include "old.h"
 
-    void print_width_macro( FILE* p_out, double p_width, const std::string& p_text,
-                            u64 p_startIndent, u64 p_indent ) {
+namespace TIKZ {
+    const tikz_option XSCALE_TO_WIDTH = OPT::XSCALE( "{min(1, \\twd)}" );
+    const tikz_option YSCALE_TO_WIDTH = OPT::YSCALE( "{min(1, \\twd)}" );
+    math_command      width_macro( double p_width, const std::string& p_text ) {
+        math_command res{ };
+        res.m_name = "twd";
+        char buf[ 50 ];
         if( p_text == EMPTY_STR ) {
-            INDENT_PRINT( p_startIndent )(
-                p_out, "\\pgfmathsetmacro\\twd{ %5.3lf * 1cm / width(\" \") }\n", p_width );
+            snprintf( buf, 49, "%5.3lf * 1cm / width(\" \")", p_width );
         } else {
-            INDENT_PRINT( p_startIndent )(
-                p_out, "\\pgfmathsetmacro\\twd{ %5.3lf * 1cm / width(\"%s\") }\n", p_width,
-                p_text.c_str( ) );
+            snprintf( buf, 49, "%5.3lf * 1cm / width(\"%s\")", p_width, p_text.c_str( ) );
         }
+        res.m_macro = std::string{ buf };
+        return res;
+    }
+
+    void place_single_character( picture p_pic, const stylized_string& p_S, u64 p_pos,
+                                 std::pair<std::string, std::string> p_render, tikz_point p_center,
+                                 const kv_store& p_extraOptions ) {
+
+        p_pic.add_command(
+            std::make_shared<math_command>( width_macro( CHAR_WIDTH, p_render.first ) ) );
+
+        if( p_S.m_annotation.count( p_pos )
+            && p_S.m_annotation.at( p_pos ).m_textColor.is_non_empty( ) ) {
+            // p_extraOptions | OPT::TEXT_COLOR( p_S.m_annotation.at( p_pos ).m_textColor );
+        } else {
+            // print_node( p_out, p_center, p_render.second, p_extraOptions, EMPTY_STR,
+            // p_startIndent,
+            //            p_indent );
+        }
+    }
+
+    void place_string( picture p_pic, const stylized_string& p_S, tikz_point p_StopLeft ) {
+    }
+
+    void place_string_vertical( picture p_pic, const stylized_string& p_S, tikz_point p_StopLeft ) {
     }
 
     void print_single_character( FILE* p_out, const stylized_string& p_S, u64 p_pos,
@@ -172,12 +202,6 @@ namespace TIKZ {
             }
             pos = next.second.open_end( );
         }
-    }
-
-    void place_string( picture p_pic, const stylized_string& p_S, tikz_point p_StopLeft ) {
-    }
-
-    void place_string_vertical( picture p_pic, const stylized_string& p_S, tikz_point p_StopLeft ) {
     }
 
     // Prints a string S

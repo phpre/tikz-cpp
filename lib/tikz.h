@@ -13,8 +13,6 @@
 namespace TIKZ {
     typedef std::deque<std::pair<u64, std::string>> render_t;
 
-    const extern std::string CROSS_STYLE;
-
     constexpr std::string LINE_CONN     = " -- ";
     constexpr std::string RECT_CONN     = " rectangle ";
     constexpr std::string CIRC_CONN     = " circle ";
@@ -52,25 +50,6 @@ namespace TIKZ {
         return "{\\large " + p_string + "}";
     }
 
-    FILE* open_or_abort( const std::string& p_path );
-
-    FILE* new_document( const std::string& p_path, const std::string& p_fontPath = EMPTY_STR,
-                        const std::string& p_colorPath     = EMPTY_STR,
-                        const std::string& p_macroPath     = EMPTY_STR,
-                        const std::string& p_packages      = EMPTY_STR,
-                        const std::string& p_tikzLibraries = EMPTY_STR,
-                        const std::string& p_extra         = EMPTY_STR );
-
-    void finish_document( FILE* p_out );
-
-    void initialize_tikzpicture( FILE* p_out, const std::string& p_options = EMPTY_STR );
-    void finish_tikzpicture( FILE* p_out );
-    void indent( FILE* p_out, u64 p_indentLevel = 1, u64 p_indent = 4 );
-
-#define INDENT_PRINT( p_level )         \
-    indent( p_out, p_level, p_indent ); \
-    fprintf
-
     void print_coordinate( FILE* p_out, const std::string& p_position, const std::string& p_name,
                            const std::string& p_extraOptions = EMPTY_STR, u64 p_startIndent = 1,
                            u64 p_indent = 4 );
@@ -99,13 +78,6 @@ namespace TIKZ {
                            const std::string& p_connection = LINE_CONN,
                            const std::string& p_options = EMPTY_STR, u64 p_startIndent = 1,
                            u64 p_indent = 4 );
-
-    void print_text( FILE* p_out, const std::string& p_text, tikz_point p_position,
-                     const std::string& p_options = EMPTY_STR, color p_textColor = COLOR_TEXT,
-                     u64 p_startIndent = 1, u64 p_indent = 4 );
-
-    void print_cross( FILE* p_out, tikz_point p_position, color p_color = COLOR_TEXT,
-                      u64 p_startIndent = 1, u64 p_indent = 4 );
 
     void print_debug_point( FILE* p_out, tikz_point p_position, u64 p_startIndent = 1,
                             u64 p_indent = 4 );

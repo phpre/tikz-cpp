@@ -22,7 +22,7 @@ void picture_string( const std::string& p_name = "g01.tex" ) {
     TIKZ::document out{ };
     TIKZ::picture  p1{ };
     for( u64 j = 1, i2 = 0; j < TIKZ::str_displ_t::MAX; j <<= 1, ++i2 ) {
-        p1.place_text( optname[ i2 ],
+        p1.place_text( TIKZ::VSIZE_CORRECTION + optname[ i2 ],
                        TIKZ::tikz_point{ ( data.length( ) + 1 + i2 ) * TIKZ::CHAR_WIDTH,
                                          TIKZ::CHAR_HEIGHT * ( .5 ) },
                        TIKZ::OPT::ROTATE( "90" ) | TIKZ::OPT::ANCHOR_WEST );
@@ -38,9 +38,13 @@ void picture_string( const std::string& p_name = "g01.tex" ) {
                                               -TIKZ::CHAR_HEIGHT * 1.0 * i } );
 
         for( u64 j = 1, i2 = 0; j < TIKZ::str_displ_t::MAX; j <<= 1, ++i2 ) {
-            p1.place_text( ( i & j ) ? "o" : "x",
-                           TIKZ::tikz_point{ ( data.length( ) + 1 + i2 ) * TIKZ::CHAR_WIDTH,
-                                             -TIKZ::CHAR_HEIGHT * ( 1.0 * i + .5 ) } );
+            TIKZ::tikz_point pos{ ( data.length( ) + 1 + i2 ) * TIKZ::CHAR_WIDTH,
+                                  -TIKZ::CHAR_HEIGHT * ( 1.0 * i + .5 ) };
+            if( i & j ) {
+                p1.place_maru( pos );
+            } else {
+                p1.place_batsu( pos );
+            }
         }
     }
 
