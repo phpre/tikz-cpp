@@ -289,103 +289,71 @@ namespace TIKZ {
         }
     }
 
-    void print_separator( FILE* p_out, tikz_point p_PtopLeft, tikz_point p_TtopLeft, color p_color,
-                          u64 p_startIndent, u64 p_indent ) {
+    void place_separator( picture& p_pic, tikz_point p_PtopLeft, tikz_point p_TtopLeft,
+                          color p_color ) {
         // make sure T is top, P is bottom
         if( p_PtopLeft.m_y > p_TtopLeft.m_y ) { std::swap( p_PtopLeft, p_TtopLeft ); }
 
-        INDENT_PRINT( p_startIndent )(
-            p_out,
-            "\\node[rotate = 45, outer sep = 0pt, inner sep = 1pt, fill = %s] "
-            "at (%5.3lf, %5.3lf + %5.3lf) {};\n",
-            p_color.c_str( ), p_TtopLeft.m_x, p_TtopLeft.m_y, 1.5 * CHAR_GLOW );
-        INDENT_PRINT( p_startIndent )(
-            p_out,
-            "\\node[rotate = 45, outer sep = 0pt, inner sep = 1pt, fill = %s] "
-            "at (%5.3lf, %5.3lf - %5.3lf) {};\n",
-            p_color.c_str( ), p_PtopLeft.m_x, p_PtopLeft.m_y - CHAR_HEIGHT, 1.5 * CHAR_GLOW );
+        auto opt = OPT::ROTATE( "45" ) | OPT::OUTER_SEP( "0pt" ) | OPT::INNER_SEP( "1pt" )
+                   | OPT::FILL( p_color );
+        p_pic.place_node( tikz_point{ p_TtopLeft.m_x, p_TtopLeft.m_y + 1.5 * CHAR_GLOW }, EMPTY_STR,
+                          opt );
+        p_pic.place_node(
+            tikz_point{ p_PtopLeft.m_x, p_PtopLeft.m_y - CHAR_HEIGHT - 1.5 * CHAR_GLOW }, EMPTY_STR,
+            opt );
 
-        INDENT_PRINT( p_startIndent )( p_out, "\\draw[%s, rounded corners=2pt, %s]\n",
-                                       LW_LINE.c_str( ), p_color.c_str( ) );
-        INDENT_PRINT( 1 + p_startIndent )( p_out,
-                                           "(%5.3lf, %5.3lf + %5.3lf) -- (%5.3lf, %5.3lf) "
-                                           "-- (%5.3lf, %5.3lf) -- (%5.3lf, %5.3lf - %5.3lf);\n",
-                                           p_TtopLeft.m_x, p_TtopLeft.m_y, 1.5 * CHAR_GLOW,
-                                           p_TtopLeft.m_x, p_TtopLeft.m_y - CHAR_HEIGHT,
-                                           p_PtopLeft.m_x, p_PtopLeft.m_y, p_PtopLeft.m_x,
-                                           p_PtopLeft.m_y - CHAR_HEIGHT, 1.5 * CHAR_GLOW );
+        p_pic.place_simple_path(
+            { tikz_point{ p_TtopLeft.m_x, p_TtopLeft.m_y + 1.5 * CHAR_GLOW },
+              tikz_point{ p_TtopLeft.m_x, p_TtopLeft.m_y - CHAR_HEIGHT },
+              tikz_point{ p_PtopLeft.m_x, p_PtopLeft.m_y },
+              tikz_point{ p_PtopLeft.m_x, p_PtopLeft.m_y - CHAR_HEIGHT - 1.5 * CHAR_GLOW } },
+            OPT::DRAW( p_color ) | OPT::LW_LINE | OPT::ROUNDED_CORNERS( "2pt" ) );
     }
 
-    void print_matched_string_pair( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft,
-                                    const stylized_string& p_T, tikz_point p_TtopLeft,
-                                    color p_bgColor, bool p_compress, u64 p_startIndent,
-                                    u64 p_indent ) {
+    void place_matched_string_pair( picture& p_pic, const stylized_string& p_P,
+                                    tikz_point p_PtopLeft, const stylized_string& p_T,
+                                    tikz_point p_TtopLeft, color p_color, bool p_compress ) {
         // print glow bubble
-        if( !p_compress ) {
-            INDENT_PRINT( p_startIndent )(
-                p_out, "\\draw[%s, rounded corners = 2pt, %s, fill = %s]\n",
-                LW_THIN_OUTLINE.c_str( ), p_bgColor.c_str( ), p_bgColor.to_bg( ).c_str( ) );
-        } else {
-            INDENT_PRINT( p_startIndent )(
-                p_out, "\\draw[%s, rounded corners = 2pt, %s, fill = %s]\n",
-                LW_VERY_THIN_OUTLINE.c_str( ), p_bgColor.c_str( ), p_bgColor.to_bg( ).c_str( ) );
-        }
-
+        auto opt = OPT::DRAW( p_color ) | OPT::FILL( p_color.to_bg( ) )
+                   | OPT::ROUNDED_CORNERS( "2pt" )
+                   | ( p_compress ? OPT::LW_VERY_THIN_OUTLINE : OPT::LW_THIN_OUTLINE );
         auto glowx = p_compress ? 0 : CHAR_GLOW;
         auto glowy = p_compress ? -CHAR_GLOW : CHAR_GLOW;
 
-        INDENT_PRINT( 1 + p_startIndent )( p_out,
-                                           "(%5.3lf - %5.3lf, %5.3lf + %5.3lf) "
-                                           "-- (%5.3lf - %5.3lf, %5.3lf - %5.3lf)\n",
-                                           p_PtopLeft.m_x, glowx, p_PtopLeft.m_y,
-                                           0 * glowy, // bot-mid left
-                                           p_TtopLeft.m_x, glowx, p_TtopLeft.m_y - CHAR_HEIGHT,
-                                           0 * glowy // top-mid left
-        );
+        std::deque<tikz_position> pts{
+            tikz_point{ p_PtopLeft.m_x - glowx, p_PtopLeft.m_y + 0 * glowy },
+            tikz_point{ p_TtopLeft.m_x - glowx, p_TtopLeft.m_y - CHAR_HEIGHT - 0 * glowy } };
 
         // top line
         if( !p_compress || p_T.length( ) ) {
-            INDENT_PRINT( 1 + p_startIndent )(
-                p_out,
-                "-- (%5.3lf - %5.3lf, %5.3lf + %5.3lf) "
-                "-- (%5.3lf + %5.3lf, %5.3lf + %5.3lf) "
-                "-- (%5.3lf + %5.3lf, %5.3lf - %5.3lf)\n",
-                p_TtopLeft.m_x, glowx, p_TtopLeft.m_y, glowy, // top left
-                p_TtopLeft.m_x + p_T.length( ) * CHAR_WIDTH, glowx, p_TtopLeft.m_y,
-                glowy, // top
-                       // right
-                p_TtopLeft.m_x + p_T.length( ) * CHAR_WIDTH, glowx, p_TtopLeft.m_y - CHAR_HEIGHT,
-                0 * glowy // top-mid right
-            );
+            pts.push_back( tikz_point{ p_TtopLeft.m_x - glowx, p_TtopLeft.m_y + glowy } );
+            pts.push_back( tikz_point{ p_TtopLeft.m_x + p_T.length( ) * CHAR_WIDTH + glowx,
+                                       p_TtopLeft.m_y + glowy } );
+            pts.push_back( tikz_point{ p_TtopLeft.m_x + p_T.length( ) * CHAR_WIDTH + glowx,
+                                       p_TtopLeft.m_y - CHAR_HEIGHT - 0 * glowy } );
         }
 
+        // bottom line
         if( !p_compress || p_P.length( ) ) {
-            INDENT_PRINT( 1 + p_startIndent )(
-                p_out,
-                "-- (%5.3lf + %5.3lf, %5.3lf + %5.3lf) "
-                "-- (%5.3lf + %5.3lf, %5.3lf - %5.3lf) "
-                "-- (%5.3lf - %5.3lf, %5.3lf - %5.3lf)\n",
-                p_PtopLeft.m_x + p_P.length( ) * CHAR_WIDTH, glowx, p_PtopLeft.m_y,
-                0 * glowy, // bot-mid right
-                p_PtopLeft.m_x + p_P.length( ) * CHAR_WIDTH, glowx, p_PtopLeft.m_y - CHAR_HEIGHT,
-                glowy,                                                     // bot right
-                p_PtopLeft.m_x, glowx, p_PtopLeft.m_y - CHAR_HEIGHT, glowy // bot left
-            );
+            pts.push_back( tikz_point{ p_PtopLeft.m_x + p_P.length( ) * CHAR_WIDTH + glowx,
+                                       p_PtopLeft.m_y + 0 * glowy } );
+            pts.push_back( tikz_point{ p_PtopLeft.m_x + p_P.length( ) * CHAR_WIDTH + glowx,
+                                       p_PtopLeft.m_y - CHAR_HEIGHT - glowy } );
+            pts.push_back(
+                tikz_point{ p_PtopLeft.m_x - glowx, p_PtopLeft.m_y - CHAR_HEIGHT - glowy } );
         }
-
-        INDENT_PRINT( 1 + p_startIndent )( p_out, "-- cycle;\n" );
+        pts.push_back( tikz_position{ } );
+        p_pic.place_simple_path( pts, opt );
 
         if( p_P.length( ) == p_T.length( ) ) {
             // print "matching edges"
-            INDENT_PRINT( p_startIndent )( p_out, "\\draw[%s, %s]\n", LW_SUPPORT_LINE.c_str( ),
-                                           p_bgColor.deemphasize( ).c_str( ) );
+            auto lopt = OPT::LW_SUPPORT_LINE | OPT::DRAW( p_color.deemphasize( ) );
             for( u64 i = 0; i < p_P.length( ); ++i ) {
-                INDENT_PRINT( 1 + p_startIndent )(
-                    p_out, "(%5.3lf, %5.3lf) -- (%5.3lf, %5.3lf)\n",
-                    p_TtopLeft.m_x + ( i + .5 ) * CHAR_WIDTH, p_TtopLeft.m_y - CHAR_HEIGHT,
-                    p_PtopLeft.m_x + ( i + .5 ) * CHAR_WIDTH, p_PtopLeft.m_y );
+                p_pic.place_line(
+                    tikz_point{ p_TtopLeft.m_x + ( i + .5 ) * CHAR_WIDTH,
+                                p_TtopLeft.m_y - CHAR_HEIGHT },
+                    tikz_point{ p_PtopLeft.m_x + ( i + .5 ) * CHAR_WIDTH, p_PtopLeft.m_y }, lopt );
             }
-            INDENT_PRINT( p_startIndent )( p_out, ";\n" );
             for( u64 i = 0; i < p_P.length( ); ++i ) {
                 // if characters are printed, check that they actually match
                 bool match = p_P.has_wildcard( i + p_P.m_fragment.closed_begin( ) )
@@ -396,24 +364,19 @@ namespace TIKZ {
 
                 if( !match ) {
                     // if they don't, draw a big cross symbolizing the replacement
-                    print_cross(
-                        p_out,
+                    p_pic.place_double_cross(
                         tikz_point{ ( p_TtopLeft.m_x + ( i + .5 ) * CHAR_WIDTH + p_PtopLeft.m_x
                                       + ( i + .5 ) * CHAR_WIDTH )
                                         / 2.0,
                                     p_PtopLeft.m_y
                                         + ( p_TtopLeft.m_y - CHAR_HEIGHT - p_PtopLeft.m_y ) / 2.0 },
-                        p_bgColor.deemphasize_weak( ), p_startIndent, p_indent );
+                        OPT::DOUBLE( p_color.to_bg( ) ) | OPT::DRAW( p_color.deemphasize( ) ), 3 );
                 }
             }
         }
 
-        if( !p_compress && p_P.length( ) ) {
-            print_string( p_out, p_P, p_PtopLeft, p_startIndent, p_indent );
-        }
-        if( !p_compress && p_T.length( ) ) {
-            print_string( p_out, p_T, p_TtopLeft, p_startIndent, p_indent );
-        }
+        if( !p_compress && p_P.length( ) ) { place_string( p_pic, p_P, p_PtopLeft ); }
+        if( !p_compress && p_T.length( ) ) { place_string( p_pic, p_T, p_TtopLeft ); }
     }
 
     std::string char_or_empty( char p_char, const std::string& p_wildcard ) {
@@ -451,10 +414,11 @@ namespace TIKZ {
         }
     }
 
-    std::pair<tikz_point, tikz_point> print_alignment(
-        FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft, const stylized_string& p_T,
-        tikz_point p_TtopLeft, const breakpoint_repn& p_brpnt, bool p_printBreakpoints,
-        bool p_printExtraStringParts, bool p_compress, u64 p_startIndent, u64 p_indent ) {
+    std::pair<tikz_point, tikz_point>
+    place_alignment( picture& p_pic, const stylized_string& p_P, tikz_point p_PtopLeft,
+                     const stylized_string& p_T, tikz_point p_TtopLeft,
+                     const breakpoint_repn& p_brpnt, bool p_printBreakpoints,
+                     bool p_printExtraStringParts, bool p_compress ) {
         double pxpos = p_PtopLeft.m_x, txpos = p_TtopLeft.m_x;
         double sepWidth = 3 * CHAR_GLOW, extraGlow = 3.5 * CHAR_GLOW, smallGlow = 2 * CHAR_GLOW;
 
@@ -485,8 +449,7 @@ namespace TIKZ {
             auto fragT = fragmentco{ p_T.m_fragment.closed_begin( ), p_brpnt.front( ).m_posT };
             if( fragP.length( ) ) {
                 if( !p_compress ) {
-                    print_string( p_out, p_P.slice( fragP ), tikz_point{ pxpos, p_PtopLeft.m_y },
-                                  p_startIndent, p_indent );
+                    place_string( p_pic, p_P.slice( fragP ), tikz_point{ pxpos, p_PtopLeft.m_y } );
                 }
                 pxpos += CHAR_WIDTH * fragP.length( ) + smallGlow;
             } else {
@@ -495,8 +458,7 @@ namespace TIKZ {
             }
             if( fragT.length( ) ) {
                 if( !p_compress ) {
-                    print_string( p_out, p_T.slice( fragT ), tikz_point{ txpos, p_TtopLeft.m_y },
-                                  p_startIndent, p_indent );
+                    place_string( p_pic, p_T.slice( fragT ), tikz_point{ txpos, p_TtopLeft.m_y } );
                 }
                 txpos += CHAR_WIDTH * fragT.length( ) + smallGlow;
             } else {
@@ -510,16 +472,17 @@ namespace TIKZ {
 
         if( p_printBreakpoints ) {
             // initial dummy breakpoint
-            print_separator( p_out, tikz_point{ pxpos, p_PtopLeft.m_y },
-                             tikz_point{ txpos, p_TtopLeft.m_y }, SEP_COL.deemphasize( ),
-                             p_startIndent, p_indent );
-            print_text(
-                p_out, to_stringP( p_brpnt.front( ), WILDCARD ),
+            place_separator( p_pic, tikz_point{ pxpos, p_PtopLeft.m_y },
+                             tikz_point{ txpos, p_TtopLeft.m_y }, SEP_COL.deemphasize( ) );
+            p_pic.place_text(
+                to_stringP( p_brpnt.front( ), WILDCARD ),
                 tikz_point{ pxpos - 3 * CHAR_GLOW, p_PtopLeft.m_y - CHAR_HEIGHT - 3 * CHAR_GLOW },
-                "anchor = north west", SEP_COL, p_startIndent, p_indent );
-            print_text( p_out, to_stringT( p_brpnt.front( ), WILDCARD ),
-                        tikz_point{ txpos - 3 * CHAR_GLOW, p_TtopLeft.m_y + 3 * CHAR_GLOW },
-                        "anchor = south west", SEP_COL, p_startIndent, p_indent );
+                OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR( "north west" )
+                    | OPT::TEXT_COLOR( SEP_COL ) );
+            p_pic.place_text( to_stringT( p_brpnt.front( ), WILDCARD ),
+                              tikz_point{ txpos - 3 * CHAR_GLOW, p_TtopLeft.m_y + 3 * CHAR_GLOW },
+                              OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR( "south west" )
+                                  | OPT::TEXT_COLOR( SEP_COL ) );
             pxpos += sepWidth;
             txpos += sepWidth;
         }
@@ -531,10 +494,9 @@ namespace TIKZ {
 
             if( fragT.length( ) > 0 && fragP.length( ) > 0 ) {
                 // matched fragment
-                print_matched_string_pair( p_out, p_P.slice( fragP ),
-                                           tikz_point{ pxpos, p_PtopLeft.m_y }, p_T.slice( fragT ),
-                                           tikz_point{ txpos, p_TtopLeft.m_y }, MAT_COL, p_compress,
-                                           p_startIndent, p_indent );
+                place_matched_string_pair(
+                    p_pic, p_P.slice( fragP ), tikz_point{ pxpos, p_PtopLeft.m_y },
+                    p_T.slice( fragT ), tikz_point{ txpos, p_TtopLeft.m_y }, MAT_COL, p_compress );
                 pxpos += CHAR_WIDTH * fragP.length( ) + extraGlow;
                 txpos += CHAR_WIDTH * fragT.length( ) + extraGlow;
             }
@@ -563,21 +525,21 @@ namespace TIKZ {
                     lastt = posxt;
                 }
 
-                std::string anchort = "anchor = south", anchorp = "anchor = north";
+                auto anchort = OPT::ANCHOR_SOUTH, anchorp = OPT::ANCHOR_NORTH;
                 if( bp.m_posT == p_brpnt.back( ).m_posT ) {
-                    anchort = "anchor = south east";
+                    anchort = OPT::ANCHOR( "south east" );
                     posxt += sepWidth;
                 } else if( bp.m_posT == p_brpnt.front( ).m_posT ) {
-                    anchort = "anchor = south west";
+                    anchort = OPT::ANCHOR( "south west" );
                     posxt -= sepWidth;
                 } else {
                     posxt -= CHAR_GLOW;
                 }
                 if( bp.m_posP == p_brpnt.back( ).m_posP ) {
-                    anchorp = "anchor = north east";
+                    anchorp = OPT::ANCHOR( "north east" );
                     posx += sepWidth;
                 } else if( bp.m_posP == p_brpnt.front( ).m_posP ) {
-                    anchorp = "anchor = north west";
+                    anchorp = OPT::ANCHOR( "north west" );
                     posx -= sepWidth;
                 } else {
                     posx -= CHAR_GLOW;
@@ -586,16 +548,17 @@ namespace TIKZ {
                 auto col = color_for_bp( bp );
                 pxpos    = pxpos - extraGlow + sepWidth;
                 txpos    = txpos - extraGlow + sepWidth;
-                print_separator( p_out, { pxpos, p_PtopLeft.m_y }, { txpos, p_TtopLeft.m_y },
-                                 col.deemphasize( ), p_startIndent, p_indent );
+                place_separator( p_pic, { pxpos, p_PtopLeft.m_y }, { txpos, p_TtopLeft.m_y },
+                                 col.deemphasize( ) );
                 pxpos += sepWidth;
                 txpos += sepWidth;
-                print_text( p_out, to_stringP( p_brpnt[ i ], WILDCARD ),
-                            tikz_point{ posx, p_PtopLeft.m_y - CHAR_HEIGHT - sepWidth - extray },
-                            anchorp, col, p_startIndent, p_indent );
-                print_text( p_out, to_stringT( p_brpnt[ i ], WILDCARD ),
-                            tikz_point{ posxt, p_TtopLeft.m_y + sepWidth + extrayt }, anchort, col,
-                            p_startIndent, p_indent );
+                p_pic.place_text(
+                    to_stringP( p_brpnt[ i ], WILDCARD ),
+                    tikz_point{ posx, p_PtopLeft.m_y - CHAR_HEIGHT - sepWidth - extray },
+                    OPT::INNER_SEP( "0pt" ) | anchorp | OPT::TEXT_COLOR( col ) );
+                p_pic.place_text( to_stringT( p_brpnt[ i ], WILDCARD ),
+                                  tikz_point{ posxt, p_TtopLeft.m_y + sepWidth + extrayt },
+                                  OPT::INNER_SEP( "0pt" ) | anchort | OPT::TEXT_COLOR( col ) );
             }
 
             if( bp.is_dummy( ) ) {
@@ -627,8 +590,8 @@ namespace TIKZ {
                     pnew[ bp.m_posP ] = std::string{ bp.m_charP };
                     pnew.highlight_position( bp.m_posP, color_for_bp( bp ) );
                 }
-                print_matched_string_pair(
-                    p_out,
+                place_matched_string_pair(
+                    p_pic,
                     p_P.slice( { bp.m_posP, bp.m_posP + shiftP } )
                         .replace_data( str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS,
                                        std::string{ bp.m_charP }, bp.m_posP ),
@@ -636,8 +599,7 @@ namespace TIKZ {
                     p_T.slice( { bp.m_posT, bp.m_posT + shiftT } )
                         .replace_data( str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS,
                                        std::string{ bp.m_charT }, bp.m_posT ),
-                    tikz_point{ txpos, p_TtopLeft.m_y }, color_for_bp( bp ), p_compress,
-                    p_startIndent, p_indent );
+                    tikz_point{ txpos, p_TtopLeft.m_y }, color_for_bp( bp ), p_compress );
                 pxpos += shiftP * CHAR_WIDTH + extraGlow;
                 txpos += shiftT * CHAR_WIDTH + extraGlow;
             }
@@ -651,8 +613,7 @@ namespace TIKZ {
             if( fragP.length( ) ) {
                 pxpos += corr;
                 if( !p_compress ) {
-                    print_string( p_out, p_P.slice( fragP ), tikz_point{ pxpos, p_PtopLeft.m_y },
-                                  p_startIndent, p_indent );
+                    place_string( p_pic, p_P.slice( fragP ), tikz_point{ pxpos, p_PtopLeft.m_y } );
                 }
                 pxpos += CHAR_WIDTH * fragP.length( );
             } else {
@@ -661,8 +622,7 @@ namespace TIKZ {
             if( fragT.length( ) ) {
                 txpos += corr;
                 if( !p_compress ) {
-                    print_string( p_out, p_T.slice( fragT ), tikz_point{ txpos, p_TtopLeft.m_y },
-                                  p_startIndent, p_indent );
+                    place_string( p_pic, p_T.slice( fragT ), tikz_point{ txpos, p_TtopLeft.m_y } );
                 }
                 txpos += CHAR_WIDTH * fragT.length( );
             } else {
@@ -671,10 +631,8 @@ namespace TIKZ {
         }
 
         if( p_compress ) {
-            print_string( p_out, pnew, tikz_point{ pxinit, p_PtopLeft.m_y }, p_startIndent,
-                          p_indent );
-            print_string( p_out, tnew, tikz_point{ txinit, p_TtopLeft.m_y }, p_startIndent,
-                          p_indent );
+            place_string( p_pic, pnew, tikz_point{ pxinit, p_PtopLeft.m_y } );
+            place_string( p_pic, tnew, tikz_point{ txinit, p_TtopLeft.m_y } );
         }
 
         return { tikz_point{ pxpos, p_PtopLeft.m_y }, tikz_point{ txpos, p_TtopLeft.m_y } };

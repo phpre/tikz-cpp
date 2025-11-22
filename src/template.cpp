@@ -5,21 +5,13 @@
 #include "tikz_document.h"
 #include "tikz_picture.h"
 #include "tikz_string.h"
-using namespace TIKZ;
 
-std::string OUT_DIR        = "../figs/";
-std::string TEX_DIR        = "../tex/";
-std::string FONT_PATH      = TEX_DIR + "font";
-std::string COLOR_PATH     = TEX_DIR + "color";
-std::string MACRO_PATH     = TEX_DIR + "macros";
-std::string PACKAGES       = "";
-std::string LIBRARIES      = "";
-std::string EXTRA_PREAMBLE = "";
-std::string PROGRAM_NAME   = "";
-
-#define NEW_DOC_SIMPLE( p_name )                                                                \
-    new_document( OUT_DIR + ( p_name ), FONT_PATH, COLOR_PATH, MACRO_PATH, PACKAGES, LIBRARIES, \
-                  EXTRA_PREAMBLE );
+std::string OUT_DIR      = "../figs/";
+std::string TEX_DIR      = "../tex/";
+std::string FONT_PATH    = TEX_DIR + "font";
+std::string COLOR_PATH   = TEX_DIR + "color";
+std::string MACRO_PATH   = TEX_DIR + "macros";
+std::string PROGRAM_NAME = "";
 
 void picture_string( const std::string& p_name = "g01.tex" ) {
     std::deque<std::string> optname{ "rotatable",      "show positions",  "show characters",
@@ -70,73 +62,77 @@ void picture_string( const std::string& p_name = "g01.tex" ) {
 }
 
 void picture_alignment( const std::string& p_name = "g02.tex" ) {
-    FILE* out = NEW_DOC_SIMPLE( p_name );
-    initialize_tikzpicture( out );
+    TIKZ::document out{ };
+    TIKZ::picture  p1{ };
     {
         std::string T = "abab" + WILDCARD + "abcaab" + WILDCARD + "a" + WILDCARD + "a";
         std::string P = "babcabcaccabaab";
 
         auto T_NAME
-            = stylized_string{ T, "T", str_displ_t::FRAGMENT_WILDCARD }.add_wildcards( T, true );
-        auto P_NAME = stylized_string{ P, "P", str_displ_t::FRAGMENT_WILDCARD };
+            = TIKZ::stylized_string{ T, "T", TIKZ::str_displ_t::FRAGMENT_WILDCARD }.add_wildcards(
+                T, true );
+        auto P_NAME = TIKZ::stylized_string{ P, "P", TIKZ::str_displ_t::FRAGMENT_WILDCARD };
 
         auto bp = compute_breakpoints( P, T, WILDCARD );
 
-        print_alignment( out, P_NAME, tikz_point{ 0.0, 0.0 }, T_NAME, tikz_point{ 0.0, 1.25 }, bp );
+        TIKZ::place_alignment( p1, P_NAME, TIKZ::tikz_point{ 0.0, 0.0 }, T_NAME,
+                               TIKZ::tikz_point{ 0.0, 1.25 }, bp );
 
-        print_alignment( out, P_NAME, tikz_point{ 0.0, 3.5 }, T_NAME, tikz_point{ 0.0, 4.75 }, bp,
-                         false, false, true );
+        TIKZ::place_alignment( p1, P_NAME, TIKZ::tikz_point{ 0.0, 3.5 }, T_NAME,
+                               TIKZ::tikz_point{ 0.0, 4.75 }, bp, false, false, true );
 
-        print_alignment( out, P_NAME, tikz_point{ 0.0, 6.5 }, T_NAME, tikz_point{ 0.0, 7.75 }, bp,
-                         false );
+        TIKZ::place_alignment( p1, P_NAME, TIKZ::tikz_point{ 0.0, 6.5 }, T_NAME,
+                               TIKZ::tikz_point{ 0.0, 7.75 }, bp, false );
     }
-    finish_tikzpicture( out );
-
-    initialize_tikzpicture( out );
+    out.add_picture( p1 );
+    TIKZ::picture p2{ };
     {
         std::string T = "b" + WILDCARD + WILDCARD + WILDCARD + "a" + WILDCARD + "ab" + WILDCARD
                         + WILDCARD + "a" + WILDCARD + "a";
         std::string P = "bcaaa";
 
         auto T_NAME
-            = stylized_string{ T, "T", str_displ_t::FRAGMENT_WILDCARD }.add_wildcards( T, true );
-        auto P_NAME = stylized_string{ P, "P", str_displ_t::FRAGMENT_WILDCARD };
+            = TIKZ::stylized_string{ T, "T", TIKZ::str_displ_t::FRAGMENT_WILDCARD }.add_wildcards(
+                T, true );
+        auto P_NAME = TIKZ::stylized_string{ P, "P", TIKZ::str_displ_t::FRAGMENT_WILDCARD };
 
         auto bps = compute_occs( P, T, WILDCARD );
 
         for( u64 y = 0; y < bps.size( ); ++y ) {
-            print_alignment( out, P_NAME, tikz_point{ 0.0, -3.0 * y }, T_NAME,
-                             tikz_point{ 0.0, -3.0 * y + 1 }, bps[ y ], false, true, true );
+            TIKZ::place_alignment( p2, P_NAME, TIKZ::tikz_point{ 0.0, -3.0 * y }, T_NAME,
+                                   TIKZ::tikz_point{ 0.0, -3.0 * y + 1 }, bps[ y ], false, true,
+                                   true );
 
-            print_alignment( out, P_NAME, tikz_point{ ( 2 + T.length( ) ) * CHAR_WIDTH, -3.0 * y },
-                             T_NAME, tikz_point{ ( 2 + T.length( ) ) * CHAR_WIDTH, -3.0 * y + 1 },
-                             bps[ y ], true, true );
+            TIKZ::place_alignment(
+                p2, P_NAME, TIKZ::tikz_point{ ( 2 + T.length( ) ) * TIKZ::CHAR_WIDTH, -3.0 * y },
+                T_NAME, TIKZ::tikz_point{ ( 2 + T.length( ) ) * TIKZ::CHAR_WIDTH, -3.0 * y + 1 },
+                bps[ y ], true, true );
         }
     }
-    finish_tikzpicture( out );
-
-    initialize_tikzpicture( out );
+    out.add_picture( p2 );
+    TIKZ::picture p3{ };
     {
         std::string T = "aabaabcaabaabba";
         std::string P = "bcaaa";
 
-        auto T_NAME = stylized_string{ T, "T", str_displ_t::FRAGMENT_WILDCARD };
-        auto P_NAME = stylized_string{ P, "P", str_displ_t::FRAGMENT_WILDCARD };
+        auto T_NAME = TIKZ::stylized_string{ T, "T", TIKZ::str_displ_t::FRAGMENT_WILDCARD };
+        auto P_NAME = TIKZ::stylized_string{ P, "P", TIKZ::str_displ_t::FRAGMENT_WILDCARD };
 
         auto bps = compute_occs_with_edits( P, T, 2 );
 
         for( u64 y = 0; y < bps.size( ); ++y ) {
-            print_alignment( out, P_NAME, tikz_point{ 0.0, -3.0 * y }, T_NAME,
-                             tikz_point{ 0.0, -3.0 * y + 1 }, bps[ y ], false, true, true );
+            TIKZ::place_alignment( p3, P_NAME, TIKZ::tikz_point{ 0.0, -3.0 * y }, T_NAME,
+                                   TIKZ::tikz_point{ 0.0, -3.0 * y + 1 }, bps[ y ], false, true,
+                                   true );
 
-            print_alignment( out, P_NAME, tikz_point{ ( 2 + T.length( ) ) * CHAR_WIDTH, -3.0 * y },
-                             T_NAME, tikz_point{ ( 2 + T.length( ) ) * CHAR_WIDTH, -3.0 * y + 1 },
-                             bps[ y ], true, true );
+            TIKZ::place_alignment(
+                p3, P_NAME, TIKZ::tikz_point{ ( 2 + T.length( ) ) * TIKZ::CHAR_WIDTH, -3.0 * y },
+                T_NAME, TIKZ::tikz_point{ ( 2 + T.length( ) ) * TIKZ::CHAR_WIDTH, -3.0 * y + 1 },
+                bps[ y ], true, true );
         }
     }
-    finish_tikzpicture( out );
-
-    finish_document( out );
+    out.add_picture( p3 );
+    TIKZ::document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
 int main( int p_argc, char* p_argv[] ) {

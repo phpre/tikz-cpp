@@ -331,33 +331,25 @@ namespace TIKZ {
 
     color color_for_bp( const breakpoint& p_bp );
 
-    void print_separator( FILE* p_out, tikz_point p_PtopLeft, tikz_point p_TtopLeft, color p_color,
-                          u64 p_startIndent = 1, u64 p_indent = 4 );
+    void place_separator( picture& p_pic, tikz_point p_PtopLeft, tikz_point p_TtopLeft,
+                          color p_color );
 
     // Prints a string S
-    void print_string( FILE* p_out, const stylized_string& p_S, tikz_point p_StopLeft,
-                       u64 p_startIndent = 1, u64 p_indent = 4 );
-
-    void print_string_vertical( FILE* p_out, const stylized_string& p_S, tikz_point p_StopLeft,
-                                u64 p_startIndent = 1, u64 p_indent = 4 );
-
     void place_string( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft );
 
     void place_string_vertical( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft );
 
     // assumes T is on top, P on bottom
-    void print_matched_string_pair( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft,
-                                    const stylized_string& p_T, tikz_point p_TtopLeft,
-                                    color p_bgColor, bool p_compress = false, u64 p_startIndent = 1,
-                                    u64 p_indent = 4 );
+    void place_matched_string_pair( picture& p_pic, const stylized_string& p_P,
+                                    tikz_point p_PtopLeft, const stylized_string& p_T,
+                                    tikz_point p_TtopLeft, color p_color, bool p_compress = false );
 
     // Prints alignment P to T
     std::pair<tikz_point, tikz_point>
-    print_alignment( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft,
+    place_alignment( picture& p_pic, const stylized_string& p_P, tikz_point p_PtopLeft,
                      const stylized_string& p_T, tikz_point p_TtopLeft,
                      const breakpoint_repn& p_brpnt, bool p_printBreakpoints = true,
-                     bool p_printExtraStringParts = false, bool p_compress = false,
-                     u64 p_startIndent = 1, u64 p_indent = 4 );
+                     bool p_printExtraStringParts = false, bool p_compress = false );
 
     void print_alignment_graph_label( FILE* p_out, const stylized_string& p_Pname,
                                       const stylized_string& p_Tname,

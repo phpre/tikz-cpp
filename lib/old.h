@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "breakpoint.h"
 #include "defines.h"
 #include "tikz_color.h"
 #include "tikz_point.h"
@@ -64,5 +65,30 @@ namespace TIKZ {
                          u64 p_startIndent, u64 p_indent );
     void print_string_inner( FILE* p_out, const stylized_string& p_S, tikz_point p_StopLeft,
                              u64 p_startIndent, u64 p_indent );
+
+    void print_separator( FILE* p_out, tikz_point p_PtopLeft, tikz_point p_TtopLeft, color p_color,
+                          u64 p_startIndent = 1, u64 p_indent = 4 );
+
+    void print_matched_string_pair( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft,
+                                    const stylized_string& p_T, tikz_point p_TtopLeft,
+                                    color p_bgColor, bool p_compress = false, u64 p_startIndent = 1,
+                                    u64 p_indent = 4 );
+
+    std::pair<tikz_point, tikz_point>
+    print_alignment( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft,
+                     const stylized_string& p_T, tikz_point p_TtopLeft,
+                     const breakpoint_repn& p_brpnt, bool p_printBreakpoints = true,
+                     bool p_printExtraStringParts = false, bool p_compress = false,
+                     u64 p_startIndent = 1, u64 p_indent = 4 );
+
+    std::string to_stringT( const breakpoint& p_bp, const std::string& p_wildcard );
+
+    std::string to_stringP( const breakpoint& p_bp, const std::string& p_wildcard );
+
+    void print_string( FILE* p_out, const stylized_string& p_S, tikz_point p_StopLeft,
+                       u64 p_startIndent = 1, u64 p_indent = 4 );
+
+    void print_string_vertical( FILE* p_out, const stylized_string& p_S, tikz_point p_StopLeft,
+                                u64 p_startIndent = 1, u64 p_indent = 4 );
 
 } // namespace TIKZ

@@ -55,11 +55,30 @@ namespace TIKZ {
             std::make_shared<node_command>( p_position, p_content, p_options, p_name ) );
     }
 
+    void picture::place_line( tikz_position p_topLeft, tikz_position p_bottomRight,
+                              const kv_store& p_options ) {
+        std::deque<std::shared_ptr<path_operation>> line{
+            std::make_shared<line_to_operation>( p_bottomRight ) };
+        _content.emplace_back( std::make_shared<path_command>( p_topLeft, line, p_options ) );
+    }
+
     void picture::place_rectangle( tikz_position p_topLeft, tikz_position p_bottomRight,
                                    const kv_store& p_options ) {
         std::deque<std::shared_ptr<path_operation>> rect{
             std::make_shared<rectangle_operation>( p_bottomRight ) };
         _content.emplace_back( std::make_shared<path_command>( p_topLeft, rect, p_options ) );
+    }
+
+    void picture::place_simple_path( std::deque<tikz_position> p_coords,
+                                     const kv_store&           p_options ) {
+        if( p_coords.size( ) < 2 ) { return; }
+
+        std::deque<std::shared_ptr<path_operation>> path{ };
+        for( u64 i = 1; i < p_coords.size( ); ++i ) {
+            path.emplace_back( std::make_shared<line_to_operation>( p_coords[ i ] ) );
+        }
+        _content.emplace_back(
+            std::make_shared<path_command>( p_coords.front( ), path, p_options ) );
     }
 
     void picture::place_cross( tikz_position p_position, const kv_store& p_options,

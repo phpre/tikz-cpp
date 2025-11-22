@@ -61,9 +61,14 @@ namespace TIKZ {
             place_node( p_position, p_text, p_options, p_name );
         }
 
-        void place_rectangle( tikz_position p_topLeft, tikz_position p_bottomRight,
-                              const kv_store& p_options = OPT::ROUNDED_CORNERS );
+        void place_line( tikz_position p_topLeft, tikz_position p_bottomRight,
+                         const kv_store& p_options = OPT::DRAW );
 
+        void place_rectangle( tikz_position p_topLeft, tikz_position p_bottomRight,
+                              const kv_store& p_options = OPT::ROUNDED_CORNERS | OPT::DRAW );
+
+        void place_simple_path( std::deque<tikz_position> p_coords,
+                                const kv_store&           p_options = OPT::ROUNDED_CORNERS );
         // special stuff
 
         void place_cross( tikz_position p_position, const kv_store& p_options = { },

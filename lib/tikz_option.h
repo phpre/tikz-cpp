@@ -93,6 +93,7 @@ namespace TIKZ {
         const tikz_option SHARP_CORNERS{ "sharp corners" };
 
         const tikz_option LINE_WIDTH{ "line width", "1.25pt" };
+        const tikz_option LW_LINE{ "line width", "1.25pt" };
         const tikz_option LW_VERY_THIN_OUTLINE{ "line width", ".5pt" };
         const tikz_option LW_THIN_OUTLINE{ "line width", ".75pt" };
         const tikz_option LW_OUTLINE{ "line width", "1pt" };
