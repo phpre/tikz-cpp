@@ -50,24 +50,6 @@ namespace TIKZ {
         return "{\\large " + p_string + "}";
     }
 
-    void print_coordinate( FILE* p_out, const std::string& p_position, const std::string& p_name,
-                           const std::string& p_extraOptions = EMPTY_STR, u64 p_startIndent = 1,
-                           u64 p_indent = 4 );
-
-    void print_coordinate( FILE* p_out, tikz_point p_position, const std::string& p_name,
-                           const std::string& p_extraOptions = EMPTY_STR, u64 p_startIndent = 1,
-                           u64 p_indent = 4 );
-
-    void print_node( FILE* p_out, const std::string& p_position,
-                     const std::string& p_content = EMPTY_STR,
-                     const std::string& p_options = EMPTY_STR,
-                     const std::string& p_name = EMPTY_STR, u64 p_startIndent = 1,
-                     u64 p_indent = 4 );
-
-    void print_node( FILE* p_out, tikz_point p_position, const std::string& p_content = EMPTY_STR,
-                     const std::string& p_options = EMPTY_STR,
-                     const std::string& p_name = EMPTY_STR, u64 p_startIndent = 1,
-                     u64 p_indent = 4 );
 
     void print_connection( FILE* p_out, const std::string& p_topLeft,
                            const std::string& p_bottomRight,

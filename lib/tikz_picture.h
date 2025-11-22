@@ -43,9 +43,28 @@ namespace TIKZ {
 
         void add_command( std::shared_ptr<command> p_command );
 
-        void place_text( const std::string& p_text, tikz_position p_position,
-                         const kv_store&    p_options = OPT::INNER_SEP( "0pt" ),
-                         const std::string& p_name    = EMPTY_STR );
+        void place_coordinate( tikz_position p_position, const std::string& p_name,
+                               const kv_store& p_options = { } );
+
+        void place_node( tikz_position p_position, const std::string& p_content = EMPTY_STR,
+                         const kv_store& p_options = { }, const std::string& p_name = EMPTY_STR );
+
+        inline void place_debug_point( tikz_position p_position ) {
+            place_node( p_position, EMPTY_STR,
+                        OPT::FILL | OPT::CIRCLE | OPT::COLOR( COLOR_C3 )
+                            | OPT::INNER_SEP( "1pt" ) );
+        }
+
+        inline void place_text( const std::string& p_text, tikz_position p_position,
+                                const kv_store&    p_options = OPT::INNER_SEP( "0pt" ),
+                                const std::string& p_name    = EMPTY_STR ) {
+            place_node( p_position, p_text, p_options, p_name );
+        }
+
+        void place_rectangle( tikz_position p_topLeft, tikz_position p_bottomRight,
+                              const kv_store& p_options = OPT::ROUNDED_CORNERS );
+
+        // special stuff
 
         void place_cross( tikz_position p_position, const kv_store& p_options = { },
                           double p_lineWidth = 2.5, double p_size = 5,

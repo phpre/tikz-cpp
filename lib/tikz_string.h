@@ -341,9 +341,9 @@ namespace TIKZ {
     void print_string_vertical( FILE* p_out, const stylized_string& p_S, tikz_point p_StopLeft,
                                 u64 p_startIndent = 1, u64 p_indent = 4 );
 
-    void place_string( picture p_pic, const stylized_string& p_S, tikz_point p_StopLeft );
+    void place_string( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft );
 
-    void place_string_vertical( picture p_pic, const stylized_string& p_S, tikz_point p_StopLeft );
+    void place_string_vertical( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft );
 
     // assumes T is on top, P on bottom
     void print_matched_string_pair( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft,

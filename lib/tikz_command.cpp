@@ -1,96 +1,103 @@
 #include "tikz_command.h"
 
 namespace TIKZ {
-    const std::string CROSS_STYLE
-        = "\\tikzset{cross/.style={cross out, draw, minimum size=2*(#1-\\pgflinewidth), inner sep=0pt, outer sep=0pt}}\n";
+    render_t path_command::render( u64 p_time, u64 p_startIndent ) const {
+        if( p_time && !m_times.count( p_time ) ) { return { }; }
+        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
 
-    node_command node_command::place_text( const std::string& p_text, tikz_position p_position,
-                                           const kv_store& p_options, const std::string& p_name ) {
-        node_command res{ };
-        res._options   = p_options;
-        res.m_position = p_position;
-        res.m_name     = p_name;
-        res.m_content  = p_text;
+        render_t result{ };
 
-        return res;
+        std::string res = "\\path";
+        if( !_options.empty( ) ) {
+            res += "[";
+            res += _options.to_string( );
+            res += "]";
+        }
+        if( !m_startPosition.empty( ) ) { res += " (" + m_startPosition.to_string( ) + ")"; }
+        result.push_back( { p_startIndent, res } );
+
+        for( const auto& op : m_operations ) {
+            result.append_range( op->render_op( p_time, 1 + p_startIndent ) );
+        }
+
+        result.push_back( { p_startIndent, ";" } );
+        return result;
     }
 
-    node_command node_command::place_cross( tikz_position p_position, const kv_store& p_options,
-                                            double p_lineWidth, double p_size,
-                                            const std::string& p_name ) {
-        char buf1[ 30 ], buf2[ 50 ];
-        snprintf( buf1, 29, "%5.3lfpt", p_lineWidth );
-        snprintf( buf2, 49, "2 * (%5.3lfpt - \\pgflinewidth)", p_size );
+    render_t move_to_operation::render_op( u64 p_time, u64 p_startIndent ) const {
+        if( p_time && !m_times.count( p_time ) ) { return { }; }
+        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
 
-        node_command res{ };
-        res._options = OPT::CROSS_OUT | OPT::DRAW | OPT::MINIMUM_SIZE( std::string{ buf2 } )
-                       | OPT::LINE_WIDTH( std::string{ buf1 } ) | OPT::INNER_SEP( "0pt" )
-                       | OPT::OUTER_SEP( "0pt" ) | p_options;
-        res.m_position = p_position;
+        std::string res{ };
+        if( !_options.empty( ) ) {
+            res += "[";
+            res += _options.to_string( );
+            res += "]";
+        }
+        if( !m_position.empty( ) ) {
+            res += " (" + m_position.to_string( ) + ")";
+        } else {
+            res += " cycle";
+        }
 
-        res.m_name    = p_name;
-        res.m_content = EMPTY_STR;
-        return res;
+        return { { p_startIndent, res } };
     }
 
-    node_command node_command::place_circle( tikz_position p_position, const kv_store& p_options,
-                                             double p_lineWidth, double p_size,
-                                             const std::string& p_name ) {
-        char buf1[ 30 ], buf2[ 50 ];
-        snprintf( buf1, 29, "%5.3lfpt", p_lineWidth );
-        snprintf( buf2, 49, "2 * (%5.3lfpt - \\pgflinewidth)", p_size );
+    render_t line_to_operation::render_op( u64 p_time, u64 p_startIndent ) const {
+        if( p_time && !m_times.count( p_time ) ) { return { }; }
+        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
 
-        node_command res{ };
-        res._options = OPT::CIRCLE | OPT::DRAW | OPT::MINIMUM_SIZE( std::string{ buf2 } )
-                       | OPT::LINE_WIDTH( std::string{ buf1 } ) | OPT::INNER_SEP( "0pt" )
-                       | OPT::OUTER_SEP( "0pt" ) | p_options;
-        res.m_position = p_position;
+        std::string res{ };
+        if( !_options.empty( ) ) {
+            res += "[";
+            res += _options.to_string( );
+            res += "]";
+        }
+        if( !m_position.empty( ) ) {
+            res += "-- (" + m_position.to_string( ) + ")";
+        } else {
+            res += "-- cycle";
+        }
 
-        res.m_name    = p_name;
-        res.m_content = EMPTY_STR;
-        return res;
+        return { { p_startIndent, res } };
     }
 
-    node_command node_command::place_double_cross( tikz_position   p_position,
-                                                   const kv_store& p_options, double p_lineWidth,
-                                                   double p_outlineWidth, double p_size,
-                                                   const std::string& p_name ) {
-        char buf1[ 30 ], buf2[ 30 ], buf3[ 30 ];
-        snprintf( buf1, 29, "%5.3lfpt", p_outlineWidth );
-        snprintf( buf3, 29, "%5.3lfpt", p_lineWidth - 2 * p_outlineWidth );
-        snprintf( buf2, 29, "%5.3lfpt", 2 * ( p_size - p_lineWidth ) - 2 * p_outlineWidth );
+    render_t rectangle_operation::render_op( u64 p_time, u64 p_startIndent ) const {
+        if( p_time && !m_times.count( p_time ) ) { return { }; }
+        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
 
-        node_command res{ };
-        res._options = OPT::CROSS_OUT | OPT::DRAW | OPT::MINIMUM_SIZE( std::string{ buf2 } )
-                       | OPT::LINE_WIDTH( std::string{ buf1 } )
-                       | OPT::DOUBLE_DISTANCE( std::string{ buf3 } ) | OPT::INNER_SEP( "0pt" )
-                       | OPT::OUTER_SEP( "0pt" ) | OPT::LINE_CAP_RECT | p_options;
-        res.m_position = p_position;
+        std::string res{ };
+        if( !_options.empty( ) ) {
+            res += "[";
+            res += _options.to_string( );
+            res += "]";
+        }
+        if( !m_position.empty( ) ) { res += "rectangle (" + m_position.to_string( ) + ")"; }
 
-        res.m_name    = p_name;
-        res.m_content = EMPTY_STR;
-        return res;
+        return { { p_startIndent, res } };
     }
 
-    node_command node_command::place_double_circle( tikz_position   p_position,
-                                                    const kv_store& p_options, double p_lineWidth,
-                                                    double p_outlineWidth, double p_size,
-                                                    const std::string& p_name ) {
-        char buf1[ 30 ], buf2[ 30 ], buf3[ 30 ];
-        snprintf( buf1, 29, "%5.3lfpt", p_outlineWidth );
-        snprintf( buf3, 29, "%5.3lfpt", p_lineWidth - 2 * p_outlineWidth );
-        snprintf( buf2, 29, "%5.3lfpt", 2 * ( p_size - p_lineWidth ) );
+    render_t coordinate_command::render( u64 p_time, u64 p_startIndent, bool p_internal ) const {
+        if( p_time && !m_times.count( p_time ) ) { return { }; }
+        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
 
-        node_command res{ };
-        res._options = OPT::CIRCLE | OPT::DRAW | OPT::MINIMUM_SIZE( std::string{ buf2 } )
-                       | OPT::LINE_WIDTH( std::string{ buf1 } )
-                       | OPT::DOUBLE_DISTANCE( std::string{ buf3 } ) | OPT::INNER_SEP( "0pt" )
-                       | OPT::OUTER_SEP( "0pt" ) | p_options;
-        res.m_position = p_position;
+        std::string result = "";
 
-        res.m_name    = p_name;
-        res.m_content = EMPTY_STR;
-        return res;
+        if( !p_internal ) { result += "\\"; }
+        result += "coordinate";
+
+        if( !_options.empty( ) ) {
+            result += "[";
+            result += _options.to_string( );
+            result += "]";
+        }
+
+        if( m_name != EMPTY_STR ) { result += " (" + m_name + ")"; }
+        if( !m_position.empty( ) ) { result += " at (" + m_position.to_string( ) + ")"; }
+
+        if( !p_internal ) { result += ";"; }
+
+        return { { p_startIndent, result } };
     }
 
     render_t node_command::render( u64 p_time, u64 p_startIndent, bool p_internal ) const {
@@ -109,7 +116,7 @@ namespace TIKZ {
         }
 
         if( m_name != EMPTY_STR ) { result += " (" + m_name + ")"; }
-        result += " at (" + m_position.to_string( ) + ")";
+        if( !m_position.empty( ) ) { result += " at (" + m_position.to_string( ) + ")"; }
         result += " {" + m_content + "}";
 
         if( !p_internal ) { result += ";"; }

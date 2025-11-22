@@ -4,6 +4,8 @@
 #include <cstdio>
 #include <string>
 
+#include "defines.h"
+
 namespace TIKZ {
     struct tikz_point {
         double m_x;
@@ -34,15 +36,17 @@ namespace TIKZ {
                                                       double                            p_amount );
 
     class tikz_position {
-        enum class type { POINT, POLAR, NAME };
-        type _type = type::POINT;
+        enum class type { EMPTY, POINT, POLAR, NAME };
+        type _type = type::EMPTY;
 
         tikz_point  _point{ 0.0, 0.0 };
         std::string _name = EMPTY_STR;
 
       public:
-        inline tikz_position( tikz_point p_point = tikz_point{ 0.0, 0.0 } )
-            : _type{ type::POINT }, _point{ p_point } {
+        inline tikz_position( ) {
+        }
+
+        inline tikz_position( tikz_point p_point ) : _type{ type::POINT }, _point{ p_point } {
         }
 
         inline tikz_position( double p_angle, double p_length )
@@ -52,8 +56,13 @@ namespace TIKZ {
         inline tikz_position( const std::string& p_name ) : _type{ type::NAME }, _name{ p_name } {
         }
 
+        inline bool empty( ) const {
+            return _type == type::EMPTY;
+        }
+
         inline std::string to_string( ) const {
             switch( _type ) {
+            case type::EMPTY: return EMPTY_STR;
             case type::POLAR: {
                 char buffer[ 30 ] = { 0 };
                 snprintf( buffer, 29, "%5.3lf: %5.3lf", _point.m_x, _point.m_y );
