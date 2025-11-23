@@ -17,13 +17,14 @@ All of the files below are in `lib/`.
     - merge a list of slices into a new slice (`static graph_slice graph_slice::merged_slice( const std::deque<graph_slice>& p_primitiveSlices, fragmentco p_fragment )`)
     - group/merge a list of primitive slices into a sequence of one top, several pure/non-pure, and onte bottom slice (`static std::deque<graph_slice> graph_slice::top_pure_bot_decomp( const std::deque<graph_slice>& p_primitiveSlices )`)
 * General tikz Utility
-  - `tikz.h`: `color`, default color aliases, `tikz_point`, default line width aliases
-    - Open a new file `new_document` (also adds default tex code needed for a `standalone` and loads packages; ends with printing `\begin{document}`, close a document `finish_document` (also writes `\end{document}`
-    - Start a new page and a new tikzpicture `initialize_tikzpicture`; end a tikzpicture and a page `finish_tikzpicture`
-    - print coordinates, nodes, text, and other basic tikz shapes
+  - `tikz_util.h`: useful defines and type aliases/
+  -  `tikz_document.h`, `tikz_picture.h`, `tikz_command.h`: classes and structures to build a representation of a (set of) tikz pictures.
+  -  `tikz_option.h`: `tikz_option`, `kv_store`: general utility for representing key-value tikz options (and their dependencies on libraries/packages)
+  -  `tikz_color.h`: `color`, default color aliases.
+  -  `tikz_point.h`: `tikz_point`, `tikz_position`, general utility to work with positions.
 * Application-specific tikz Code Generation
+  - `tikz_stylized_string.h`: `stylized_string` data structure to represent a string to be displayed either just by its name or by its individual characters
   - `tikz_string.h`: generate pictures involving string or sequence data.
-    - `stylized_string`: data structure to represent a string to be displayed either just by its name or by its individual characters
     - `void print_[vertical_]string( FILE* p_out, const stylized_string& p_S, tikz_point p_StopLeft )`: writes tikz code to print the given string (vertically).
     - `void print_matched_string_pair( FILE* p_out, const stylized_string& p_P, tikz_point p_PtopLeft, const stylized_string& p_T, tikz_point p_TtopLeft, color p_bgColor )`: prints two strings inside of a "glow bubble" and addes thin lines between matching pairs of characters. (See [[CKW25, Figure 4, colored boxes]](https://arxiv.org/abs/2510.17752) for an example.)
     - `void print_separator( FILE* p_out, tikz_point p_PtopLeft, tikz_point p_TtopLeft, color p_color )`: prints separator of a breakpoint representation (withoult a label; See [[CKW25, Figure 4]](https://arxiv.org/abs/2510.17752) for an example)
