@@ -1,11 +1,13 @@
+#include "tikz_command.h"
 #include "tikz_picture.h"
 
 namespace TIKZ {
-    picture::picture( kv_store p_options )
-        : _packages{ }, _libraries{ }, _options{ p_options }, _content{ } {
+    picture::picture( const kv_store& p_options, const kv_store& p_basicOptions )
+        : _packages{ }, _libraries{ }, _options{ p_basicOptions | p_options }, _content{ } {
     }
 
-    render_t picture::render( u64 p_time, u64 p_startIndent ) const {
+    render_t picture::render( u64 p_time, u64 p_startIndent,
+                              const std::string& p_environName ) const {
         render_t result{ };
 
         if( _content.empty( ) ) {
@@ -17,7 +19,7 @@ namespace TIKZ {
             result.append_range( cmd->render( p_time, p_startIndent + 1 ) );
         }
 
-        std::string env = "\\begin{tikzpicture}";
+        std::string env = "\\begin{" + p_environName + "}";
         if( !_options.empty( ) ) {
             env += "[";
             env += _options.to_string( );
@@ -25,9 +27,25 @@ namespace TIKZ {
         }
 
         result.push_front( { p_startIndent, env } );
-        result.push_back( { p_startIndent, "\\end{tikzpicture}" } );
+        result.push_back( { p_startIndent, "\\end{" + p_environName + "}" } );
 
         return result;
+    }
+
+    std::set<std::string> picture::libraries( ) const {
+        std::set<std::string> res{ };
+        res.insert_range( _libraries );
+        res.insert_range( _options.libraries( ) );
+        for( const auto& cmd : _content ) { res.insert_range( cmd->libraries( ) ); }
+        return res;
+    }
+
+    std::set<std::string> picture::packages( ) const {
+        std::set<std::string> res{ };
+        res.insert_range( _packages );
+        res.insert_range( _options.packages( ) );
+        for( const auto& cmd : _content ) { res.insert_range( cmd->packages( ) ); }
+        return res;
     }
 
     void picture::add_package( const std::string& p_package ) {
@@ -43,6 +61,10 @@ namespace TIKZ {
         _content.emplace_back( p_command );
     }
 
+    void picture::add_scope( const picture& p_content ) {
+        _content.emplace_back( std::make_shared<scope_command>( p_content ) );
+    }
+
     void picture::place_coordinate( tikz_position p_position, const std::string& p_name,
                                     const kv_store& p_options ) {
         _content.emplace_back(
@@ -53,6 +75,16 @@ namespace TIKZ {
                               const kv_store& p_options, const std::string& p_name ) {
         _content.emplace_back(
             std::make_shared<node_command>( p_position, p_content, p_options, p_name ) );
+    }
+
+    void picture::place_debug_point( tikz_position p_position ) {
+        place_node( p_position, EMPTY_STR,
+                    OPT::FILL | OPT::CIRCLE | OPT::COLOR( COLOR_C3 ) | OPT::INNER_SEP( "1pt" ) );
+    }
+
+    void picture::place_text( const std::string& p_text, tikz_position p_position,
+                              const kv_store& p_options, const std::string& p_name ) {
+        place_node( p_position, p_text, p_options, p_name );
     }
 
     void picture::place_line( tikz_position p_topLeft, tikz_position p_bottomRight,

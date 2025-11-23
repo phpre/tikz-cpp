@@ -1,14 +1,12 @@
 #pragma once
-
 #include <deque>
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
 
 #include "defines.h"
-#include "tikz.h"
 #include "tikz_option.h"
+#include "tikz_picture.h"
 
 namespace TIKZ {
     struct command {
@@ -19,7 +17,7 @@ namespace TIKZ {
         std::set<std::string> _packages;  // dependencies
         kv_store              _options;
 
-        inline command( kv_store p_options = { }, std::set<u64> p_times = { } )
+        inline command( kv_store p_options = { }, const std::set<u64>& p_times = { } )
             : m_times{ p_times }, _libraries{ }, _packages{ }, _options{ p_options } {
         }
 
@@ -59,6 +57,31 @@ namespace TIKZ {
         virtual render_t render_op( u64 p_time = 0, u64 p_startIndent = 2 ) const = 0;
     };
 
+    struct arc_to_operation : public path_operation {
+        std::set<u64> m_times; // time points at which this command is active
+
+        double m_startAngle;
+        double m_endAngle;
+        double m_radius;
+
+      public:
+        inline arc_to_operation( double p_startAngle, double p_endAngle, double p_radius,
+                                 const std::set<u64>& p_times = { } )
+            : path_operation( tikz_position{ } ), m_times{ p_times }, m_startAngle{ p_startAngle },
+              m_endAngle{ p_endAngle }, m_radius{ p_radius } {
+        }
+
+        virtual inline std::set<std::string> libraries( ) const {
+            return { };
+        }
+
+        virtual inline std::set<std::string> packages( ) const {
+            return { };
+        }
+
+        virtual render_t render_op( u64 p_time = 0, u64 p_startIndent = 2 ) const;
+    };
+
     struct move_to_operation : public path_operation {
         std::set<u64> m_times; // time points at which this command is active
       protected:
@@ -66,7 +89,7 @@ namespace TIKZ {
 
       public:
         inline move_to_operation( tikz_position p_position, kv_store p_options = { },
-                                  std::set<u64> p_times = { } )
+                                  const std::set<u64>& p_times = { } )
             : path_operation( p_position ), m_times{ p_times }, _options{ p_options } {
         }
 
@@ -87,7 +110,7 @@ namespace TIKZ {
 
     struct line_to_operation : public move_to_operation {
         inline line_to_operation( tikz_position p_position, kv_store p_options = { },
-                                  std::set<u64> p_times = { } )
+                                  const std::set<u64>& p_times = { } )
             : move_to_operation( p_position, p_options, p_times ) {
         }
 
@@ -95,7 +118,7 @@ namespace TIKZ {
     };
 
     struct rectangle_operation : public move_to_operation {
-        inline rectangle_operation( tikz_position p_position, std::set<u64> p_times = { } )
+        inline rectangle_operation( tikz_position p_position, const std::set<u64>& p_times = { } )
             : move_to_operation( p_position, { }, p_times ) {
         }
 
@@ -108,7 +131,7 @@ namespace TIKZ {
 
         inline path_command( tikz_position                               p_position,
                              std::deque<std::shared_ptr<path_operation>> p_operations,
-                             const kv_store& p_options = { }, std::set<u64> p_times = { } )
+                             const kv_store& p_options = { }, const std::set<u64>& p_times = { } )
             : command( p_options, p_times ), m_startPosition{ p_position },
               m_operations{ p_operations } {
         }
@@ -136,7 +159,8 @@ namespace TIKZ {
         std::string m_name = EMPTY_STR;
 
         inline coordinate_command( tikz_position p_position, const std::string& p_name,
-                                   const kv_store& p_options = { }, std::set<u64> p_times = { } )
+                                   const kv_store&      p_options = { },
+                                   const std::set<u64>& p_times   = { } )
             : command( p_options, p_times ), path_operation( p_position ), m_name{ p_name } {
         }
 
@@ -169,7 +193,7 @@ namespace TIKZ {
 
         inline node_command( tikz_position p_position, const std::string& p_content = EMPTY_STR,
                              const kv_store& p_options = { }, const std::string& p_name = EMPTY_STR,
-                             std::set<u64> p_times = { } )
+                             const std::set<u64>& p_times = { } )
             : coordinate_command( p_position, p_name, p_options, p_times ), m_content{ p_content } {
         }
 
@@ -179,6 +203,11 @@ namespace TIKZ {
     struct math_command : public command {
         std::string m_name;
         std::string m_macro;
+
+        inline math_command( const std::string& p_name, const std::string& p_macro,
+                             const kv_store& p_options = { }, const std::set<u64>& p_times = { } )
+            : command( p_options, p_times ), m_name{ p_name }, m_macro{ p_macro } {
+        }
 
         virtual inline render_t render( u64 p_time = 0, u64 p_startIndent = 1 ) const {
             if( p_time && !m_times.count( p_time ) ) { return { }; }
@@ -191,11 +220,18 @@ namespace TIKZ {
         }
     };
 
-    /*
     struct scope_command : public command {
-        virtual render_t render( u64 p_time = 0, u64 p_startIndent = 1 ) const {
-            return { };
+      protected:
+        picture _content;
+
+      public:
+        inline scope_command( const picture& p_content, const std::set<u64>& p_times = { } )
+            : command( { }, p_times ), _content{ p_content } {
         }
+
+        virtual std::set<std::string> libraries( ) const;
+        virtual std::set<std::string> packages( ) const;
+
+        virtual render_t render( u64 p_time = 0, u64 p_startIndent = 1 ) const;
     };
-    */
 } // namespace TIKZ

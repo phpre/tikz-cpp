@@ -1,9 +1,8 @@
 #pragma once
-
-#include <cstdio>
 #include <string>
-#include "old.h"
-#include "tikz.h"
+
+#include "tikz_option.h"
+#include "tikz_picture.h"
 
 namespace TIKZ {
     struct vertex {
@@ -28,17 +27,17 @@ namespace TIKZ {
         double m_innerSep  = 0.0;
         double m_outerSep  = 0.0;
 
-        std::string m_inner = EMPTY_STR;
+        kv_store m_inner = { };
 
-        static inline std::string shape_string( shape_t p_shape ) {
+        static inline kv_store shape_string( shape_t p_shape ) {
             switch( p_shape ) {
             default:
-            case ST_CIRCLE: return "circle";
-            case ST_RECTANGLE: return "rectangle, rounded corners=.85pt";
+            case ST_CIRCLE: return OPT::CIRCLE;
+            case ST_RECTANGLE: return OPT::RECTANGLE | OPT::ROUNDED_CORNERS( ".85pt" );
             case ST_TRIANGLE_DOWN:
-                return "regular polygon, regular polygon sides=3, shape border rotate=180, rounded corners=.85pt";
-            case ST_TRIANGLE_UP:
-                return "regular polygon,regular polygon sides=3, rounded corners=.85pt";
+                return OPT::REGULAR_TRIANGLE | OPT::ROUNDED_CORNERS( ".85pt" )
+                       | OPT::SHAPE_BORDER_ROTATE( "180" );
+            case ST_TRIANGLE_UP: return OPT::REGULAR_TRIANGLE | OPT::ROUNDED_CORNERS( ".85pt" );
             }
         }
 
@@ -67,12 +66,12 @@ namespace TIKZ {
             res.m_fillColor  = p_color;
             res.m_innerSep   = p_radius;
             res.m_outerSep   = p_margin;
-            res.m_inner      = p_inner.to_string( );
+            res.m_inner      = p_inner.compile( );
 
             return res;
         }
 
-        std::string to_string( ) const;
+        kv_store compile( ) const;
     };
 
     struct vertex_grid {
@@ -101,62 +100,41 @@ namespace TIKZ {
                    + ( tikz_point{ 0, m_distance.m_y } * p_posY );
         }
 
-        void print_coordinates( FILE* p_out, u64 p_sizeX, u64 p_sizeY, s32 p_startX = 0,
-                                s32 p_startY = 0, const std::string& p_extraOptions = EMPTY_STR,
-                                u64 p_startIndent = 1, u64 p_indent = 4 ) const;
+        void place_coordinates( picture& p_pic, u64 p_sizeX, u64 p_sizeY, s32 p_startX = 0,
+                                s32 p_startY = 0, const kv_store& p_options = { } ) const;
 
-        void print_vertex_on_coordinates( FILE* p_out, const vertex& p_vertex, s32 p_posX = 0,
-                                          s32                p_posY         = 0,
-                                          const std::string& p_extraOptions = EMPTY_STR,
-                                          u64 p_startIndent = 1, u64 p_indent = 4 ) const;
+        void place_vertex_on_coordinates( picture& p_pic, const vertex& p_vertex, s32 p_posX = 0,
+                                          s32 p_posY = 0, const kv_store& p_options = { } ) const;
 
-        void print_vertices_on_coordinates( FILE* p_out, const vertex& p_vertex, u64 p_sizeX,
+        void place_vertices_on_coordinates( picture& p_pic, const vertex& p_vertex, u64 p_sizeX,
                                             u64 p_sizeY, s32 p_startX = 0, s32 p_startY = 0,
-                                            const std::string& p_extraOptions = EMPTY_STR,
-                                            u64 p_startIndent = 1, u64 p_indent = 4 ) const;
+                                            const kv_store& p_options = { } ) const;
 
-        void print_diagonal_on_coordinates( FILE* p_out, const vertex& p_vertex, u64 p_length,
+        void place_diagonal_on_coordinates( picture& p_pic, const vertex& p_vertex, u64 p_length,
                                             s32 p_startX = 0, s32 p_startY = 0,
-                                            const std::string& p_extraOptions = EMPTY_STR,
-                                            u64 p_startIndent = 1, u64 p_indent = 4 ) const;
+                                            const kv_store& p_options = { } ) const;
 
-        void print_new_vertex( FILE* p_out, const vertex& p_vertex, s32 p_posX = 0, s32 p_posY = 0,
-                               const std::string& p_extraOptions = EMPTY_STR, u64 p_startIndent = 1,
-                               u64 p_indent = 4 ) const;
+        void place_new_vertex( picture& p_pic, const vertex& p_vertex, s32 p_posX = 0,
+                               s32 p_posY = 0, const kv_store& p_options = { } ) const;
 
-        void print_vertices( FILE* p_out, const vertex& p_vertex, u64 p_sizeX, u64 p_sizeY,
+        void place_vertices( picture& p_pic, const vertex& p_vertex, u64 p_sizeX, u64 p_sizeY,
                              s32 p_startX = 0, s32 p_startY = 0,
-                             const std::string& p_extraOptions = EMPTY_STR, u64 p_startIndent = 1,
-                             u64 p_indent = 4 ) const;
+                             const kv_store& p_options = { } ) const;
 
-        void print_diagonal( FILE* p_out, const vertex& p_vertex, u64 p_length, s32 p_startX = 0,
-                             s32 p_startY = 0, const std::string& p_extraOptions = EMPTY_STR,
-                             u64 p_startIndent = 1, u64 p_indent = 4 ) const;
+        void place_diagonal( picture& p_pic, const vertex& p_vertex, u64 p_length, s32 p_startX = 0,
+                             s32 p_startY = 0, const kv_store& p_options = { } ) const;
     };
 
-    void print_vertex( FILE* p_out, const std::string& p_position, const vertex& p_vertex,
-                       const std::string& p_name         = EMPTY_STR,
-                       const std::string& p_extraOptions = EMPTY_STR, u64 p_startIndent = 1,
-                       u64 p_indent = 4 );
+    void place_vertex( picture& p_pic, tikz_position p_position, const vertex& p_vertex,
+                       const std::string& p_name = EMPTY_STR, const kv_store& p_options = { } );
 
-    void print_vertex( FILE* p_out, tikz_point p_position, const vertex& p_vertex,
-                       const std::string& p_name         = EMPTY_STR,
-                       const std::string& p_extraOptions = EMPTY_STR, u64 p_startIndent = 1,
-                       u64 p_indent = 4 );
+    void place_arrow( picture& p_pic, tikz_position p_startPos, tikz_position p_endPos,
+                      const kv_store& p_options = { },
+                      const kv_store& p_basicOptions
+                      = OPT::LW_SUPPORT_LINE | OPT::DRAW( COLOR_TEXT ) | OPT::ARR_TIP_LATEX );
 
-    void print_arrow( FILE* p_out, const std::string& p_startPos, const std::string& p_endPos,
-                      const std::string& p_lineWidth = LW_SUPPORT_LINE, color p_color = COLOR_TEXT,
-                      u64 p_startIndent = 1, u64 p_indent = 4 );
-    void print_arrow( FILE* p_out, tikz_point p_startPos, tikz_point p_endPos,
-                      const std::string& p_lineWidth = LW_SUPPORT_LINE, color p_color = COLOR_TEXT,
-                      u64 p_startIndent = 1, u64 p_indent = 4 );
-
-    void print_selected_arrow( FILE* p_out, const std::string& p_startPos,
-                               const std::string& p_endPos, color p_lineColor, color p_fillColor,
-                               double p_angle = 0, u64 p_startIndent = 1, u64 p_indent = 4 );
-
-    void print_selected_arrow( FILE* p_out, tikz_point p_startPos, tikz_point p_endPos,
+    void place_selected_arrow( picture& p_pic, tikz_position p_startPos, tikz_position p_endPos,
                                color p_lineColor, color p_fillColor, double p_angle = 0,
-                               u64 p_startIndent = 1, u64 p_indent = 4 );
+                               const kv_store& p_options = { } );
 
 } // namespace TIKZ

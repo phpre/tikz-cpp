@@ -166,13 +166,7 @@ std::deque<breakpoint_repn> compute_occs_with_edits( const std::string& p_P, con
 }
 
 // compute A( P[ l .. r) )
-breakpoint_repn breakpoint_slice( const breakpoint_repn& p_brpts, fragmentco p_frag,
-                                  bool p_print ) {
-    for( auto i : p_brpts ) {
-        PRINT_MACRO( "(%llu %c, %llu %c) ", i.m_posP, i.m_charP, i.m_posT, i.m_charT );
-    }
-    PRINT_MACRO( "\n" );
-
+breakpoint_repn breakpoint_slice( const breakpoint_repn& p_brpts, fragmentco p_frag ) {
     breakpoint_repn result{ };
 
     s32 shift = p_brpts.front( ).shift_after( );
@@ -197,23 +191,11 @@ breakpoint_repn breakpoint_slice( const breakpoint_repn& p_brpts, fragmentco p_f
             breakpoint{ p_frag.m_end,
                         static_cast<u64>( p_frag.m_end - result.back( ).shift_after( ) ), 0, 0 } );
     }
-
-    for( auto i : result ) {
-        PRINT_MACRO( "(%llu %c, %llu %c) ", i.m_posP, i.m_charP, i.m_posT, i.m_charT );
-    }
-    PRINT_MACRO( "\n" );
-
     return result;
 }
 
-fragmentco align_fragment( const breakpoint_repn& p_brpts, fragmentco p_frag, bool p_print ) {
+fragmentco align_fragment( const breakpoint_repn& p_brpts, fragmentco p_frag ) {
     auto sl = breakpoint_slice( p_brpts, p_frag );
-    PRINT_MACRO( "  " );
-    for( auto i : sl ) {
-        PRINT_MACRO( "(%llu %c, %llu %c) ", i.m_posP, i.m_charP, i.m_posT, i.m_charT );
-    }
-    PRINT_MACRO( "\n" );
-
     return fragmentco{ sl.front( ).m_posT, sl.back( ).m_posT };
 }
 

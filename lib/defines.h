@@ -1,9 +1,6 @@
 #pragma once
-
+#include <deque>
 #include <string>
-
-#define PRINT_MACRO \
-    if( p_print ) printf
 
 typedef uint_fast8_t        u8;
 typedef int_fast8_t         s8;
@@ -15,8 +12,7 @@ typedef uint_fast64_t       u64;
 typedef int_fast64_t        s64;
 typedef std::pair<u64, u64> point;
 
+typedef std::deque<std::pair<u64, std::string>> render_t;
+
 constexpr std::string EMPTY_STR = "";
 constexpr std::string WILDCARD  = "*";
-
-#define NO_OPTS \
-    {}

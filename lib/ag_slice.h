@@ -1,9 +1,8 @@
 #pragma once
-
 #include <deque>
-
 #include "breakpoint.h"
 #include "defines.h"
+#include "fragmentco.h"
 
 typedef u64 gs_flag_t;
 gs_flag_t   merge_flags( gs_flag_t p_a, gs_flag_t p_b );
@@ -27,33 +26,15 @@ struct graph_slice {
 
     std::deque<point> m_innerPortals; // column-wise top-to-bottom; columns left-to-right
 
-    inline point top_left( ) const {
-        return m_topFrontier.front( );
-    }
+    point top_left( ) const;
+    point bottom_right( ) const;
 
-    inline point bottom_right( ) const {
-        return m_bottomFrontier.front( );
-    }
+    fragmentco fragment_p( ) const;
+    fragmentco original_fragment_p( ) const;
+    fragmentco fragment_t( ) const;
 
-    inline fragmentco fragment_p( ) const {
-        return fragmentco{ top_left( ).second, bottom_right( ).second };
-    }
-
-    inline fragmentco original_fragment_p( ) const {
-        return m_originalFragP;
-    }
-
-    inline fragmentco fragment_t( ) const {
-        return fragmentco{ top_left( ).first, bottom_right( ).first };
-    }
-
-    inline u64 width( ) const {
-        return fragment_t( ).length( );
-    }
-
-    inline u64 height( ) const {
-        return fragment_p( ).length( );
-    }
+    u64 width( ) const;
+    u64 height( ) const;
 
     void merge_left( const graph_slice& p_other );
     void merge_right( const graph_slice& p_other );

@@ -1,6 +1,32 @@
-#include <vector>
-
 #include "ag_slice.h"
+
+point graph_slice::top_left( ) const {
+    return m_topFrontier.front( );
+}
+
+point graph_slice::bottom_right( ) const {
+    return m_bottomFrontier.front( );
+}
+
+fragmentco graph_slice::fragment_p( ) const {
+    return fragmentco{ top_left( ).second, bottom_right( ).second };
+}
+
+fragmentco graph_slice::original_fragment_p( ) const {
+    return m_originalFragP;
+}
+
+fragmentco graph_slice::fragment_t( ) const {
+    return fragmentco{ top_left( ).first, bottom_right( ).first };
+}
+
+u64 graph_slice::width( ) const {
+    return fragment_t( ).length( );
+}
+
+u64 graph_slice::height( ) const {
+    return fragment_p( ).length( );
+}
 
 void graph_slice::merge_left( const graph_slice& p_other ) {
     m_topFrontier.prepend_range( p_other.m_topFrontier );

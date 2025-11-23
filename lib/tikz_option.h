@@ -1,13 +1,11 @@
 #pragma once
-
 #include <deque>
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
 
 #include "defines.h"
-#include "tikz.h"
+#include "tikz_color.h"
 
 namespace TIKZ {
     struct kv_store;
@@ -78,9 +76,13 @@ namespace TIKZ {
         const tikz_option DRAW{ "draw", COLOR_TEXT.to_string( ) };
         const tikz_option FILL{ "fill", COLOR_TEXT.to_string( ) };
 
+        const tikz_option CLIP{ "clip" };
+        const tikz_option TRANSFORM_SHAPE{ "transform shape" };
+
         const tikz_option DOUBLE{ "double", COLOR_WHITE.to_string( ) };
         const tikz_option DOUBLE_DISTANCE{ "double distance", "1.25pt" };
 
+        const tikz_option SHAPE_BORDER_ROTATE{ "shape border rotate", "0" };
         const tikz_option ROTATE{ "rotate", "0" };
         const tikz_option XSCALE{ "xscale", "1" };
         const tikz_option YSCALE{ "yscale", "1" };
@@ -119,7 +121,13 @@ namespace TIKZ {
         const tikz_option ANCHOR_SOUTH{ "anchor", "south" };
 
         const tikz_option CIRCLE{ "circle" };
+        const tikz_option RECTANGLE{ "rectangle" };
         const tikz_option CROSS_OUT{ "cross out", EMPTY_STR, EMPTY_STR, { "shapes.misc" } };
-    } // namespace OPT
+        const tikz_option REGULAR_POLYGON{
+            "regular polygon, regular polygon sides", "5", EMPTY_STR, { "shapes.geometric" } };
+        const tikz_option REGULAR_TRIANGLE{
+            "regular polygon, regular polygon sides", "3", "3", { "shapes.geometric" } };
 
+        const tikz_option RADIUS{ "radius", "3pt" };
+    } // namespace OPT
 } // namespace TIKZ

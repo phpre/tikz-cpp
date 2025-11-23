@@ -24,6 +24,15 @@ namespace TIKZ {
         return result;
     }
 
+    render_t arc_to_operation::render_op( u64 p_time, u64 p_startIndent ) const {
+        if( p_time && !m_times.count( p_time ) ) { return { }; }
+        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
+
+        char buf[ 50 ];
+        snprintf( buf, 49, "arc (%5.3lf:%5.3lf:%5.3lfpt)", m_startAngle, m_endAngle, m_radius );
+        return { { p_startIndent, std::string{ buf } } };
+    }
+
     render_t move_to_operation::render_op( u64 p_time, u64 p_startIndent ) const {
         if( p_time && !m_times.count( p_time ) ) { return { }; }
         if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
@@ -123,4 +132,17 @@ namespace TIKZ {
 
         return { { p_startIndent, result } };
     }
+
+    std::set<std::string> scope_command::libraries( ) const {
+        return _content.libraries( );
+    }
+
+    std::set<std::string> scope_command::packages( ) const {
+        return _content.packages( );
+    }
+
+    render_t scope_command::render( u64 p_time, u64 p_startIndent ) const {
+        return _content.render( p_time, p_startIndent, "scope" );
+    }
+
 } // namespace TIKZ

@@ -1,5 +1,4 @@
 #pragma once
-
 #include <deque>
 #include <string>
 
@@ -77,11 +76,9 @@ inline std::deque<breakpoint_repn> compute_occs( const std::string& p_P, const s
 }
 
 // compute A( P[ l .. r) )
-breakpoint_repn breakpoint_slice( const breakpoint_repn& p_brpts, fragmentco p_frag,
-                                  bool p_print = false );
+breakpoint_repn breakpoint_slice( const breakpoint_repn& p_brpts, fragmentco p_frag );
 
-fragmentco align_fragment( const breakpoint_repn& p_brpts, fragmentco p_frag,
-                           bool p_print = false );
+fragmentco align_fragment( const breakpoint_repn& p_brpts, fragmentco p_frag );
 
 // normalize breakpoint representation s.t. first breakpoint is at (0,0)
 breakpoint_repn breakpoint_normalize( const breakpoint_repn& p_brpts );
