@@ -2,8 +2,9 @@
 #include <cstdio>
 #include <string>
 
-#include "ag_slice.h"
-#include "breakpoint.h"
+#include "alg_ag_slice.h"
+#include "alg_breakpoint.h"
+#include "alg_trie.h"
 #include "defines.h"
 #include "tikz_graph.h"
 #include "tikz_picture.h"
@@ -104,4 +105,7 @@ namespace TIKZ {
                                       double p_labelDistance = DEFAULT_SLICE_SPACING,
                                       double p_sliceSpacing  = DEFAULT_SLICE_SPACING );
 
+    void place_trie( picture& p_pic, const trie& p_trie, tikz_point p_topLeft,
+                     double p_distX = 2.5 * CHAR_WIDTH, double p_distY = -1.5 * CHAR_HEIGHT,
+                     const std::string& p_name = EMPTY_STR );
 } // namespace TIKZ

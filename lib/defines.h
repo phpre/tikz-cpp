@@ -16,3 +16,10 @@ typedef std::deque<std::pair<u64, std::string>> render_t;
 
 constexpr std::string EMPTY_STR = "";
 constexpr std::string WILDCARD  = "*";
+
+namespace ALG {
+}
+
+namespace TIKZ {
+    using namespace ALG;
+}

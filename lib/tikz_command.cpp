@@ -71,6 +71,44 @@ namespace TIKZ {
         return { { p_startIndent, res } };
     }
 
+    render_t hv_line_to_operation::render_op( u64 p_time, u64 p_startIndent ) const {
+        if( p_time && !m_times.count( p_time ) ) { return { }; }
+        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
+
+        std::string res{ };
+        if( !_options.empty( ) ) {
+            res += "[";
+            res += _options.to_string( );
+            res += "]";
+        }
+        if( !m_position.empty( ) ) {
+            res += "-| (" + m_position.to_string( ) + ")";
+        } else {
+            res += "-| cycle";
+        }
+
+        return { { p_startIndent, res } };
+    }
+
+    render_t vh_line_to_operation::render_op( u64 p_time, u64 p_startIndent ) const {
+        if( p_time && !m_times.count( p_time ) ) { return { }; }
+        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
+
+        std::string res{ };
+        if( !_options.empty( ) ) {
+            res += "[";
+            res += _options.to_string( );
+            res += "]";
+        }
+        if( !m_position.empty( ) ) {
+            res += "|- (" + m_position.to_string( ) + ")";
+        } else {
+            res += "|- cycle";
+        }
+
+        return { { p_startIndent, res } };
+    }
+
     render_t rectangle_operation::render_op( u64 p_time, u64 p_startIndent ) const {
         if( p_time && !m_times.count( p_time ) ) { return { }; }
         if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }

@@ -2,8 +2,8 @@
 #include <map>
 #include <string>
 
+#include "alg_fragmentco.h"
 #include "defines.h"
-#include "fragmentco.h"
 #include "tikz_color.h"
 #include "tikz_util.h"
 

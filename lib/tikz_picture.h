@@ -52,6 +52,12 @@ namespace TIKZ {
         void place_line( tikz_position p_topLeft, tikz_position p_bottomRight,
                          const kv_store& p_options = OPT::DRAW );
 
+        void place_vh_line( tikz_position p_topLeft, tikz_position p_bottomRight,
+                            const kv_store& p_options = OPT::DRAW );
+
+        void place_hv_line( tikz_position p_topLeft, tikz_position p_bottomRight,
+                            const kv_store& p_options = OPT::DRAW );
+
         void place_rectangle( tikz_position p_topLeft, tikz_position p_bottomRight,
                               const kv_store& p_options = OPT::ROUNDED_CORNERS | OPT::DRAW );
 

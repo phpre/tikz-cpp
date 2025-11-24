@@ -28,9 +28,17 @@ void wildcards_picture( const std::string& p_name = "g01.tex" ) {
 }
 
 void trie_picture( const std::string& p_name = "g02.tex" ) {
+    trie                    T;
+    std::deque<std::string> str{ "abab", "bab", "bba", "aaab", "cab", "cba", "aa" };
+    // std::deque<std::string> str{ "aaa", "aab" };
+
     document out{ };
-    picture  p1{ };
-    out.add_picture( p1 );
+    for( const auto& s : str ) {
+        picture p1{ };
+        T.insert( s );
+        place_trie( p1, T, tikz_point{ 0, 0 } );
+        out.add_picture( p1 );
+    }
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
@@ -52,6 +60,6 @@ int main( int p_argc, char* p_argv[] ) {
     }
 
     wildcards_picture( );
-    // trie_picture( );
+    trie_picture( );
     // multi_trie_picture( );
 }

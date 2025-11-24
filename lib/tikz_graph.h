@@ -18,6 +18,7 @@ namespace TIKZ {
             ST_RECTANGLE,
             ST_TRIANGLE_UP,
             ST_TRIANGLE_DOWN,
+            ST_CROSS,
         } m_shape;
 
         color m_drawColor = COLOR_BLACK;
@@ -38,6 +39,7 @@ namespace TIKZ {
                 return OPT::REGULAR_TRIANGLE | OPT::ROUNDED_CORNERS( ".85pt" )
                        | OPT::SHAPE_BORDER_ROTATE( "180" );
             case ST_TRIANGLE_UP: return OPT::REGULAR_TRIANGLE | OPT::ROUNDED_CORNERS( ".85pt" );
+            case ST_CROSS: return OPT::CROSS_OUT;
             }
         }
 
@@ -45,12 +47,17 @@ namespace TIKZ {
                                                    double p_radius = 1.0, double p_margin = .75,
                                                    shape_t p_shape = vertex::ST_CIRCLE ) {
             vertex res{ };
-
-            res.m_vertexType = vertex::VT_FILL;
-            res.m_shape      = p_shape;
-            res.m_fillColor  = p_color;
-            res.m_innerSep   = p_radius;
-            res.m_outerSep   = p_margin;
+            if( p_shape == ST_CROSS ) {
+                res.m_vertexType = vertex::VT_DRAW;
+                res.m_drawColor  = p_color;
+                res.m_lineWidth  = 2 * p_radius - p_margin;
+            } else {
+                res.m_vertexType = vertex::VT_FILL;
+                res.m_fillColor  = p_color;
+            }
+            res.m_shape    = p_shape;
+            res.m_innerSep = p_radius;
+            res.m_outerSep = p_margin;
 
             return res;
         }

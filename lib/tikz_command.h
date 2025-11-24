@@ -117,6 +117,24 @@ namespace TIKZ {
         virtual render_t render_op( u64 p_time = 0, u64 p_startIndent = 2 ) const;
     };
 
+    struct vh_line_to_operation : public move_to_operation {
+        inline vh_line_to_operation( tikz_position p_position, kv_store p_options = { },
+                                     const std::set<u64>& p_times = { } )
+            : move_to_operation( p_position, p_options, p_times ) {
+        }
+
+        virtual render_t render_op( u64 p_time = 0, u64 p_startIndent = 2 ) const;
+    };
+
+    struct hv_line_to_operation : public move_to_operation {
+        inline hv_line_to_operation( tikz_position p_position, kv_store p_options = { },
+                                     const std::set<u64>& p_times = { } )
+            : move_to_operation( p_position, p_options, p_times ) {
+        }
+
+        virtual render_t render_op( u64 p_time = 0, u64 p_startIndent = 2 ) const;
+    };
+
     struct rectangle_operation : public move_to_operation {
         inline rectangle_operation( tikz_position p_position, const std::set<u64>& p_times = { } )
             : move_to_operation( p_position, { }, p_times ) {

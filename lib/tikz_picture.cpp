@@ -94,6 +94,20 @@ namespace TIKZ {
         _content.emplace_back( std::make_shared<path_command>( p_topLeft, line, p_options ) );
     }
 
+    void picture::place_vh_line( tikz_position p_topLeft, tikz_position p_bottomRight,
+                                 const kv_store& p_options ) {
+        std::deque<std::shared_ptr<path_operation>> line{
+            std::make_shared<vh_line_to_operation>( p_bottomRight ) };
+        _content.emplace_back( std::make_shared<path_command>( p_topLeft, line, p_options ) );
+    }
+
+    void picture::place_hv_line( tikz_position p_topLeft, tikz_position p_bottomRight,
+                                 const kv_store& p_options ) {
+        std::deque<std::shared_ptr<path_operation>> line{
+            std::make_shared<hv_line_to_operation>( p_bottomRight ) };
+        _content.emplace_back( std::make_shared<path_command>( p_topLeft, line, p_options ) );
+    }
+
     void picture::place_rectangle( tikz_position p_topLeft, tikz_position p_bottomRight,
                                    const kv_store& p_options ) {
         std::deque<std::shared_ptr<path_operation>> rect{

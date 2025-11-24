@@ -1,9 +1,10 @@
 #pragma once
-
-#include "ag_slice.h"
-#include "breakpoint.h"
 #include "defines.h"
-#include "fragmentco.h"
+
+#include "alg_ag_slice.h"
+#include "alg_breakpoint.h"
+#include "alg_fragmentco.h"
+#include "alg_trie.h"
 
 #include "tikz_color.h"
 #include "tikz_command.h"
