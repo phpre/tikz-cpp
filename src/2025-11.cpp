@@ -8,21 +8,37 @@ std::string COLOR_PATH   = TEX_DIR + "color";
 std::string MACRO_PATH   = TEX_DIR + "macros";
 std::string PROGRAM_NAME = "";
 
-std::string T = "abab" + WILDCARD + "abcaab" + WILDCARD + "a" + WILDCARD + "ab";
-std::string P = "abcab";
+std::string T = "b" + WILDCARD + WILDCARD + WILDCARD + "a" + WILDCARD + "ab" + WILDCARD + WILDCARD
+                + "a" + WILDCARD + "a";
+std::string P = "bcaaa";
 
-const stylized_string T_NAME{ T, std::string{ "T" },
-                              str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
-const stylized_string T_WC = T_NAME.add_wildcards( T, true );
-const stylized_string P_NAME{ P, std::string{ "P" }, str_displ_t::FRAGMENT };
+auto T_NAME = stylized_string{ T, "T", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS }
+                  .add_wildcards( T, true );
+auto P_NAME = stylized_string{ P, "P", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
+
+auto OCCS_P_T     = compute_occs( P, T, WILDCARD );
+auto OCCS_P_T_ALL = compute_occs_with_mism( P, T, P.size( ), WILDCARD );
 
 void wildcards_picture( const std::string& p_name = "g01.tex" ) {
     document out{ };
-    picture  p1{ };
+    for( u64 y = 0; y < OCCS_P_T.size( ); ++y ) {
+        picture p2{ };
+        place_alignment( p2, P_NAME, tikz_point{ 0.0, -3.0 * y }, T_NAME,
+                         tikz_point{ 0.0, -3.0 * y + 1 }, OCCS_P_T[ y ], false, true, true, true );
+        out.add_picture( p2 );
+    }
+    document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
+}
 
-    place_string( p1, T_WC.slice( fragmentco{ 0, T.size( ) } ), tikz_point{ 0, 0 } );
-
-    out.add_picture( p1 );
+void wildcards_picture2( const std::string& p_name = "g01b.tex" ) {
+    document out{ };
+    for( u64 y = 0; y < OCCS_P_T_ALL.size( ); ++y ) {
+        picture p2{ };
+        place_alignment( p2, P_NAME, tikz_point{ 0.0, -3.0 * y }, T_NAME,
+                         tikz_point{ 0.0, -3.0 * y + 1 }, OCCS_P_T_ALL[ y ], false, true, true,
+                         true );
+        out.add_picture( p2 );
+    }
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
@@ -35,15 +51,18 @@ void trie_picture( const std::string& p_name = "g02.tex" ) {
     for( const auto& s : str ) {
         picture p1{ };
         T.insert( s );
-        place_trie( p1, T, tikz_point{ 0, 0 } );
+        place_trie_depth_labels( p1, T, tikz_point{ 0, CHAR_HEIGHT * 3 / 4 } );
+        auto tr = place_trie( p1, T );
+        place_trie_string_on_coordinates( p1, tr, s, OPT::COLOR( COLOR_C3 ) );
         out.add_picture( p1 );
     }
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
-void multi_trie_picture( const std::string& p_name = "g02.tex" ) {
-    document out{ };
-    picture  p1{ };
+void multi_trie_picture( const std::string& p_name = "g03.tex" ) {
+    std::deque<std::string> str{ "caa", "bcaa", "*bca", "****caa", "****bca" };
+    document                out{ };
+    picture                 p1{ };
     out.add_picture( p1 );
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
@@ -59,6 +78,7 @@ int main( int p_argc, char* p_argv[] ) {
     }
 
     wildcards_picture( );
+    wildcards_picture2( );
     trie_picture( );
     // multi_trie_picture( );
 }

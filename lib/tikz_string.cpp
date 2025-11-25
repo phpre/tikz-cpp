@@ -72,17 +72,18 @@ namespace TIKZ {
         }
     }
 
-    void place_string_inner( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft ) {
+    void place_string_inner( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft,
+                             const kv_store& p_options ) {
         auto posy = p_StopLeft.m_y - CHAR_HEIGHT / 2.0;
 
         kv_store extraopt
             = OPT::TEXT_COLOR( p_S.m_color ) | OPT::INNER_SEP( "2pt" ) | XSCALE_TO_WIDTH;
-
         if( p_S.m_labelAlign == AN_BEGIN ) {
             extraopt = extraopt | OPT::ANCHOR_WEST;
         } else if( p_S.m_labelAlign == AN_END ) {
             extraopt = extraopt | OPT::ANCHOR_EAST;
         }
+        extraopt = extraopt | p_options;
 
         u64 pos = p_S.m_fragment.closed_begin( );
         while( pos < p_S.m_fragment.open_end( ) ) {
@@ -122,7 +123,7 @@ namespace TIKZ {
     }
 
     void place_string_inner_vertical( picture& p_pic, const stylized_string& p_S,
-                                      tikz_point p_StopLeft ) {
+                                      tikz_point p_StopLeft, const kv_store& p_options ) {
         auto     posx = p_StopLeft.m_x + ( CHAR_WIDTH ) / 2.0;
         kv_store extraopt
             = OPT::TEXT_COLOR( p_S.m_color ) | OPT::INNER_SEP( "2pt" ) | XSCALE_TO_WIDTH;
@@ -136,6 +137,8 @@ namespace TIKZ {
             extraopt        = extraopt | OPT::ANCHOR_SOUTH;
             extraopt_rotate = extraopt_rotate | OPT::ANCHOR_SOUTH;
         }
+        extraopt        = extraopt | p_options;
+        extraopt_rotate = extraopt_rotate | p_options;
 
         u64 pos = p_S.m_fragment.closed_begin( );
         while( pos < p_S.m_fragment.open_end( ) ) {
@@ -176,7 +179,8 @@ namespace TIKZ {
         }
     }
 
-    void place_string( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft ) {
+    void place_string( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft,
+                       const kv_store& p_options ) {
         if( !p_S.length( ) ) { return; }
         double cor3 = -0.035;
         p_pic.place_rectangle( tikz_point{ p_StopLeft.m_x + cor3, p_StopLeft.m_y - cor3 },
@@ -192,7 +196,7 @@ namespace TIKZ {
                 tikz_point{ p_StopLeft.m_x + i * CHAR_WIDTH + cor1, p_StopLeft.m_y },
                 tikz_point{ p_StopLeft.m_x + ( i + 1 ) * CHAR_WIDTH - cor2,
                             p_StopLeft.m_y - CHAR_HEIGHT },
-                OPT::LW_OUTLINE | OPT::DRAW( col ) | OPT::ROUNDED_CORNERS( "1pt" ) );
+                OPT::LW_OUTLINE | OPT::DRAW( col ) | OPT::ROUNDED_CORNERS( "1pt" ) | p_options );
         }
         // fill draw white box with label
         cor3 = 0.015;
@@ -212,9 +216,9 @@ namespace TIKZ {
                     OPT::ROUNDED_CORNERS( "2pt" ) | OPT::FILL( bgcol ) );
             }
         }
-        place_string_inner( p_pic, p_S, p_StopLeft );
+        place_string_inner( p_pic, p_S, p_StopLeft, p_options );
         double cor4 = .02;
-        auto   smno = OPT::FILL( p_S.m_color ) | OPT::CIRCLE | OPT::INNER_SEP( "0.1pt" );
+        auto smno = OPT::FILL( p_S.m_color ) | OPT::CIRCLE | OPT::INNER_SEP( "0.1pt" ) | p_options;
         // add little dots to highlight parts between characters
         for( u64 i = 1; i < p_S.length( ); ++i ) {
             p_pic.place_node( tikz_point{ p_StopLeft.m_x + i * CHAR_WIDTH, p_StopLeft.m_y - cor4 },
@@ -225,8 +229,8 @@ namespace TIKZ {
         }
     }
 
-    void place_string_vertical( picture& p_pic, const stylized_string& p_S,
-                                tikz_point p_StopLeft ) {
+    void place_string_vertical( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft,
+                                const kv_store& p_options ) {
         if( !p_S.length( ) ) { return; }
         double cor3 = -0.035;
         p_pic.place_rectangle( tikz_point{ p_StopLeft.m_x + cor3, p_StopLeft.m_y - cor3 },
@@ -242,7 +246,7 @@ namespace TIKZ {
                 tikz_point{ p_StopLeft.m_x, p_StopLeft.m_y - i * CHAR_HEIGHT - cor1 },
                 tikz_point{ p_StopLeft.m_x + CHAR_WIDTH,
                             p_StopLeft.m_y - ( i + 1 ) * CHAR_HEIGHT + cor2 },
-                OPT::LW_OUTLINE | OPT::DRAW( col ) | OPT::ROUNDED_CORNERS( "1pt" ) );
+                OPT::LW_OUTLINE | OPT::DRAW( col ) | OPT::ROUNDED_CORNERS( "1pt" ) | p_options );
         }
         // fill draw white box with label
         cor3 = 0.015;
@@ -264,10 +268,10 @@ namespace TIKZ {
             }
         }
 
-        place_string_inner_vertical( p_pic, p_S, p_StopLeft );
+        place_string_inner_vertical( p_pic, p_S, p_StopLeft, p_options );
 
         double cor4 = .02;
-        auto   smno = OPT::FILL( p_S.m_color ) | OPT::CIRCLE | OPT::INNER_SEP( "0.1pt" );
+        auto smno = OPT::FILL( p_S.m_color ) | OPT::CIRCLE | OPT::INNER_SEP( "0.1pt" ) | p_options;
         // add little dots to highlight parts between characters
         for( u64 i = 1; i < p_S.length( ); ++i ) {
             p_pic.place_node( tikz_point{ p_StopLeft.m_x + cor4, p_StopLeft.m_y - i * CHAR_HEIGHT },
@@ -407,7 +411,7 @@ namespace TIKZ {
     place_alignment( picture& p_pic, const stylized_string& p_P, tikz_point p_PtopLeft,
                      const stylized_string& p_T, tikz_point p_TtopLeft,
                      const breakpoint_repn& p_brpnt, bool p_printBreakpoints,
-                     bool p_printExtraStringParts, bool p_compress ) {
+                     bool p_printExtraStringParts, bool p_compress, bool p_showMatchedCharacters ) {
         double pxpos = p_PtopLeft.m_x, txpos = p_TtopLeft.m_x;
         double sepWidth = 3 * CHAR_GLOW, extraGlow = 3.5 * CHAR_GLOW, smallGlow = 2 * CHAR_GLOW;
 
@@ -417,12 +421,12 @@ namespace TIKZ {
                               p_T.m_displayStyle | str_displ_t::SHOW_CHARACTERS };
 
         for( u64 i = p_P.m_fragment.closed_begin( ); i < p_P.m_fragment.open_end( ); ++i ) {
-            if( p_P.has_wildcard( i ) ) {
+            if( p_P.has_wildcard( i ) || p_showMatchedCharacters ) {
                 pnew.annotation_at_pos( i ) = p_P.annotation_at_pos( i );
             }
         }
         for( u64 i = p_T.m_fragment.closed_begin( ); i < p_T.m_fragment.open_end( ); ++i ) {
-            if( p_T.has_wildcard( i ) ) {
+            if( p_T.has_wildcard( i ) || p_showMatchedCharacters ) {
                 tnew.annotation_at_pos( i ) = p_T.annotation_at_pos( i );
             }
         }

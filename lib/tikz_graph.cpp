@@ -8,13 +8,13 @@
 namespace TIKZ {
     kv_store vertex::compile( ) const {
         auto res = vertex::shape_string( m_shape )
-                   | OPT::INNER_SEP( std::to_string( m_innerSep ) + "pt" )
-                   | OPT::OUTER_SEP( std::to_string( m_outerSep ) + "pt" );
+                   | OPT::INNER_SEP( std::format( "{:5.3f}pt", m_innerSep ) )
+                   | OPT::OUTER_SEP( std::format( "{:5.3f}pt", m_outerSep ) );
 
         if( m_vertexType & vertex::VT_FILL ) { res = res | OPT::FILL( m_fillColor ); }
         if( m_vertexType & vertex::VT_DRAW ) {
             res = res | OPT::DRAW( m_drawColor )
-                  | OPT::LINE_WIDTH( std::to_string( m_lineWidth ) + "pt" );
+                  | OPT::LINE_WIDTH( std::format( "{:5.3f}pt", m_lineWidth ) );
         }
         if( !m_inner.empty( ) ) {
             res = res

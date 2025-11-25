@@ -22,4 +22,8 @@ namespace TIKZ {
         return kv_store{ { *this, p_other } };
     }
 
+    kv_store tikz_option::operator|( const kv_store& p_other ) const {
+        return kv_store{ { *this } } | p_other;
+    }
+
 } // namespace TIKZ

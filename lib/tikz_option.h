@@ -33,6 +33,7 @@ namespace TIKZ {
         tikz_option operator( )( const std::string& p_value = EMPTY_STR ) const;
                     operator kv_store( ) const;
         kv_store    operator|( const tikz_option& p_other ) const;
+        kv_store    operator|( const kv_store& p_other ) const;
     };
 
     struct kv_store {
@@ -141,13 +142,12 @@ namespace TIKZ {
                                 p_options.libraries( ), p_options.packages( ) };
         }
 
-        inline kv_store double_arrow( color p_innerColor, color p_outerColor,
+        inline kv_store double_arrow( kv_store p_innerOptions = OPT::DRAW( COLOR_FILL_WHITE ),
                                       double p_doubleDistance = 1.25, double p_outlineWidth = .5 ) {
             // via
             // https://tex.stackexchange.com/questions/17950/how-can-i-draw-the-outline-of-a-path-in-tikz
             double lwfactor = 2;
             return LINE_WIDTH( std::format( "{:5.3f}pt", 2 * p_outlineWidth + p_doubleDistance ) )
-                   | DRAW( p_outerColor )
                    | tikz_option{ std::string{ "-{Stealth[length=" }
                                       + std::format( "{:5.3f}pt 1/2*(cosec(22.5)+sec(45)), ",
                                                      lwfactor * p_doubleDistance )
@@ -158,10 +158,9 @@ namespace TIKZ {
                    | tikz_option{ std::format( "shorten <={:5.3f}pt", -p_outlineWidth ) }
                    | tikz_option{ std::format( "shorten >=cosec(45)*{:5.3f}pt", -p_outlineWidth ) }
                    | postaction(
-                       DRAW( p_innerColor )
-                       | LINE_WIDTH( std::format( "{:5.3f}pt", p_doubleDistance ) )
+                       LINE_WIDTH( std::format( "{:5.3f}pt", p_doubleDistance ) )
                        | tikz_option{ std::format( "shorten >={:5.3}pt", p_outlineWidth / 2 ) }
-                       | tikz_option{ std::format( "shorten <=0pt" ) } );
+                       | tikz_option{ std::format( "shorten <=0pt" ) } | p_innerOptions );
         }
 
     } // namespace OPT

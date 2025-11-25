@@ -57,6 +57,13 @@ namespace ALG {
         return res;
     }
 
+    inline breakpoint_repn trivial_alignment( fragmentco p_fragmentP, fragmentco p_fragmentT ) {
+        breakpoint_repn res{ };
+        res.push_back( breakpoint{ p_fragmentP.closed_begin( ), p_fragmentT.closed_begin( ) } );
+        res.push_back( breakpoint{ p_fragmentP.open_end( ), p_fragmentT.open_end( ) } );
+        return res;
+    }
+
     // computes optimal (unweighted) edit distance alignment of P onto T
     breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& p_T,
                                          const std::string& p_wildcard   = WILDCARD,

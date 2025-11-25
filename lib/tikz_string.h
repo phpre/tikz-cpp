@@ -26,9 +26,11 @@ namespace TIKZ {
                           color p_color );
 
     // Prints a string S
-    void place_string( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft );
+    void place_string( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft,
+                       const kv_store& p_options = { } );
 
-    void place_string_vertical( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft );
+    void place_string_vertical( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft,
+                                const kv_store& p_options = { } );
 
     // assumes T is on top, P on bottom
     void place_matched_string_pair( picture& p_pic, const stylized_string& p_P,
@@ -40,7 +42,8 @@ namespace TIKZ {
     place_alignment( picture& p_pic, const stylized_string& p_P, tikz_point p_PtopLeft,
                      const stylized_string& p_T, tikz_point p_TtopLeft,
                      const breakpoint_repn& p_brpnt, bool p_printBreakpoints = true,
-                     bool p_printExtraStringParts = false, bool p_compress = false );
+                     bool p_printExtraStringParts = false, bool p_compress = false,
+                     bool p_showMatchedCharacters = false );
 
     void place_alignment_graph_label( picture& p_pic, const stylized_string& p_Pname,
                                       const stylized_string& p_Tname,
@@ -126,11 +129,16 @@ namespace TIKZ {
         double                 _distX;
         double                 _distY;
         std::string            _name;
+        u64                    _depth{ 0 };
 
       public:
-        inline placed_trie( const trie& p_trie, tikz_point p_topLeft = { .0, .0 },
-                            double p_distX = 2.5 * CHAR_WIDTH, double p_distY = -1.5 * CHAR_HEIGHT,
-                            const std::string& p_name = EMPTY_STR );
+        placed_trie( const trie& p_trie, tikz_point p_topLeft = { .0, .0 },
+                     double p_distX = 2.5 * CHAR_WIDTH, double p_distY = -1.5 * CHAR_HEIGHT,
+                     const std::string& p_name = EMPTY_STR );
+
+        inline u64 depth( ) const {
+            return _depth;
+        }
 
         inline tikz_point vertex_position( u64 p_depth, u64 p_height ) const {
             return _topLeft + tikz_point{ p_depth * _distX, p_height * _distY };
@@ -167,10 +175,15 @@ namespace TIKZ {
                                      double             p_distY   = -1.5 * CHAR_HEIGHT,
                                      const std::string& p_name    = EMPTY_STR );
 
-    void place_trie_string_on_coordinates( picture& p_pic, const trie& p_trie,
+    void place_trie_string_on_coordinates( picture& p_pic, const placed_trie& p_trie,
                                            const std::string& p_string,
-                                           const std::string& p_name    = EMPTY_STR,
                                            const kv_store&    p_options = { } );
+
+    void place_trie_depth_labels( picture& p_pic, const placed_trie& p_trie,
+                                  tikz_point      p_labelTopLeft = { .0, CHAR_HEIGHT },
+                                  const kv_store& p_options
+                                  = OPT::INNER_SEP( "0pt" )
+                                    | OPT::TEXT_COLOR( COLOR_TEXT.deemphasize( ) ) );
 
     placed_trie place_trie( picture& p_pic, const trie& p_trie, tikz_point p_topLeft = { .0, .0 },
                             double p_distX = 2.5 * CHAR_WIDTH, double p_distY = -1.5 * CHAR_HEIGHT,
