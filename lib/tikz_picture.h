@@ -24,7 +24,7 @@ namespace TIKZ {
         picture( const kv_store& p_options      = { },
                  const kv_store& p_basicOptions = OPT::TEXT_COLOR );
 
-        render_t render( u64 p_time = 0, u64 p_startIndent = 1,
+        render_t render( u64                p_startIndent = 1,
                          const std::string& p_environName = "tikzpicture" ) const;
 
         std::set<std::string> libraries( ) const;

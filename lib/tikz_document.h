@@ -18,10 +18,9 @@ namespace TIKZ {
 
         void add_picture( const picture& p_picture );
 
-        render_t render( const std::string&   p_fontPath  = EMPTY_STR,
-                         const std::string&   p_colorPath = EMPTY_STR,
-                         const std::string&   p_macroPath = EMPTY_STR,
-                         const std::set<u64>& p_times     = { 0 } ) const;
+        render_t render( const std::string& p_fontPath  = EMPTY_STR,
+                         const std::string& p_colorPath = EMPTY_STR,
+                         const std::string& p_macroPath = EMPTY_STR ) const;
 
         static FILE* open_or_abort( const std::string& p_path );
         static void  indent( FILE* p_out, u64 p_indentLevel = 1, u64 p_indent = 4 );

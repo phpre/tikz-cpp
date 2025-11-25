@@ -41,8 +41,7 @@ namespace TIKZ {
     }
 
     render_t document::render( const std::string& p_fontPath, const std::string& p_colorPath,
-                               const std::string&   p_macroPath,
-                               const std::set<u64>& p_times ) const {
+                               const std::string& p_macroPath ) const {
         render_t result{ };
 
         result.push_back( { 0, "\\documentclass[multi=page]{standalone}" } );
@@ -81,13 +80,11 @@ namespace TIKZ {
 
         // print pictures
         for( const auto& pic : _pictures ) {
-            for( auto time : p_times ) {
-                auto pres = pic.render( time, 1 );
-                if( pres.empty( ) ) { continue; }
-                result.push_back( { 0, "\\begin{page}" } );
-                result.append_range( pres );
-                result.push_back( { 0, "\\end{page}" } );
-            }
+            auto pres = pic.render( 1 );
+            if( pres.empty( ) ) { continue; }
+            result.push_back( { 0, "\\begin{page}" } );
+            result.append_range( pres );
+            result.push_back( { 0, "\\end{page}" } );
         }
 
         result.push_back( { 0, "\\end{document}" } );

@@ -7,8 +7,7 @@ namespace TIKZ {
         : _packages{ }, _libraries{ }, _options{ p_basicOptions | p_options }, _content{ } {
     }
 
-    render_t picture::render( u64 p_time, u64 p_startIndent,
-                              const std::string& p_environName ) const {
+    render_t picture::render( u64 p_startIndent, const std::string& p_environName ) const {
         render_t result{ };
 
         if( _content.empty( ) ) {
@@ -17,7 +16,7 @@ namespace TIKZ {
         }
 
         for( const auto& cmd : _content ) {
-            result.append_range( cmd->render( p_time, p_startIndent + 1 ) );
+            result.append_range( cmd->render( p_startIndent + 1 ) );
         }
 
         std::string env = "\\begin{" + p_environName + "}";

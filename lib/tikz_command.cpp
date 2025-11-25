@@ -2,10 +2,7 @@
 #include "tikz_command.h"
 
 namespace TIKZ {
-    render_t path_command::render( u64 p_time, u64 p_startIndent ) const {
-        if( p_time && !m_times.count( p_time ) ) { return { }; }
-        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
-
+    render_t path_command::render( u64 p_startIndent ) const {
         render_t result{ };
 
         std::string res = "\\path";
@@ -18,25 +15,19 @@ namespace TIKZ {
         result.push_back( { p_startIndent, res } );
 
         for( const auto& op : m_operations ) {
-            result.append_range( op->render_op( p_time, 1 + p_startIndent ) );
+            result.append_range( op->render_op( 1 + p_startIndent ) );
         }
 
         result.push_back( { p_startIndent, ";" } );
         return result;
     }
 
-    render_t arc_to_operation::render_op( u64 p_time, u64 p_startIndent ) const {
-        if( p_time && !m_times.count( p_time ) ) { return { }; }
-        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
-
+    render_t arc_to_operation::render_op( u64 p_startIndent ) const {
         return { { p_startIndent, std::format( "arc ({:5.3f}:{:5.3f}:{:5.3f}pt)", m_startAngle,
                                                m_endAngle, m_radius ) } };
     }
 
-    render_t move_to_operation::render_op( u64 p_time, u64 p_startIndent ) const {
-        if( p_time && !m_times.count( p_time ) ) { return { }; }
-        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
-
+    render_t move_to_operation::render_op( u64 p_startIndent ) const {
         std::string res{ };
         if( !_options.empty( ) ) {
             res += "[";
@@ -52,10 +43,7 @@ namespace TIKZ {
         return { { p_startIndent, res } };
     }
 
-    render_t line_to_operation::render_op( u64 p_time, u64 p_startIndent ) const {
-        if( p_time && !m_times.count( p_time ) ) { return { }; }
-        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
-
+    render_t line_to_operation::render_op( u64 p_startIndent ) const {
         std::string res{ };
         if( !_options.empty( ) ) {
             res += "[";
@@ -71,10 +59,7 @@ namespace TIKZ {
         return { { p_startIndent, res } };
     }
 
-    render_t hv_line_to_operation::render_op( u64 p_time, u64 p_startIndent ) const {
-        if( p_time && !m_times.count( p_time ) ) { return { }; }
-        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
-
+    render_t hv_line_to_operation::render_op( u64 p_startIndent ) const {
         std::string res{ };
         if( !_options.empty( ) ) {
             res += "[";
@@ -90,10 +75,7 @@ namespace TIKZ {
         return { { p_startIndent, res } };
     }
 
-    render_t vh_line_to_operation::render_op( u64 p_time, u64 p_startIndent ) const {
-        if( p_time && !m_times.count( p_time ) ) { return { }; }
-        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
-
+    render_t vh_line_to_operation::render_op( u64 p_startIndent ) const {
         std::string res{ };
         if( !_options.empty( ) ) {
             res += "[";
@@ -109,10 +91,7 @@ namespace TIKZ {
         return { { p_startIndent, res } };
     }
 
-    render_t rectangle_operation::render_op( u64 p_time, u64 p_startIndent ) const {
-        if( p_time && !m_times.count( p_time ) ) { return { }; }
-        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
-
+    render_t rectangle_operation::render_op( u64 p_startIndent ) const {
         std::string res{ };
         if( !_options.empty( ) ) {
             res += "[";
@@ -124,10 +103,7 @@ namespace TIKZ {
         return { { p_startIndent, res } };
     }
 
-    render_t coordinate_command::render( u64 p_time, u64 p_startIndent, bool p_internal ) const {
-        if( p_time && !m_times.count( p_time ) ) { return { }; }
-        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
-
+    render_t coordinate_command::render( u64 p_startIndent, bool p_internal ) const {
         std::string result = "";
 
         if( !p_internal ) { result += "\\"; }
@@ -147,10 +123,7 @@ namespace TIKZ {
         return { { p_startIndent, result } };
     }
 
-    render_t node_command::render( u64 p_time, u64 p_startIndent, bool p_internal ) const {
-        if( p_time && !m_times.count( p_time ) ) { return { }; }
-        if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
-
+    render_t node_command::render( u64 p_startIndent, bool p_internal ) const {
         std::string result = "";
 
         if( !p_internal ) { result += "\\"; }
@@ -179,8 +152,8 @@ namespace TIKZ {
         return _content.packages( );
     }
 
-    render_t scope_command::render( u64 p_time, u64 p_startIndent ) const {
-        return _content.render( p_time, p_startIndent, "scope" );
+    render_t scope_command::render( u64 p_startIndent ) const {
+        return _content.render( p_startIndent, "scope" );
     }
 
 } // namespace TIKZ
