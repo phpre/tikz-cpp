@@ -1,3 +1,4 @@
+#include <format>
 #include "tikz_command.h"
 #include "tikz_option.h"
 #include "tikz_string.h"
@@ -7,13 +8,13 @@ namespace TIKZ {
     const tikz_option XSCALE_TO_WIDTH = OPT::XSCALE( "{min(1, \\twd)}" );
     const tikz_option YSCALE_TO_WIDTH = OPT::YSCALE( "{min(1, \\twd)}" );
     math_command      width_macro( double p_width, const std::string& p_text ) {
-        char buf[ 300 ];
+        std::string buf;
         if( p_text == EMPTY_STR ) {
-            snprintf( buf, 299, "%5.3lf * 1cm / width(\" \")", p_width );
+            buf = std::format( "{:5.3f} * 1cm / width(\" \")", p_width );
         } else {
-            snprintf( buf, 299, "%5.3lf * 1cm / width(\"%s\")", p_width, p_text.c_str( ) );
+            buf = std::format( "{:5.3f} * 1cm / width(\"{}\")", p_width, p_text );
         }
-        return math_command{ "twd", std::string{ buf } };
+        return math_command{ "twd", buf };
     }
 
     void place_single_character( picture& p_pic, const stylized_string& p_S, u64 p_pos,

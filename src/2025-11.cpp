@@ -1,4 +1,3 @@
-#include <cstdio>
 #include "tikz.h"
 using namespace TIKZ;
 
@@ -29,7 +28,7 @@ void wildcards_picture( const std::string& p_name = "g01.tex" ) {
 
 void trie_picture( const std::string& p_name = "g02.tex" ) {
     trie                    T;
-    std::deque<std::string> str{ "abab", "b", "", "bba", "aaab", "aa" };
+    std::deque<std::string> str{ "abab", "b", "", "bba", "cba", "cc", "aaab", "aa" };
     // std::deque<std::string> str{ "aaa", "aab" };
 
     document out{ };

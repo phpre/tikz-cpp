@@ -1,3 +1,4 @@
+#include <format>
 #include "tikz_command.h"
 
 namespace TIKZ {
@@ -28,9 +29,8 @@ namespace TIKZ {
         if( p_time && !m_times.count( p_time ) ) { return { }; }
         if( !m_times.empty( ) && !m_times.count( p_time ) ) { return { }; }
 
-        char buf[ 50 ];
-        snprintf( buf, 49, "arc (%5.3lf:%5.3lf:%5.3lfpt)", m_startAngle, m_endAngle, m_radius );
-        return { { p_startIndent, std::string{ buf } } };
+        return { { p_startIndent, std::format( "arc ({:5.3f}:{:5.3f}:{:5.3f}pt)", m_startAngle,
+                                               m_endAngle, m_radius ) } };
     }
 
     render_t move_to_operation::render_op( u64 p_time, u64 p_startIndent ) const {

@@ -1,4 +1,3 @@
-#include <cstdio>
 #include "tikz.h"
 using namespace TIKZ;
 

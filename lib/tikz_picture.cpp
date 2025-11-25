@@ -1,3 +1,4 @@
+#include <format>
 #include "tikz_command.h"
 #include "tikz_picture.h"
 
@@ -129,59 +130,52 @@ namespace TIKZ {
 
     void picture::place_cross( tikz_position p_position, const kv_store& p_options,
                                double p_lineWidth, double p_size, const std::string& p_name ) {
-        char buf1[ 30 ], buf2[ 50 ];
-        snprintf( buf1, 29, "%5.3lfpt", p_lineWidth );
-        snprintf( buf2, 49, "2 * (%5.3lfpt - \\pgflinewidth)", p_size );
-
-        place_node( p_position, EMPTY_STR,
-                    OPT::CROSS_OUT | OPT::DRAW | OPT::MINIMUM_SIZE( std::string{ buf2 } )
-                        | OPT::LINE_WIDTH( std::string{ buf1 } ) | OPT::INNER_SEP( "0pt" )
-                        | OPT::OUTER_SEP( "0pt" ) | p_options,
-                    p_name );
+        place_node(
+            p_position, EMPTY_STR,
+            OPT::CROSS_OUT | OPT::DRAW
+                | OPT::MINIMUM_SIZE( std::format( "2 * ({:5.3f}pt - \\pgflinewidth)", p_size ) )
+                | OPT::LINE_WIDTH( std::format( "{:5.3f}pt", p_lineWidth ) )
+                | OPT::INNER_SEP( "0pt" ) | OPT::OUTER_SEP( "0pt" ) | p_options,
+            p_name );
     }
 
     void picture::place_circle( tikz_position p_position, const kv_store& p_options,
                                 double p_lineWidth, double p_size, const std::string& p_name ) {
-        char buf1[ 30 ], buf2[ 50 ];
-        snprintf( buf1, 29, "%5.3lfpt", p_lineWidth );
-        snprintf( buf2, 49, "2 * (%5.3lfpt - \\pgflinewidth)", p_size );
-
-        place_node( p_position, EMPTY_STR,
-                    OPT::CIRCLE | OPT::DRAW | OPT::MINIMUM_SIZE( std::string{ buf2 } )
-                        | OPT::LINE_WIDTH( std::string{ buf1 } ) | OPT::INNER_SEP( "0pt" )
-                        | OPT::OUTER_SEP( "0pt" ) | p_options,
-                    p_name );
+        place_node(
+            p_position, EMPTY_STR,
+            OPT::CIRCLE | OPT::DRAW
+                | OPT::MINIMUM_SIZE( std::format( "2 * ({:5.3f}pt - \\pgflinewidth)", p_size ) )
+                | OPT::LINE_WIDTH( std::format( "{:5.3f}pt", p_lineWidth ) )
+                | OPT::INNER_SEP( "0pt" ) | OPT::OUTER_SEP( "0pt" ) | p_options,
+            p_name );
     }
 
     void picture::place_double_cross( tikz_position p_position, const kv_store& p_options,
                                       double p_lineWidth, double p_outlineWidth, double p_size,
                                       const std::string& p_name ) {
-        char buf1[ 30 ], buf2[ 30 ], buf3[ 30 ];
-        snprintf( buf1, 29, "%5.3lfpt", p_outlineWidth );
-        snprintf( buf3, 29, "%5.3lfpt", p_lineWidth - 2 * p_outlineWidth );
-        snprintf( buf2, 29, "%5.3lfpt", 2 * ( p_size - p_lineWidth ) - 2 * p_outlineWidth );
-
         place_node( p_position, EMPTY_STR,
-                    OPT::CROSS_OUT | OPT::DRAW | OPT::MINIMUM_SIZE( std::string{ buf2 } )
-                        | OPT::LINE_WIDTH( std::string{ buf1 } )
-                        | OPT::DOUBLE_DISTANCE( std::string{ buf3 } ) | OPT::INNER_SEP( "0pt" )
-                        | OPT::OUTER_SEP( "0pt" ) | OPT::LINE_CAP_RECT | p_options,
+                    OPT::CROSS_OUT | OPT::DRAW
+                        | OPT::MINIMUM_SIZE( std::format( "{:5.3f}pt", 2 * ( p_size - p_lineWidth )
+                                                                           - 2 * p_outlineWidth ) )
+                        | OPT::LINE_WIDTH( std::format( "{:5.3f}pt", p_outlineWidth ) )
+                        | OPT::DOUBLE_DISTANCE(
+                            std::format( "{:5.3f}pt", p_lineWidth - 2 * p_outlineWidth ) )
+                        | OPT::INNER_SEP( "0pt" ) | OPT::OUTER_SEP( "0pt" ) | OPT::LINE_CAP_RECT
+                        | p_options,
                     p_name );
     }
 
     void picture::place_double_circle( tikz_position p_position, const kv_store& p_options,
                                        double p_lineWidth, double p_outlineWidth, double p_size,
                                        const std::string& p_name ) {
-        char buf1[ 30 ], buf2[ 30 ], buf3[ 30 ];
-        snprintf( buf1, 29, "%5.3lfpt", p_outlineWidth );
-        snprintf( buf3, 29, "%5.3lfpt", p_lineWidth - 2 * p_outlineWidth );
-        snprintf( buf2, 29, "%5.3lfpt", 2 * ( p_size - p_lineWidth ) );
-
-        place_node( p_position, EMPTY_STR,
-                    OPT::CIRCLE | OPT::DRAW | OPT::MINIMUM_SIZE( std::string{ buf2 } )
-                        | OPT::LINE_WIDTH( std::string{ buf1 } )
-                        | OPT::DOUBLE_DISTANCE( std::string{ buf3 } ) | OPT::INNER_SEP( "0pt" )
-                        | OPT::OUTER_SEP( "0pt" ) | p_options,
-                    p_name );
+        place_node(
+            p_position, EMPTY_STR,
+            OPT::CIRCLE | OPT::DRAW
+                | OPT::MINIMUM_SIZE( std::format( "{:5.3f}pt", 2 * ( p_size - p_lineWidth ) ) )
+                | OPT::LINE_WIDTH( std::format( "{:5.3f}pt", p_outlineWidth ) )
+                | OPT::DOUBLE_DISTANCE(
+                    std::format( "{:5.3f}pt", p_lineWidth - 2 * p_outlineWidth ) )
+                | OPT::INNER_SEP( "0pt" ) | OPT::OUTER_SEP( "0pt" ) | p_options,
+            p_name );
     }
 } // namespace TIKZ

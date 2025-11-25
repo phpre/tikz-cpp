@@ -1,5 +1,4 @@
 #pragma once
-#include <cstdio>
 #include <string>
 
 #include "alg_ag_slice.h"
@@ -105,7 +104,76 @@ namespace TIKZ {
                                       double p_labelDistance = DEFAULT_SLICE_SPACING,
                                       double p_sliceSpacing  = DEFAULT_SLICE_SPACING );
 
-    void place_trie( picture& p_pic, const trie& p_trie, tikz_point p_topLeft,
-                     double p_distX = 2.5 * CHAR_WIDTH, double p_distY = -1.5 * CHAR_HEIGHT,
-                     const std::string& p_name = EMPTY_STR );
+    typedef std::pair<u64, u64> trie_point;
+    constexpr trie_point        TRIE_ROOT = { 0, 0 };
+
+    struct placed_trie_vertex {
+        bool                m_marked;
+        u64                 m_height;
+        tikz_point          m_pos{ 0.0, 0.0 };
+        std::string         m_name;
+        std::map<char, u64> m_next;
+        trie_point          m_parent;
+    };
+
+    class placed_trie {
+      public:
+        typedef std::map<trie_point, placed_trie_vertex> placed_trie_vertices_t;
+
+      private:
+        placed_trie_vertices_t _vertices;
+        tikz_point             _topLeft;
+        double                 _distX;
+        double                 _distY;
+        std::string            _name;
+
+      public:
+        inline placed_trie( const trie& p_trie, tikz_point p_topLeft = { .0, .0 },
+                            double p_distX = 2.5 * CHAR_WIDTH, double p_distY = -1.5 * CHAR_HEIGHT,
+                            const std::string& p_name = EMPTY_STR );
+
+        inline tikz_point vertex_position( u64 p_depth, u64 p_height ) const {
+            return _topLeft + tikz_point{ p_depth * _distX, p_height * _distY };
+        }
+
+        inline placed_trie_vertex operator[]( trie_point p_point ) const {
+            return _vertices.at( p_point );
+        }
+
+        inline trie_point next( trie_point p_point, char p_char ) const {
+            const auto& vtx = ( *this )[ p_point ];
+            auto        j   = vtx.m_next.at( p_char );
+            return { p_point.first + 1, j };
+        }
+
+        inline std::deque<trie_point> in_order( trie_point p_start = TRIE_ROOT ) {
+            std::deque<trie_point> res{ p_start };
+            for( const auto& [ c, n ] : ( *this )[ p_start ].m_next ) {
+                res.append_range( in_order( { p_start.first + 1, n } ) );
+            }
+            return res;
+        }
+    };
+
+    placed_trie place_trie_coordinates( picture& p_pic, const trie& p_trie,
+                                        tikz_point         p_topLeft = { .0, .0 },
+                                        double             p_distX   = 2.5 * CHAR_WIDTH,
+                                        double             p_distY   = -1.5 * CHAR_HEIGHT,
+                                        const std::string& p_name    = EMPTY_STR );
+
+    placed_trie place_trie_vertices( picture& p_pic, const trie& p_trie,
+                                     tikz_point         p_topLeft = { .0, .0 },
+                                     double             p_distX   = 2.5 * CHAR_WIDTH,
+                                     double             p_distY   = -1.5 * CHAR_HEIGHT,
+                                     const std::string& p_name    = EMPTY_STR );
+
+    void place_trie_string_on_coordinates( picture& p_pic, const trie& p_trie,
+                                           const std::string& p_string,
+                                           const std::string& p_name    = EMPTY_STR,
+                                           const kv_store&    p_options = { } );
+
+    placed_trie place_trie( picture& p_pic, const trie& p_trie, tikz_point p_topLeft = { .0, .0 },
+                            double p_distX = 2.5 * CHAR_WIDTH, double p_distY = -1.5 * CHAR_HEIGHT,
+                            const std::string& p_name    = EMPTY_STR,
+                            const kv_store&    p_options = { } );
 } // namespace TIKZ

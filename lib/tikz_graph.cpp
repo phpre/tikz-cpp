@@ -1,4 +1,4 @@
-#include <cstdio>
+#include <format>
 #include <string>
 
 #include "tikz_command.h"
@@ -99,10 +99,7 @@ namespace TIKZ {
     void place_selected_arrow( picture& p_pic, tikz_position p_startPos, tikz_position p_endPos,
                                color p_lineColor, color p_fillColor, double p_angle,
                                const kv_store& p_options ) {
-        char buf[ 20 ];
-        snprintf( buf, 19, "%5.3lf", p_angle );
-
-        auto opt = OPT::ROTATE( std::string{ buf } ) | OPT::DRAW( p_fillColor )
+        auto opt = OPT::ROTATE( std::format( "{:5.3f}", p_angle ) ) | OPT::DRAW( p_fillColor )
                    | OPT::DOUBLE( p_lineColor ) | OPT::DOUBLE_DISTANCE( ".75pt" )
                    | OPT::FILL( p_fillColor ) | OPT::ROUNDED_CORNERS( ".2pt" ) | p_options;
         p_pic.add_library( "calc" );

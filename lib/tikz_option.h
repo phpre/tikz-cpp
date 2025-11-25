@@ -1,5 +1,6 @@
 #pragma once
 #include <deque>
+#include <format>
 #include <memory>
 #include <set>
 #include <string>
@@ -95,6 +96,7 @@ namespace TIKZ {
         const tikz_option SHARP_CORNERS{ "sharp corners" };
 
         const tikz_option LINE_WIDTH{ "line width", "1.25pt" };
+        const tikz_option LW_DOUBLE_BG{ "line width", "2.25pt" };
         const tikz_option LW_LINE{ "line width", "1.25pt" };
         const tikz_option LW_VERY_THIN_OUTLINE{ "line width", ".5pt" };
         const tikz_option LW_THIN_OUTLINE{ "line width", ".75pt" };
@@ -112,7 +114,11 @@ namespace TIKZ {
         const tikz_option LINE_JOIN_ROUND{ "line join", "round" };
         const tikz_option LINE_JOIN_BEVEL{ "line join", "bevel" };
 
-        const tikz_option ARR_TIP_LATEX{ "-latex" };
+        const tikz_option ARR_TIP{ "-{Stealth[length=1.75pt 2.5 0, round, inset=0pt, angle'=45]}",
+                                   EMPTY_STR,
+                                   EMPTY_STR,
+                                   { "arrows.meta" } };
+        const tikz_option ARR_TIP_LATEX = ARR_TIP;
 
         const tikz_option ANCHOR{ "anchor", "center" };
         const tikz_option ANCHOR_WEST{ "anchor", "west" };
@@ -129,5 +135,34 @@ namespace TIKZ {
             "regular polygon, regular polygon sides", "3", "3", { "shapes.geometric" } };
 
         const tikz_option RADIUS{ "radius", "3pt" };
+
+        inline tikz_option postaction( kv_store p_options ) {
+            return tikz_option{ "postaction", EMPTY_STR, "{" + p_options.to_string( ) + "}",
+                                p_options.libraries( ), p_options.packages( ) };
+        }
+
+        inline kv_store double_arrow( color p_innerColor, color p_outerColor,
+                                      double p_doubleDistance = 1.25, double p_outlineWidth = .5 ) {
+            // via
+            // https://tex.stackexchange.com/questions/17950/how-can-i-draw-the-outline-of-a-path-in-tikz
+            double lwfactor = 2;
+            return LINE_WIDTH( std::format( "{:5.3f}pt", 2 * p_outlineWidth + p_doubleDistance ) )
+                   | DRAW( p_outerColor )
+                   | tikz_option{ std::string{ "-{Stealth[length=" }
+                                      + std::format( "{:5.3f}pt 1/2*(cosec(22.5)+sec(45)), ",
+                                                     lwfactor * p_doubleDistance )
+                                      + "round, inset=0pt, angle'=45]}",
+                                  EMPTY_STR,
+                                  EMPTY_STR,
+                                  { "arrows.meta" } }
+                   | tikz_option{ std::format( "shorten <={:5.3f}pt", -p_outlineWidth ) }
+                   | tikz_option{ std::format( "shorten >=cosec(45)*{:5.3f}pt", -p_outlineWidth ) }
+                   | postaction(
+                       DRAW( p_innerColor )
+                       | LINE_WIDTH( std::format( "{:5.3f}pt", p_doubleDistance ) )
+                       | tikz_option{ std::format( "shorten >={:5.3}pt", p_outlineWidth / 2 ) }
+                       | tikz_option{ std::format( "shorten <=0pt" ) } );
+        }
+
     } // namespace OPT
 } // namespace TIKZ

@@ -1,6 +1,7 @@
 #pragma once
 #include <deque>
 #include <map>
+#include <set>
 #include <string>
 
 #include "defines.h"
@@ -16,6 +17,49 @@ namespace ALG {
     struct trie {
         // for each depth, store a deque of all vertices at this depth
         std::deque<std::deque<trie_vertex>> m_vertices{ { trie_vertex{} } };
+
+        inline std::map<std::pair<u64, u64>, std::string> names( const std::string& p_namePrefix
+                                                                 = EMPTY_STR ) const {
+            u64             i = 0;
+            std::deque<u64> cur{ 0 };
+
+            std::map<std::pair<u64, u64>, std::string> names{ { { 0, 0 }, p_namePrefix + "-" } };
+
+            for( ; i < m_vertices.size( ); ++i ) {
+                std::deque<u64> next{ };
+                for( u64 j : cur ) {
+                    const auto& vtx = m_vertices[ i ][ j ];
+                    for( const auto& [ c, t ] : vtx.m_next ) {
+                        next.push_back( t );
+                        names[ { i + 1, t } ] = names[ { i, j } ] + c;
+                    }
+                }
+                cur = next;
+            }
+            return names;
+        }
+
+        inline std::map<std::pair<u64, u64>, u64> heights( ) const {
+            u64             i = 0;
+            std::deque<u64> cur{ 0 };
+
+            std::map<std::pair<u64, u64>, u64> heights{ { { 0, 0 }, 0 } };
+
+            for( ; i < m_vertices.size( ); ++i ) {
+                std::deque<u64> next{ };
+                for( u64 j : cur ) {
+                    const auto& vtx  = m_vertices[ i ][ j ];
+                    u64         hcur = 0;
+                    for( const auto& [ c, t ] : vtx.m_next ) {
+                        next.push_back( t );
+                        heights[ { i + 1, t } ] = heights[ { i, j } ] + hcur;
+                        hcur += m_vertices[ i + 1 ][ t ].m_size;
+                    }
+                }
+                cur = next;
+            }
+            return heights;
+        }
 
         inline void insert( const std::string& p_string ) {
             u64  i = 0, j = 0;

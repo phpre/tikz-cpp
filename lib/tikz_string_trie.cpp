@@ -10,72 +10,85 @@
 #include "tikz_stylized_string.h"
 
 namespace TIKZ {
+    placed_trie::placed_trie( const trie& p_trie, tikz_point p_topLeft, double p_distX,
+                              double p_distY, const std::string& p_name )
+        : _topLeft{ p_topLeft }, _distX{ p_distX }, _distY{ p_distY }, _name{ p_name } {
+        auto names   = p_trie.names( p_name );
+        auto heights = p_trie.heights( );
 
-    void place_trie_vertex( picture& p_pic, tikz_position p_pos, const std::string& p_name,
-                            bool p_marked ) {
+        _vertices = placed_trie_vertices_t{ };
+
+        for( const auto& [ p, h ] : heights ) {
+            auto        pos = vertex_position( p.first, h );
+            const auto& vtx = p_trie.m_vertices[ p.first ][ p.second ];
+            _vertices[ p ]  = { vtx.m_marked, h, pos, names[ p ], vtx.m_next, TRIE_ROOT };
+        }
+
+        for( const auto& [ p, h ] : heights ) {
+            for( const auto& [ c, n ] : ( *this )[ p ].m_next ) {
+                _vertices[ { p.first + 1, n } ].m_parent = p;
+            }
+        }
+    }
+
+    void place_trie_vertex( picture& p_pic, const placed_trie_vertex& p_vertex ) {
         auto selected_inner
             = vertex::unselected_vertex( COLOR_FILL_WHITE, .875, .5, vertex::ST_CROSS );
-        auto vertex = p_marked ? vertex::marked_vertex( COLOR_TEXT, 2, .75, vertex::ST_CIRCLE,
-                                                        selected_inner )
-                               : vertex::unselected_vertex( );
-        place_vertex( p_pic, p_pos, vertex, p_name );
+        auto vertex = p_vertex.m_marked ? vertex::marked_vertex( COLOR_TEXT, 2, .75,
+                                                                 vertex::ST_CIRCLE, selected_inner )
+                                        : vertex::unselected_vertex( );
+        place_vertex( p_pic, p_vertex.m_pos, vertex, p_vertex.m_name );
     }
 
-    void place_trie_edge( picture& p_pic, tikz_position p_start, tikz_position p_end,
-                          bool p_horizontal, const stylized_string& p_label,
-                          tikz_point p_labelPos ) {
-        if( p_horizontal ) {
-            p_pic.place_line( p_start, p_end,
-                              OPT::DRAW( COLOR_FILL_WHITE ) | OPT::DOUBLE( COLOR_TEXT )
-                                  | OPT::DOUBLE_DISTANCE );
+    void place_trie_edge( picture& p_pic, placed_trie_vertex p_start, placed_trie_vertex p_end,
+                          const stylized_string& p_label, const kv_store& p_options,
+                          const kv_store& p_bgOptions = { } ) {
+        if( p_start.m_pos.m_y == p_end.m_pos.m_y ) {
+            p_pic.place_line( p_start.m_name, p_end.m_name,
+                              OPT::double_arrow( COLOR_TEXT, COLOR_FILL_WHITE ) | p_bgOptions );
 
         } else {
-            p_pic.place_vh_line( p_start, p_end,
-                                 OPT::DRAW( COLOR_FILL_WHITE ) | OPT::DOUBLE( COLOR_TEXT )
-                                     | OPT::DOUBLE_DISTANCE | OPT::ROUNDED_CORNERS );
+            p_pic.place_vh_line( p_start.m_name, p_end.m_name,
+                                 OPT::double_arrow( COLOR_TEXT, COLOR_FILL_WHITE )
+                                     | OPT::ROUNDED_CORNERS | p_bgOptions );
         }
-        place_string( p_pic, p_label, p_labelPos );
+        auto labelpos = tikz_point{ ( p_start.m_pos.m_x + p_end.m_pos.m_x ) / 2, p_end.m_pos.m_y }
+                        + tikz_point{ -CHAR_WIDTH * .65, CHAR_HEIGHT / 2 };
+        place_string( p_pic, p_label, labelpos );
     }
 
-    void place_trie( picture& p_pic, const trie& p_trie, tikz_point p_topLeft, double p_distX,
-                     double p_distY, const std::string& p_name ) {
-        // ensure to place strings in lexicographically sorted order
-        u64             i = 0;
-        std::deque<u64> cur{ 0 };
-
-        std::map<std::pair<u64, u64>, std::string> names{ { { 0, 0 }, p_name + "_" } };
-        std::map<std::pair<u64, u64>, u64>         heights{ { { 0, 0 }, 0 } };
-
-        place_trie_vertex( p_pic, p_topLeft, names[ { 0, 0 } ],
-                           p_trie.m_vertices[ 0 ][ 0 ].m_marked );
-        for( ; i < p_trie.m_vertices.size( ); ++i ) {
-            std::deque<u64> next{ };
-            for( u64 j : cur ) {
-                const auto& vtx  = p_trie.m_vertices[ i ][ j ];
-                u64         hcur = 0;
-                for( const auto& [ c, t ] : vtx.m_next ) {
-                    next.push_back( t );
-                    names[ { i + 1, t } ]   = names[ { i, j } ] + c;
-                    heights[ { i + 1, t } ] = heights[ { i, j } ] + hcur;
-
-                    // place vertex
-                    place_trie_vertex(
-                        p_pic,
-                        p_topLeft
-                            + tikz_point{ ( i + 1 ) * p_distX, heights[ { i + 1, t } ] * p_distY },
-                        names[ { i + 1, t } ], p_trie.m_vertices[ i + 1 ][ t ].m_marked );
-
-                    // draw edge
-                    place_trie_edge(
-                        p_pic, names[ { i, j } ], names[ { i + 1, t } ], !hcur,
-                        stylized_string{ std::string{ c } },
-                        p_topLeft
-                            + tikz_point{ ( i + .5 ) * p_distX - CHAR_WIDTH / 2,
-                                          heights[ { i + 1, t } ] * p_distY + CHAR_HEIGHT / 2 } );
-                    hcur += p_trie.m_vertices[ i + 1 ][ t ].m_size;
-                }
-            }
-            cur = next;
+    placed_trie place_trie_coordinates( picture& p_pic, const trie& p_trie, tikz_point p_topLeft,
+                                        double p_distX, double p_distY,
+                                        const std::string& p_name ) {
+        placed_trie res{ p_trie, p_topLeft, p_distX, p_distY, p_name };
+        for( const auto& p : res.in_order( ) ) {
+            p_pic.place_coordinate( res[ p ].m_pos, res[ p ].m_name );
         }
+        return res;
+    }
+
+    placed_trie place_trie_vertices( picture& p_pic, const trie& p_trie, tikz_point p_topLeft,
+                                     double p_distX, double p_distY, const std::string& p_name ) {
+        placed_trie res{ p_trie, p_topLeft, p_distX, p_distY, p_name };
+        for( const auto& p : res.in_order( ) ) { place_trie_vertex( p_pic, res[ p ] ); }
+        return res;
+    }
+
+    void place_trie_string_on_coordinates( picture& p_pic, const placed_trie& p_trie,
+                                           const std::string& p_string,
+                                           const kv_store&    p_options ) {
+    }
+
+    placed_trie place_trie( picture& p_pic, const trie& p_trie, tikz_point p_topLeft,
+                            double p_distX, double p_distY, const std::string& p_name,
+                            const kv_store& p_options ) {
+        auto trie = place_trie_vertices( p_pic, p_trie, p_topLeft, p_distX, p_distY, p_name );
+        auto vtcs = trie.in_order( );
+
+        for( auto p = vtcs.rbegin( ); *p != TRIE_ROOT; ++p ) {
+            auto label = stylized_string{ std::string{ *trie[ *p ].m_name.rbegin( ) } };
+            place_trie_edge( p_pic, trie[ trie[ *p ].m_parent ], trie[ *p ], label, p_options );
+        }
+        return trie;
     }
 } // namespace TIKZ

@@ -1,6 +1,6 @@
 #pragma once
 #include <algorithm>
-#include <cstdio>
+#include <format>
 #include <string>
 
 #include "defines.h"
@@ -62,17 +62,9 @@ namespace TIKZ {
         inline std::string to_string( ) const {
             switch( _type ) {
             case type::EMPTY: return EMPTY_STR;
-            case type::POLAR: {
-                char buffer[ 30 ] = { 0 };
-                snprintf( buffer, 29, "%5.3lf: %5.3lf", _point.m_x, _point.m_y );
-                return std::string{ buffer };
-            }
+            case type::POLAR: return std::format( "{:5.3f}: {:5.3f}", _point.m_x, _point.m_y );
             case type::POINT:
-            default: {
-                char buffer[ 30 ] = { 0 };
-                snprintf( buffer, 29, "%5.3lf, %5.3lf", _point.m_x, _point.m_y );
-                return std::string{ buffer };
-            }
+            default: return std::format( "{:5.3f}, {:5.3f}", _point.m_x, _point.m_y );
             case type::NAME: return _name;
             }
         }
