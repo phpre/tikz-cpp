@@ -64,12 +64,14 @@ namespace ALG {
         inline void insert( const std::string& p_string ) {
             u64  i = 0, j = 0;
             bool addition = false;
+            u64  lm       = 0;
 
             for( ; i < p_string.length( ); ++i ) {
                 while( m_vertices.size( ) <= i + 1 ) {
                     m_vertices.push_back( std::deque<trie_vertex>{ } );
                 }
                 auto& vtx = m_vertices[ i ][ j ];
+                if( vtx.m_marked ) { lm = i; }
 
                 if( vtx.m_next.count( p_string[ i ] ) ) {
                     j = vtx.m_next[ p_string[ i ] ];
@@ -86,9 +88,11 @@ namespace ALG {
                 i = 0, j = 0;
                 for( ; i < p_string.length( ); ++i ) {
                     auto& vtx = m_vertices[ i ][ j ];
-                    vtx.m_size++;
+                    if( i >= lm ) { vtx.m_size++; }
                     j = vtx.m_next[ p_string[ i ] ];
                 }
+                auto& vtx = m_vertices[ i ][ j ];
+                if( i >= lm ) { vtx.m_size++; }
             }
         }
     };
