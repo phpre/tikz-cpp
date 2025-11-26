@@ -50,25 +50,32 @@ namespace TIKZ {
                                OPT::LW_OUTLINE | OPT::ROUNDED_CORNERS( "1pt" ) | OPT::FILL( col ) );
 
         const auto& wc = p_S.m_annotation.at( p_pos );
-        // print wildcard symbol
-        if( wc.m_showSymbol ) {
-            p_pic.place_node( p_center, text_typewriter( wc.m_wildcardSymbol ),
+        if( wc.m_wasWildcard ) {
+            auto text = wc.m_symbol;
+            p_pic.add_command( std::make_shared<math_command>( width_macro( CHAR_WIDTH, text ) ) );
+            p_pic.place_node( p_center, text_typewriter( VSIZE_CORRECTION + text ),
                               OPT::TEXT_COLOR( bgcol ) );
         } else {
-            // wildcard lozenge
-            p_pic.place_node( p_center, math_mode( WILDCARD_SYMBOL_FILLED ),
-                              OPT::TEXT_COLOR( bgcol ) );
-        }
-        // print wildcard index
-        if( wc.m_showId ) {
-            auto text  = math_mode( std::to_string( wc.m_wildcardId ) );
-            auto ftext = textsize_tiny( text );
+            // print wildcard symbol
+            if( wc.m_showSymbol ) {
+                p_pic.place_node( p_center, text_typewriter( wc.m_wildcardSymbol ),
+                                  OPT::TEXT_COLOR( bgcol ) );
+            } else {
+                // wildcard lozenge
+                p_pic.place_node( p_center, math_mode( WILDCARD_SYMBOL_FILLED ),
+                                  OPT::TEXT_COLOR( bgcol ) );
+            }
+            // print wildcard index
+            if( wc.m_showId ) {
+                auto text  = math_mode( std::to_string( wc.m_wildcardId ) );
+                auto ftext = textsize_tiny( text );
 
-            p_pic.add_command(
-                std::make_shared<math_command>( width_macro( CHAR_WIDTH / 2.0, text ) ) );
-            p_pic.place_node(
-                tikz_point{ p_center.m_x + CHAR_WIDTH / 3.5, p_center.m_y - CHAR_HEIGHT / 3.5 },
-                ftext, OPT::TEXT_COLOR( bgcol ) );
+                p_pic.add_command(
+                    std::make_shared<math_command>( width_macro( CHAR_WIDTH / 2.0, text ) ) );
+                p_pic.place_node(
+                    tikz_point{ p_center.m_x + CHAR_WIDTH / 3.5, p_center.m_y - CHAR_HEIGHT / 3.5 },
+                    ftext, OPT::TEXT_COLOR( bgcol ) );
+            }
         }
     }
 

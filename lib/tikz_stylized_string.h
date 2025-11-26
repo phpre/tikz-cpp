@@ -31,9 +31,13 @@ namespace TIKZ {
         u64         m_wildcardId     = 0;
         bool        m_showSymbol     = false;
         bool        m_showId         = false;
+        bool        m_wasWildcard    = false;
 
         inline bool is_wildcard( ) const {
             return m_wildcardSymbol != EMPTY_STR;
+        }
+        inline bool was_wildcard( ) const {
+            return m_wasWildcard;
         }
     };
     typedef std::map<u64, character_annotation> string_annotation;
@@ -147,6 +151,10 @@ namespace TIKZ {
             return annotation_at_pos( p_pos ).is_wildcard( );
         }
 
+        inline bool had_wildcard( u64 p_pos ) const {
+            return annotation_at_pos( p_pos ).was_wildcard( );
+        }
+
         inline void highlight_position( u64 p_pos, color p_color ) {
             m_annotation[ p_pos ].m_textColor = p_color;
             m_annotation[ p_pos ].m_bgColor   = p_color.to_bg( );
@@ -175,7 +183,8 @@ namespace TIKZ {
             if( !( m_displayStyle & str_displ_t::SHOW_POSITIONS ) ) { tp = fragment_t::FT_FULL; }
 
             while( end < m_fragment.open_end( ) ) {
-                if( ( m_displayStyle & str_displ_t::SHOW_WILDCARDS ) && has_wildcard( end ) ) {
+                if( ( m_displayStyle & str_displ_t::SHOW_WILDCARDS )
+                    && ( has_wildcard( end ) || had_wildcard( end ) ) ) {
                     if( end == p_closedBegin ) {
                         return { fragment_t::FT_WILDCARD,
                                  fragmentco{ p_closedBegin, p_closedBegin + 1 } };
@@ -261,6 +270,21 @@ namespace TIKZ {
             return add_wildcards( pos, p_showId, p_showSymbol, p_startId, p_wildcard );
         }
 
+        inline stylized_string fill_wildcards( const std::string& p_substitution,
+                                               const std::string& p_wildcard = WILDCARD ) const {
+            auto res = *this;
+            for( const auto& [ p, a ] : m_annotation ) {
+                if( a.is_wildcard( ) && a.m_wildcardSymbol == p_wildcard
+                    && a.m_wildcardId < p_substitution.size( ) ) {
+                    res.m_annotation[ p ].m_wildcardSymbol = EMPTY_STR;
+                    res.m_annotation[ p ].m_wildcardId     = 0;
+                    res.m_annotation[ p ].m_symbol         = p_substitution[ a.m_wildcardId ];
+                    res.m_annotation[ p ].m_wasWildcard    = true;
+                }
+            }
+            return res;
+        }
+
         inline stylized_string color_invert( ) const {
             auto res = *this;
             std::swap( res.m_color, res.m_fillColor );
@@ -314,4 +338,16 @@ namespace TIKZ {
             return res;
         }
     };
+
+    inline stylized_string wildcard_string( fragmentco p_indices, bool p_showId = false,
+                                            bool               p_showSymbol = false,
+                                            const std::string& p_wildcard   = WILDCARD ) {
+        std::string s{ "" };
+        for( auto i = p_indices.closed_begin( ); i < p_indices.open_end( ); ++i ) {
+            s += p_wildcard;
+        }
+
+        return stylized_string{ s, EMPTY_STR, str_displ_t::SHOW_WILDCARDS }.add_wildcards(
+            s, p_showId, p_showSymbol, p_indices.closed_begin( ), p_wildcard );
+    }
 } // namespace TIKZ

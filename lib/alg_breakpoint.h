@@ -91,4 +91,20 @@ namespace ALG {
 
     // normalize breakpoint representation s.t. first breakpoint is at (0,0)
     breakpoint_repn breakpoint_normalize( const breakpoint_repn& p_brpts );
+
+    inline std::string substitute_wildcards( const std::string& p_wcString,
+                                             const std::string& p_wcSubst,
+                                             const std::string& p_wildcard = WILDCARD ) {
+        std::string res = "";
+        u64         j   = 0;
+        for( u64 i = 0; i < p_wcString.size( ); ++i ) {
+            if( std::string{ p_wcString[ i ] } == p_wildcard ) {
+                res += p_wcSubst[ j++ ];
+            } else {
+                res += p_wcString[ i ];
+            }
+        }
+        return res;
+    }
+
 } // namespace ALG
