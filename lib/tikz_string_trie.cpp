@@ -90,17 +90,22 @@ namespace TIKZ {
         place_trie_vertex( p_pic, p_trie[ pos ], p_options );
     }
 
-    void place_trie_depth_labels( picture& p_pic, const placed_trie& p_trie,
+    void place_trie_depth_labels( picture& p_pic, const placed_trie& p_trie, u64 p_max,
                                   tikz_point p_labelTopLeft, const kv_store& p_options ) {
-        for( u64 d = 0; d <= p_trie.depth( ); ++d ) {
+        for( u64 d = 0; d <= p_max; ++d ) {
             auto        pos   = p_labelTopLeft + p_trie.vertex_position( d, 0 );
             std::string label = textsize_footnotesize( VSIZE_CORRECTION + std::to_string( d ) );
             p_pic.place_text( label, pos, p_options );
         }
     }
 
+    void place_trie_depth_labels( picture& p_pic, const placed_trie& p_trie,
+                                  tikz_point p_labelTopLeft, const kv_store& p_options ) {
+        place_trie_depth_labels( p_pic, p_trie, p_trie.depth( ), p_labelTopLeft, p_options );
+    }
+
     placed_trie place_trie( picture& p_pic, const trie& p_trie, tikz_point p_topLeft,
-                            double p_distX, double p_distY, const std::string& p_name,
+                            const std::string& p_name, double p_distX, double p_distY,
                             const kv_store& p_options ) {
         auto trie = place_trie_vertices( p_pic, p_trie, p_topLeft, p_distX, p_distY, p_name );
         auto vtcs = trie.in_order( );

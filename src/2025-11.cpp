@@ -42,9 +42,10 @@ void wildcards_picture( const std::string&                 p_name  = "g01.tex",
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
-void wc_subst_picture( const std::string& p_name      = "g02.tex",
-                       const std::string  p_wcSubst   = SUBST_GOOD,
-                       const std::string  p_substName = "\\varphi" ) {
+void wc_subst_picture( const std::string&     p_name      = "g02.tex",
+                       const std::string      p_wcSubst   = SUBST_GOOD,
+                       const std::string      p_substName = "\\varphi",
+                       const stylized_string& p_t = T_NAME, const stylized_string& p_p = P_NAME ) {
     document out{ };
     picture  p1{ };
     {
@@ -173,7 +174,7 @@ void wc_subst_picture( const std::string& p_name      = "g02.tex",
         tikz_point topLeftR1{ 0.0, 0.0 }, topLeftR2{ 0.0, -2.5 * CHAR_HEIGHT };
         tikz_point hdist{ 1 * CHAR_WIDTH, 0.0 };
 
-        const auto& str = T_NAME;
+        const auto& str = p_t;
         for( u64 i = 0, j = 0; i < str.length( ); ++i ) {
             if( !str.has_wildcard( i ) ) { continue; }
 
@@ -205,14 +206,14 @@ void wc_subst_picture( const std::string& p_name      = "g02.tex",
     {
         auto Tr         = substitute_wildcards( T, p_wcSubst );
         auto occspt_all = compute_occs_with_mism( P, Tr, P.size( ) );
-        auto TNr        = T_NAME.fill_wildcards( p_wcSubst );
-        TNr.m_name      = p_substName + "(" + T_NAME.m_name + ")";
-        wildcards_picture( "g" + p_name, P_NAME, TNr, occspt_all );
+        auto TNr        = p_t.fill_wildcards( p_wcSubst );
+        TNr.m_name      = p_substName + "(" + p_t.m_name + ")";
+        wildcards_picture( "g" + p_name, p_p, TNr, occspt_all );
 
         tikz_point topLeftR1{ 0.0, 0.0 }, topLeftR2{ 0.0, -2.5 * CHAR_HEIGHT };
         tikz_point hdist{ 1 * CHAR_WIDTH, 0.0 };
 
-        const auto& str = T_NAME;
+        const auto& str = p_t;
         for( u64 i = 0, j = 0; i < str.length( ); ++i ) {
             if( !str.has_wildcard( i ) ) { continue; }
             for( ; i < str.length( ) && str.has_wildcard( i ); ++i, ++j ) {
@@ -242,13 +243,12 @@ void wc_subst_picture( const std::string& p_name      = "g02.tex",
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
-void trie_picture( const std::string& p_name = "g03.tex" ) {
-    trie                    T;
-    std::deque<std::string> str{ "aba", "ac", "aca", "cba", "abc", "cb" };
-    // std::deque<std::string> str{ "aaa", "aab" };
-
+void trie_picture( const std::string&             p_name = "g03.tex",
+                   const std::deque<std::string>& p_str
+                   = { "aba", "ac", "aca", "cba", "abc", "cb" } ) {
+    trie     T;
     document out{ };
-    for( const auto& s : str ) {
+    for( const auto& s : p_str ) {
         picture p1{ };
         T.insert( s );
         place_trie_depth_labels( p1, T, tikz_point{ 0, CHAR_HEIGHT * 3 / 4 } );
@@ -259,11 +259,102 @@ void trie_picture( const std::string& p_name = "g03.tex" ) {
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
-void multi_trie_picture( const std::string& p_name = "g04.tex" ) {
-    std::deque<std::string> str{ "caa", "bcaa", "*bca", "****caa", "****bca" };
-    document                out{ };
-    picture                 p1{ };
+void multi_trie_picture( const std::string& p_name = "g04.tex", const std::string& p_t = T,
+                         const std::string& p_p = P, const std::string& p_wildcard = WILDCARD ) {
+    document out{ };
+
+    stylized_string pN{ p_p, "P", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
+    stylized_string tN
+        = stylized_string{ p_t, "T", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS }
+              .add_wildcards( p_t, true, false, 0, p_wildcard );
+
+    // compute occs w/ wildcards of p in t.
+    auto occs  = compute_occs( p_p, p_t, p_wildcard );
+    u64  numwc = 0;
+
+    std::deque<std::pair<u64, std::string>> constraints{ };
+    std::deque<stylized_string>             cstr{ };
+
+    picture p1{ };
+    {
+        p1.place_text( math_mode( VSIZE_CORRECTION + tN.m_name ),
+                       tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+
+        for( u64 i = 0; i < p_t.size( ); ++i ) {
+            if( tN.has_wildcard( i ) ) { numwc++; }
+        }
+
+        for( u64 y = occs.size( ); y-- > 0; ) {
+            p1.place_text( math_mode( VSIZE_CORRECTION + pN.m_name ),
+                           tikz_point{ -1 * CHAR_WIDTH, -1.25 - ( 1.5 * y - .5 ) * CHAR_HEIGHT } );
+            place_alignment( p1, pN, tikz_point{ 0.0, -.75 - 1.5 * y * CHAR_HEIGHT }, tN,
+                             tikz_point{ 0.0, 0.0 }, occs[ y ], false, true, true, true );
+
+            std::string constr{ }, cwc{ };
+            u64         prefix = p_t.size( ) + 1;
+
+            for( const auto& bp : occs[ y ] ) {
+                if( !bp.m_charP || !bp.m_charT ) { continue; }
+                if( !tN.has_wildcard( bp.m_posT ) ) { continue; }
+
+                prefix = std::min( prefix, tN.annotation_at_pos( bp.m_posT ).m_wildcardId );
+                constr += bp.m_charP;
+                cwc += bp.m_charP;
+            }
+            // pad cwc with wildcards
+            std::string wcp{ };
+            for( u64 i = 0; i < prefix; ++i ) { wcp += p_wildcard; }
+            cwc = wcp + cwc;
+
+            while( cwc.size( ) < numwc ) { cwc += p_wildcard; }
+
+            auto c = stylized_string{ cwc, "C_{" + std::to_string( y ) + "}",
+                                      str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS }
+                         .add_wildcards( cwc, false, false, 0, p_wildcard );
+
+            p1.place_text( math_mode( VSIZE_CORRECTION + c.m_name ),
+                           tikz_point{ ( 3 + p_t.length( ) ) * CHAR_WIDTH - 1 * CHAR_WIDTH,
+                                       -1.25 - ( 1.5 * y - .5 ) * CHAR_HEIGHT } );
+            place_string(
+                p1, c,
+                tikz_point{ ( 3 + p_t.length( ) ) * CHAR_WIDTH, -.75 - 1.5 * y * CHAR_HEIGHT } );
+
+            constraints.push_front( { prefix, constr } );
+            cstr.push_front( c );
+        }
+    }
     out.add_picture( p1 );
+
+    std::deque<trie>    multi_trie{ numwc + 1, trie{} };
+    std::map<u64, trie> compressed_multi_trie{ };
+
+    // push things into tries
+    {
+        for( const auto& [ s, c ] : constraints ) {
+            picture p2{ };
+            multi_trie[ s ].insert( c );
+
+            place_trie_depth_labels( p1, multi_trie[ s ], numwc,
+                                     tikz_point{ 0, CHAR_HEIGHT * 3 / 4 } );
+
+            u64 height = 0;
+            for( u64 i = 0; i <= numwc; ++i ) {
+                auto tr
+                    = place_trie( p2, multi_trie[ i ],
+                                  tikz_point{ i * 2.5 * CHAR_WIDTH, -1.5 * CHAR_HEIGHT * height },
+                                  std::to_string( i ) );
+                if( i == s ) {
+                    place_trie_string_on_coordinates( p2, tr, c, OPT::COLOR( COLOR_C3 ) );
+                }
+
+                height += std::max( 1LLU, multi_trie[ i ].m_vertices[ 0 ][ 0 ].m_size );
+            }
+            out.add_picture( p2 );
+        }
+    }
+
+    std::deque<std::string> str{ "caa", "bcaa", "*bca", "****caa", "****bca" };
+
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
@@ -282,5 +373,5 @@ int main( int p_argc, char* p_argv[] ) {
     wc_subst_picture( );
     wc_subst_picture( "g02b.tex", SUBST_BAD );
     trie_picture( );
-    // multi_trie_picture( );
+    multi_trie_picture( );
 }

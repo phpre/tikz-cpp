@@ -185,8 +185,14 @@ namespace TIKZ {
                                   = OPT::INNER_SEP( "0pt" )
                                     | OPT::TEXT_COLOR( COLOR_TEXT.deemphasize( ) ) );
 
+    void place_trie_depth_labels( picture& p_pic, const placed_trie& p_trie, u64 p_max,
+                                  tikz_point      p_labelTopLeft = { .0, CHAR_HEIGHT },
+                                  const kv_store& p_options
+                                  = OPT::INNER_SEP( "0pt" )
+                                    | OPT::TEXT_COLOR( COLOR_TEXT.deemphasize( ) ) );
+
     placed_trie place_trie( picture& p_pic, const trie& p_trie, tikz_point p_topLeft = { .0, .0 },
+                            const std::string& p_name = EMPTY_STR,
                             double p_distX = 2.5 * CHAR_WIDTH, double p_distY = -1.5 * CHAR_HEIGHT,
-                            const std::string& p_name    = EMPTY_STR,
-                            const kv_store&    p_options = { } );
+                            const kv_store& p_options = { } );
 } // namespace TIKZ
