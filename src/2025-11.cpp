@@ -260,7 +260,8 @@ void trie_picture( const std::string&             p_name = "g03.tex",
 }
 
 void multi_trie_picture( const std::string& p_name = "g04.tex", const std::string& p_t = T,
-                         const std::string& p_p = P, const std::string& p_wildcard = WILDCARD ) {
+                         const std::string& p_p = P, const std::string& p_alphabet = "abc",
+                         const std::string& p_wildcard = WILDCARD ) {
     document out{ };
 
     stylized_string pN{ p_p, "P", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
@@ -334,7 +335,7 @@ void multi_trie_picture( const std::string& p_name = "g04.tex", const std::strin
             picture p2{ };
             multi_trie[ s ].insert( c );
 
-            place_trie_depth_labels( p1, multi_trie[ s ], numwc,
+            place_trie_depth_labels( p2, multi_trie[ s ], numwc,
                                      tikz_point{ 0, CHAR_HEIGHT * 3 / 4 } );
 
             u64 height = 0;
@@ -353,7 +354,35 @@ void multi_trie_picture( const std::string& p_name = "g04.tex", const std::strin
         }
     }
 
-    std::deque<std::string> str{ "caa", "bcaa", "*bca", "****caa", "****bca" };
+    // add dummy edges
+    picture                 p2{ };
+    std::deque<placed_trie> ptr;
+    place_trie_depth_labels( p2, multi_trie[ 0 ], numwc, tikz_point{ 0, CHAR_HEIGHT * 3 / 4 } );
+    u64 height = 0;
+    for( u64 i = 0; i <= numwc; ++i ) {
+        auto tr = place_trie( p2, multi_trie[ i ],
+                              tikz_point{ i * 2.5 * CHAR_WIDTH, -1.5 * CHAR_HEIGHT * height },
+                              std::to_string( i ) );
+        ptr.push_back( tr );
+        height += std::max( 1LLU, multi_trie[ i ].m_vertices[ 0 ][ 0 ].m_size );
+
+        if( i ) {
+            std::string rem{ };
+            for( auto c : p_alphabet ) {
+                if( !multi_trie[ i - 1 ].m_vertices[ 0 ][ 0 ].m_next.count( c ) ) {
+                    rem = std::string{ c };
+                    break;
+                }
+            }
+
+            if( rem != EMPTY_STR ) {
+                place_trie_edge( p2, ptr[ i - 1 ][ TRIE_ROOT ], ptr[ i ][ TRIE_ROOT ],
+                                 stylized_string{ rem, EMPTY_STR, str_displ_t::SHOW_CHARACTERS },
+                                 OPT::COLOR( COLOR_C2.deemphasize( ) ) );
+            }
+        }
+    }
+    out.add_picture( p2 );
 
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }

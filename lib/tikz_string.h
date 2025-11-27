@@ -175,6 +175,12 @@ namespace TIKZ {
                                      double             p_distY   = -1.5 * CHAR_HEIGHT,
                                      const std::string& p_name    = EMPTY_STR );
 
+    void place_trie_vertex( picture& p_pic, const placed_trie_vertex& p_vertex,
+                            const kv_store& p_options );
+
+    void place_trie_edge( picture& p_pic, placed_trie_vertex p_start, placed_trie_vertex p_end,
+                          const stylized_string& p_label, const kv_store& p_options = { } );
+
     void place_trie_string_on_coordinates( picture& p_pic, const placed_trie& p_trie,
                                            const std::string& p_string,
                                            const kv_store&    p_options = { } );
