@@ -7,6 +7,7 @@
 #include "tikz_picture.h"
 #include "tikz_point.h"
 #include "tikz_string.h"
+#include "tikz_string_trie.h"
 #include "tikz_stylized_string.h"
 
 namespace TIKZ {
