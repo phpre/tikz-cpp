@@ -157,7 +157,7 @@ namespace TIKZ {
             u64         cpos  = p_alphabet.find( c );
             auto        label = stylized_string{ c };
             place_diverted_trie_edge( p_pic, p_trie[ pos ], p_trie[ n ], label, 0.0,
-                                      ( 1 + p_alphabet.size( ) - cpos ) * p_charDiversion,
+                                      ( 2 + p_alphabet.size( ) - cpos ) * p_charDiversion,
                                       p_options );
             pos = n;
         }
