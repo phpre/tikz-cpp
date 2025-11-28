@@ -429,7 +429,8 @@ void multi_trie_picture( const std::string& p_name = "g04.tex", const std::strin
             }
             for( u64 j = 0; j < multi_trie[ i ].m_vertices[ tg ].size( ); ++j ) {
                 picture tmp{ p2 };
-                bool    broke = false;
+                bool    broke     = false;
+                bool    brokehard = false;
 
                 trie_point posO{ TRIE_ROOT };
                 trie_point pos{ tg, j };
@@ -439,18 +440,22 @@ void multi_trie_picture( const std::string& p_name = "g04.tex", const std::strin
 
                     posO = ptr[ s ].next( posO, cstr[ i2 ] );
                     if( !ptr[ i ][ pos ].m_next.count( cstr[ i2 ] ) ) {
-                        std::string c{ cstr[ i2 ] };
-                        u64         cpos  = p_alphabet.find( c );
-                        auto        label = stylized_string{ c };
-                        place_diverted_trie_edge( p2, ptr[ i ][ pos ], ptr[ s ][ posO ], label, 0.0,
-                                                  ( 2.5 + p_alphabet.size( ) - cpos ) * charDiv,
-                                                  opts );
+                        if( !ptr[ i ][ pos ].m_marked ) {
+                            std::string c{ cstr[ i2 ] };
+                            u64         cpos  = p_alphabet.find( c );
+                            auto        label = stylized_string{ c };
+                            place_diverted_trie_edge(
+                                p2, ptr[ i ][ pos ], ptr[ s ][ posO ], label, 0.0,
+                                ( 2.5 + p_alphabet.size( ) - cpos ) * charDiv, opts );
 
-                        place_diverted_trie_edge(
-                            tmp, ptr[ i ][ pos ], ptr[ s ][ posO ], label, 0.0,
-                            ( 2.5 + p_alphabet.size( ) - cpos ) * charDiv, opts2 );
+                            place_diverted_trie_edge(
+                                tmp, ptr[ i ][ pos ], ptr[ s ][ posO ], label, 0.0,
+                                ( 2.5 + p_alphabet.size( ) - cpos ) * charDiv, opts2 );
 
-                        extra_edges[ ptr[ i ][ pos ].m_pos ].insert( p_alphabet[ cpos ] );
+                            extra_edges[ ptr[ i ][ pos ].m_pos ].insert( p_alphabet[ cpos ] );
+                        } else {
+                            brokehard = true;
+                        }
                         broke = true;
                         break;
                     }
@@ -469,8 +474,7 @@ void multi_trie_picture( const std::string& p_name = "g04.tex", const std::strin
                     // place_trie_vertex( p2, ptr[ i ][ pos ], opts );
                     // place_trie_vertex( tmp, ptr[ i ][ pos ], opts2 );
                 }
-
-                out.add_picture( tmp );
+                if( !brokehard ) { out.add_picture( tmp ); }
             }
         }
     }
