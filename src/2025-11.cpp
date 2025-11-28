@@ -405,9 +405,10 @@ void multi_trie_picture( const std::string& p_name = "g04.tex", const std::strin
                         p2, ptr[ i - 1 ][ TRIE_ROOT ], ptr[ i ][ TRIE_ROOT ],
                         stylized_string{ std::string{ p_alphabet[ rem[ j ] ] }, EMPTY_STR,
                                          str_displ_t::SHOW_CHARACTERS },
-                        j * distY, ( 2 + p_alphabet.size( ) - rem[ j ] ) * charDiv,
+                        j * distY, ( 2.25 + p_alphabet.size( ) - rem[ j ] ) * charDiv,
                         j ? OPT::COLOR( COLOR_C2.deemphasize( ) )
-                          : OPT::COLOR( COLOR_C2.deemphasize_weak( ) ) );
+                          : OPT::COLOR( COLOR_C2.deemphasize_weak( ) ),
+                        .75 );
                 }
             }
         }
@@ -442,13 +443,14 @@ void multi_trie_picture( const std::string& p_name = "g04.tex", const std::strin
                         u64         cpos  = p_alphabet.find( c );
                         auto        label = stylized_string{ c };
                         place_diverted_trie_edge( p2, ptr[ i ][ pos ], ptr[ s ][ posO ], label, 0.0,
-                                                  ( 2.666 + p_alphabet.size( ) - cpos ) * charDiv,
+                                                  ( 2.5 + p_alphabet.size( ) - cpos ) * charDiv,
                                                   opts );
 
                         place_diverted_trie_edge(
                             tmp, ptr[ i ][ pos ], ptr[ s ][ posO ], label, 0.0,
-                            ( 2.666 + p_alphabet.size( ) - cpos ) * charDiv, opts2 );
+                            ( 2.5 + p_alphabet.size( ) - cpos ) * charDiv, opts2 );
 
+                        extra_edges[ ptr[ i ][ pos ].m_pos ].insert( p_alphabet[ cpos ] );
                         broke = true;
                         break;
                     }
@@ -458,15 +460,41 @@ void multi_trie_picture( const std::string& p_name = "g04.tex", const std::strin
                     u64         cpos  = p_alphabet.find( c );
                     auto        label = stylized_string{ c };
                     place_diverted_trie_edge( tmp, ptr[ i ][ pos ], ptr[ i ][ n ], label, 0.0,
-                                              ( 2 + p_alphabet.size( ) - cpos ) * charDiv, opts2 );
+                                              ( 2.5 + p_alphabet.size( ) - cpos ) * charDiv,
+                                              opts2 );
                     pos = n;
                 }
                 if( !broke ) {
+                    // TODO: mark this vertex
                     // place_trie_vertex( p2, ptr[ i ][ pos ], opts );
                     // place_trie_vertex( tmp, ptr[ i ][ pos ], opts2 );
                 }
 
                 out.add_picture( tmp );
+            }
+        }
+    }
+    out.add_picture( p2 );
+
+    // finally, complete each internal vertex
+
+    for( u64 i = 0; i < numwc; ++i ) {
+        auto vtcs = ptr[ i ].in_order( );
+        for( auto p = vtcs.begin( ); p != vtcs.end( ); ++p ) {
+            for( auto c : p_alphabet ) {
+                if( ptr[ i ][ *p ].m_next.count( c ) ) { continue; }
+                if( extra_edges[ ptr[ i ][ *p ].m_pos ].count( c ) ) { continue; }
+                if( ptr[ i ][ *p ].m_marked ) { continue; }
+
+                // c is missing. Divert to dummy trie
+
+                u64  cpos  = p_alphabet.find( std::string{ c } );
+                auto label = stylized_string{ std::string{ c } };
+
+                place_diverted_trie_edge( p2, ptr[ i ][ *p ], ptr[ p->first + 1 + i ][ TRIE_ROOT ],
+                                          label, cpos * distY,
+                                          ( 2.75 + p_alphabet.size( ) - cpos ) * charDiv,
+                                          OPT::COLOR( COLOR_C1.deemphasize( ) ), .75 );
             }
         }
     }

@@ -67,7 +67,7 @@ namespace TIKZ {
     void place_diverted_trie_edge( picture& p_pic, placed_trie_vertex p_start,
                                    placed_trie_vertex p_end, const stylized_string& p_label,
                                    double p_downwardDivertion, double p_beginDistortion,
-                                   const kv_store& p_options ) {
+                                   const kv_store& p_options, double p_lineWidth ) {
         auto midpos
             = tikz_point{ ( p_start.m_pos.m_x + 1.5 * p_end.m_pos.m_x ) / 2.5, p_end.m_pos.m_y }
               + tikz_point{ 0.0, p_downwardDivertion };
@@ -76,38 +76,38 @@ namespace TIKZ {
         // line to label
         if( p_start.m_pos.m_y == midpos.m_y ) {
             p_pic.place_line( p_start.m_name, midpos,
-                              OPT::double_arrow( OPT::DRAW( COLOR_TEXT ) | p_options )
+                              OPT::double_arrow( OPT::DRAW( COLOR_TEXT ) | p_options, p_lineWidth )
                                   | OPT::DRAW( COLOR_FILL_WHITE ) );
 
         } else {
             if( p_beginDistortion > 0.001 ) {
                 auto begmidpos = tikz_point{ p_beginDistortion + p_start.m_pos.m_x,
                                              ( midpos.m_y + p_start.m_pos.m_y ) / 2 };
-                p_pic.place_hvh_line( p_start.m_name, begmidpos, midpos,
-                                      OPT::double_arrow( OPT::DRAW( COLOR_TEXT ) | p_options )
-                                          | OPT::DRAW( COLOR_FILL_WHITE )
-                                          | OPT::ROUNDED_CORNERS( "6.5pt" ) );
+                p_pic.place_hvh_line(
+                    p_start.m_name, begmidpos, midpos,
+                    OPT::double_arrow( OPT::DRAW( COLOR_TEXT ) | p_options, p_lineWidth )
+                        | OPT::DRAW( COLOR_FILL_WHITE ) | OPT::ROUNDED_CORNERS( "6.5pt" ) );
             } else {
-                p_pic.place_vh_line( p_start.m_name, midpos,
-                                     OPT::double_arrow( OPT::DRAW( COLOR_TEXT ) | p_options )
-                                         | OPT::DRAW( COLOR_FILL_WHITE )
-                                         | OPT::ROUNDED_CORNERS( "6.5pt" ) );
+                p_pic.place_vh_line(
+                    p_start.m_name, midpos,
+                    OPT::double_arrow( OPT::DRAW( COLOR_TEXT ) | p_options, p_lineWidth )
+                        | OPT::DRAW( COLOR_FILL_WHITE ) | OPT::ROUNDED_CORNERS( "6.5pt" ) );
             }
         }
 
         // line from label
         if( p_end.m_pos.m_y == midpos.m_y ) {
             p_pic.place_line( midpos, p_end.m_name,
-                              OPT::double_arrow( OPT::DRAW( COLOR_TEXT ) | p_options )
+                              OPT::double_arrow( OPT::DRAW( COLOR_TEXT ) | p_options, p_lineWidth )
                                   | OPT::DRAW( COLOR_FILL_WHITE ) );
 
         } else {
             auto midendpos = tikz_point{ ( midpos.m_x + p_end.m_pos.m_x ) / 2,
                                          ( midpos.m_y + p_end.m_pos.m_y ) / 2 };
-            p_pic.place_hvh_line( midpos, midendpos, p_end.m_name,
-                                  OPT::double_arrow( OPT::DRAW( COLOR_TEXT ) | p_options )
-                                      | OPT::DRAW( COLOR_FILL_WHITE )
-                                      | OPT::ROUNDED_CORNERS( "6.5pt" ) );
+            p_pic.place_hvh_line(
+                midpos, midendpos, p_end.m_name,
+                OPT::double_arrow( OPT::DRAW( COLOR_TEXT ) | p_options, p_lineWidth )
+                    | OPT::DRAW( COLOR_FILL_WHITE ) | OPT::ROUNDED_CORNERS( "6.5pt" ) );
         }
 
         place_string( p_pic, p_label, labelpos, p_options );

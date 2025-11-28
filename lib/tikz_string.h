@@ -187,7 +187,7 @@ namespace TIKZ {
     void place_diverted_trie_edge( picture& p_pic, placed_trie_vertex p_start,
                                    placed_trie_vertex p_end, const stylized_string& p_label,
                                    double p_downwardDivertion, double p_beginDivertion,
-                                   const kv_store& p_options = { } );
+                                   const kv_store& p_options = { }, double p_lineWidth = 1.25 );
 
     void place_trie_string_on_coordinates( picture& p_pic, const placed_trie& p_trie,
                                            const std::string& p_string,
