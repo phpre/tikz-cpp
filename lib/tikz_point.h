@@ -26,6 +26,8 @@ namespace TIKZ {
         inline tikz_point operator+( tikz_point p_other ) const {
             return { m_x + p_other.m_x, m_y + p_other.m_y };
         }
+
+        auto operator<=>( const tikz_point& ) const = default;
     };
 
     std::pair<tikz_point, tikz_point> translate_right( std::pair<tikz_point, tikz_point> p_pos,

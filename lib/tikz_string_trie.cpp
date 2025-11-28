@@ -32,6 +32,10 @@ namespace TIKZ {
         }
     }
 
+    tikz_point placed_trie::vertex_position( u64 p_depth, u64 p_height ) const {
+        return _topLeft + tikz_point{ p_depth * _distX, p_height * _distY };
+    }
+
     void place_trie_vertex( picture& p_pic, const placed_trie_vertex& p_vertex,
                             const kv_store& p_options = { } ) {
         auto selected_inner
@@ -54,8 +58,58 @@ namespace TIKZ {
                                  OPT::double_arrow( OPT::DRAW( COLOR_TEXT ) | p_options )
                                      | OPT::DRAW( COLOR_FILL_WHITE ) | OPT::ROUNDED_CORNERS );
         }
+
         auto labelpos = tikz_point{ ( p_start.m_pos.m_x + p_end.m_pos.m_x ) / 2, p_end.m_pos.m_y }
                         + tikz_point{ -CHAR_WIDTH * .65, CHAR_HEIGHT / 2 };
+        place_string( p_pic, p_label, labelpos, p_options );
+    }
+
+    void place_diverted_trie_edge( picture& p_pic, placed_trie_vertex p_start,
+                                   placed_trie_vertex p_end, const stylized_string& p_label,
+                                   double p_downwardDivertion, double p_beginDistortion,
+                                   const kv_store& p_options ) {
+        auto midpos
+            = tikz_point{ ( p_start.m_pos.m_x + 1.5 * p_end.m_pos.m_x ) / 2.5, p_end.m_pos.m_y }
+              + tikz_point{ 0.0, p_downwardDivertion };
+        auto labelpos = midpos + tikz_point{ -CHAR_WIDTH * .65, CHAR_HEIGHT / 2 };
+
+        // line to label
+        if( p_start.m_pos.m_y == midpos.m_y ) {
+            p_pic.place_line( p_start.m_name, midpos,
+                              OPT::double_arrow( OPT::DRAW( COLOR_TEXT ) | p_options )
+                                  | OPT::DRAW( COLOR_FILL_WHITE ) );
+
+        } else {
+            if( p_beginDistortion > 0.001 ) {
+                auto begmidpos = tikz_point{ p_beginDistortion + p_start.m_pos.m_x,
+                                             ( midpos.m_y + p_start.m_pos.m_y ) / 2 };
+                p_pic.place_hvh_line( p_start.m_name, begmidpos, midpos,
+                                      OPT::double_arrow( OPT::DRAW( COLOR_TEXT ) | p_options )
+                                          | OPT::DRAW( COLOR_FILL_WHITE )
+                                          | OPT::ROUNDED_CORNERS( "6.5pt" ) );
+            } else {
+                p_pic.place_vh_line( p_start.m_name, midpos,
+                                     OPT::double_arrow( OPT::DRAW( COLOR_TEXT ) | p_options )
+                                         | OPT::DRAW( COLOR_FILL_WHITE )
+                                         | OPT::ROUNDED_CORNERS( "6.5pt" ) );
+            }
+        }
+
+        // line from label
+        if( p_end.m_pos.m_y == midpos.m_y ) {
+            p_pic.place_line( midpos, p_end.m_name,
+                              OPT::double_arrow( OPT::DRAW( COLOR_TEXT ) | p_options )
+                                  | OPT::DRAW( COLOR_FILL_WHITE ) );
+
+        } else {
+            auto midendpos = tikz_point{ ( midpos.m_x + p_end.m_pos.m_x ) / 2,
+                                         ( midpos.m_y + p_end.m_pos.m_y ) / 2 };
+            p_pic.place_hvh_line( midpos, midendpos, p_end.m_name,
+                                  OPT::double_arrow( OPT::DRAW( COLOR_TEXT ) | p_options )
+                                      | OPT::DRAW( COLOR_FILL_WHITE )
+                                      | OPT::ROUNDED_CORNERS( "6.5pt" ) );
+        }
+
         place_string( p_pic, p_label, labelpos, p_options );
     }
 
@@ -90,10 +144,31 @@ namespace TIKZ {
         place_trie_vertex( p_pic, p_trie[ pos ], p_options );
     }
 
+    void place_diverted_trie_string_on_coordinates( picture& p_pic, const placed_trie& p_trie,
+                                                    const std::string& p_string,
+                                                    const std::string& p_alphabet,
+                                                    double             p_charDiversion,
+                                                    const kv_store&    p_options ) {
+        trie_point pos = TRIE_ROOT;
+        for( u64 i = 0; i < p_string.size( ); ++i ) {
+            place_trie_vertex( p_pic, p_trie[ pos ], p_options );
+            auto        n = p_trie.next( pos, p_string[ i ] );
+            std::string c{ p_string[ i ] };
+            u64         cpos  = p_alphabet.find( c );
+            auto        label = stylized_string{ c };
+            place_diverted_trie_edge( p_pic, p_trie[ pos ], p_trie[ n ], label, 0.0,
+                                      ( 1 + p_alphabet.size( ) - cpos ) * p_charDiversion,
+                                      p_options );
+            pos = n;
+        }
+        place_trie_vertex( p_pic, p_trie[ pos ], p_options );
+    }
+
     void place_trie_depth_labels( picture& p_pic, const placed_trie& p_trie, u64 p_max,
                                   tikz_point p_labelTopLeft, const kv_store& p_options ) {
         for( u64 d = 0; d <= p_max; ++d ) {
-            auto        pos   = p_labelTopLeft + p_trie.vertex_position( d, 0 );
+            auto pos = p_labelTopLeft + p_trie.vertex_position( d, 0 )
+                       + ( p_trie.vertex_position( 0, 0 ) * -1 );
             std::string label = textsize_footnotesize( VSIZE_CORRECTION + std::to_string( d ) );
             p_pic.place_text( label, pos, p_options );
         }
@@ -116,4 +191,25 @@ namespace TIKZ {
         }
         return trie;
     }
+
+    placed_trie place_trie_wide( picture& p_pic, const trie& p_trie, const std::string& p_alphabet,
+                                 tikz_point p_topLeft, const std::string& p_name, double p_distX,
+                                 double p_distY, double p_charDiversion,
+                                 const kv_store& p_options ) {
+        auto trie = place_trie_vertices( p_pic, p_trie, p_topLeft,
+                                         p_distX + ( 3 + p_alphabet.size( ) ) * p_charDiversion,
+                                         p_distY, p_name );
+
+        auto vtcs = trie.in_order( );
+        for( auto p = ++vtcs.begin( ); p != vtcs.end( ); ++p ) {
+            std::string c{ *trie[ *p ].m_name.rbegin( ) };
+            u64         cpos  = p_alphabet.find( c );
+            auto        label = stylized_string{ c };
+            place_diverted_trie_edge( p_pic, trie[ trie[ *p ].m_parent ], trie[ *p ], label, 0.0,
+                                      ( 2 + p_alphabet.size( ) - cpos ) * p_charDiversion,
+                                      p_options );
+        }
+        return trie;
+    }
+
 } // namespace TIKZ

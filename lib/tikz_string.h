@@ -115,16 +115,20 @@ namespace TIKZ {
         u64                 m_height;
         tikz_point          m_pos{ 0.0, 0.0 };
         std::string         m_name;
-        std::map<char, u64> m_next;
-        trie_point          m_parent;
+        std::map<char, u64> m_next{ };
+        trie_point          m_parent{ };
     };
+
+    constexpr double DEFAULT_TRIE_VERTEX_DIST_X  = 2.5 * CHAR_WIDTH;
+    constexpr double DEFAULT_TRIE_VERTEX_DIST_Y  = -1.5 * CHAR_HEIGHT;
+    constexpr double DEFAULT_TRIE_CHAR_DIVERTION = CHAR_WIDTH / 6;
 
     class placed_trie {
       public:
         typedef std::map<trie_point, placed_trie_vertex> placed_trie_vertices_t;
 
       private:
-        placed_trie_vertices_t _vertices;
+        placed_trie_vertices_t _vertices{ };
         tikz_point             _topLeft;
         double                 _distX;
         double                 _distY;
@@ -132,17 +136,16 @@ namespace TIKZ {
         u64                    _depth{ 0 };
 
       public:
-        placed_trie( const trie& p_trie, tikz_point p_topLeft = { .0, .0 },
-                     double p_distX = 2.5 * CHAR_WIDTH, double p_distY = -1.5 * CHAR_HEIGHT,
-                     const std::string& p_name = EMPTY_STR );
+        explicit placed_trie( const trie& p_trie, tikz_point p_topLeft = { .0, .0 },
+                              double             p_distX = DEFAULT_TRIE_VERTEX_DIST_X,
+                              double             p_distY = DEFAULT_TRIE_VERTEX_DIST_Y,
+                              const std::string& p_name  = EMPTY_STR );
 
         inline u64 depth( ) const {
             return _depth;
         }
 
-        inline tikz_point vertex_position( u64 p_depth, u64 p_height ) const {
-            return _topLeft + tikz_point{ p_depth * _distX, p_height * _distY };
-        }
+        tikz_point vertex_position( u64 p_depth, u64 p_height ) const;
 
         inline placed_trie_vertex operator[]( trie_point p_point ) const {
             return _vertices.at( p_point );
@@ -181,9 +184,21 @@ namespace TIKZ {
     void place_trie_edge( picture& p_pic, placed_trie_vertex p_start, placed_trie_vertex p_end,
                           const stylized_string& p_label, const kv_store& p_options = { } );
 
+    void place_diverted_trie_edge( picture& p_pic, placed_trie_vertex p_start,
+                                   placed_trie_vertex p_end, const stylized_string& p_label,
+                                   double p_downwardDivertion, double p_beginDivertion,
+                                   const kv_store& p_options = { } );
+
     void place_trie_string_on_coordinates( picture& p_pic, const placed_trie& p_trie,
                                            const std::string& p_string,
                                            const kv_store&    p_options = { } );
+
+    void place_diverted_trie_string_on_coordinates( picture& p_pic, const placed_trie& p_trie,
+                                                    const std::string& p_string,
+                                                    const std::string& p_alphabet,
+                                                    double             p_charDiversion
+                                                    = DEFAULT_TRIE_CHAR_DIVERTION,
+                                                    const kv_store& p_options = { } );
 
     void place_trie_depth_labels( picture& p_pic, const placed_trie& p_trie,
                                   tikz_point      p_labelTopLeft = { .0, CHAR_HEIGHT },
@@ -198,7 +213,17 @@ namespace TIKZ {
                                     | OPT::TEXT_COLOR( COLOR_TEXT.deemphasize( ) ) );
 
     placed_trie place_trie( picture& p_pic, const trie& p_trie, tikz_point p_topLeft = { .0, .0 },
-                            const std::string& p_name = EMPTY_STR,
-                            double p_distX = 2.5 * CHAR_WIDTH, double p_distY = -1.5 * CHAR_HEIGHT,
-                            const kv_store& p_options = { } );
+                            const std::string& p_name    = EMPTY_STR,
+                            double             p_distX   = DEFAULT_TRIE_VERTEX_DIST_X,
+                            double             p_distY   = DEFAULT_TRIE_VERTEX_DIST_Y,
+                            const kv_store&    p_options = { } );
+
+    placed_trie place_trie_wide( picture& p_pic, const trie& p_trie, const std::string& p_alphabet,
+                                 tikz_point         p_topLeft       = { .0, .0 },
+                                 const std::string& p_name          = EMPTY_STR,
+                                 double             p_distX         = DEFAULT_TRIE_VERTEX_DIST_X,
+                                 double             p_distY         = DEFAULT_TRIE_VERTEX_DIST_Y,
+                                 double             p_charDiversion = DEFAULT_TRIE_CHAR_DIVERTION,
+                                 const kv_store&    p_options       = { } );
+
 } // namespace TIKZ

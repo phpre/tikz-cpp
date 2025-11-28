@@ -8,9 +8,9 @@ std::string COLOR_PATH   = TEX_DIR + "color";
 std::string MACRO_PATH   = TEX_DIR + "macros";
 std::string PROGRAM_NAME = "";
 
-std::string T = "b" + WILDCARD + WILDCARD + WILDCARD + "a" + WILDCARD + "ab" + WILDCARD + WILDCARD
+std::string T = "bb" + WILDCARD + WILDCARD + WILDCARD + "a" + WILDCARD + "ab" + WILDCARD + WILDCARD
                 + "a" + WILDCARD + "a";
-std::string P = "bcaaa";
+std::string P = "bbaaa";
 
 std::string SUBST_GOOD = "aabbaaa";
 std::string SUBST_BAD  = "abcabca";
@@ -243,7 +243,7 @@ void wc_subst_picture( const std::string&     p_name      = "g02.tex",
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
-void trie_picture( const std::string&             p_name = "g03.tex",
+void trie_picture( const std::string& p_name = "g03.tex", const std::string& p_alphabet = EMPTY_STR,
                    const std::deque<std::string>& p_str
                    = { "aba", "ac", "aca", "cba", "abc", "cb" } ) {
     trie     T;
@@ -251,16 +251,23 @@ void trie_picture( const std::string&             p_name = "g03.tex",
     for( const auto& s : p_str ) {
         picture p1{ };
         T.insert( s );
-        place_trie_depth_labels( p1, T, tikz_point{ 0, CHAR_HEIGHT * 3 / 4 } );
-        auto tr = place_trie( p1, T );
-        place_trie_string_on_coordinates( p1, tr, s, OPT::COLOR( COLOR_C3 ) );
+        if( p_alphabet == EMPTY_STR ) {
+            auto tr = place_trie( p1, T );
+            place_trie_string_on_coordinates( p1, tr, s, OPT::COLOR( COLOR_C3 ) );
+            place_trie_depth_labels( p1, tr, tikz_point{ 0, CHAR_HEIGHT * 3 / 4 } );
+        } else {
+            auto tr = place_trie_wide( p1, T, p_alphabet );
+            place_diverted_trie_string_on_coordinates(
+                p1, tr, s, p_alphabet, DEFAULT_TRIE_CHAR_DIVERTION, OPT::COLOR( COLOR_C3 ) );
+            place_trie_depth_labels( p1, tr, tikz_point{ 0, CHAR_HEIGHT * 3 / 4 } );
+        }
         out.add_picture( p1 );
     }
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
 void multi_trie_picture( const std::string& p_name = "g04.tex", const std::string& p_t = T,
-                         const std::string& p_p = P, const std::string& p_alphabet = "abc",
+                         const std::string& p_p = P, const std::string& p_alphabet = "ab",
                          const std::string& p_wildcard = WILDCARD ) {
     document out{ };
 
@@ -326,8 +333,11 @@ void multi_trie_picture( const std::string& p_name = "g04.tex", const std::strin
     }
     out.add_picture( p1 );
 
-    std::deque<trie>    multi_trie{ numwc + 1, trie{} };
-    std::map<u64, trie> compressed_multi_trie{ };
+    std::deque<trie> multi_trie{ numwc + 1, trie{} };
+
+    double charDiv = 1.25 * DEFAULT_TRIE_CHAR_DIVERTION;
+    double distX   = DEFAULT_TRIE_VERTEX_DIST_X;
+    double distY   = 1.15 * DEFAULT_TRIE_VERTEX_DIST_Y;
 
     // push things into tries
     {
@@ -335,20 +345,24 @@ void multi_trie_picture( const std::string& p_name = "g04.tex", const std::strin
             picture p2{ };
             multi_trie[ s ].insert( c );
 
-            place_trie_depth_labels( p2, multi_trie[ s ], numwc,
-                                     tikz_point{ 0, CHAR_HEIGHT * 3 / 4 } );
-
-            u64 height = 0;
+            std::deque<placed_trie> ptr;
+            u64                     height = 0;
             for( u64 i = 0; i <= numwc; ++i ) {
-                auto tr
-                    = place_trie( p2, multi_trie[ i ],
-                                  tikz_point{ i * 2.5 * CHAR_WIDTH, -1.5 * CHAR_HEIGHT * height },
-                                  std::to_string( i ) );
+                auto tr = place_trie_wide( p2, multi_trie[ i ], p_alphabet,
+                                           !i ? tikz_point{ 0.0, 0.0 }
+                                              : ptr[ 0 ].vertex_position( i, height ),
+                                           std::to_string( i ), distX, distY, charDiv );
                 if( i == s ) {
-                    place_trie_string_on_coordinates( p2, tr, c, OPT::COLOR( COLOR_C3 ) );
+                    place_diverted_trie_string_on_coordinates( p2, tr, c, p_alphabet, charDiv,
+                                                               OPT::COLOR( COLOR_C3 ) );
                 }
 
-                height += std::max( 1LLU, multi_trie[ i ].m_vertices[ 0 ][ 0 ].m_size );
+                height += multi_trie[ i ].m_vertices[ 0 ][ 0 ].m_size;
+                ptr.push_back( tr );
+            }
+            if( !ptr.empty( ) ) {
+                place_trie_depth_labels( p2, ptr[ 0 ], numwc,
+                                         tikz_point{ 0, CHAR_HEIGHT * 3 / 4 } );
             }
             out.add_picture( p2 );
         }
@@ -357,33 +371,107 @@ void multi_trie_picture( const std::string& p_name = "g04.tex", const std::strin
     // add dummy edges
     picture                 p2{ };
     std::deque<placed_trie> ptr;
-    place_trie_depth_labels( p2, multi_trie[ 0 ], numwc, tikz_point{ 0, CHAR_HEIGHT * 3 / 4 } );
-    u64 height = 0;
+    u64                     height = 0;
     for( u64 i = 0; i <= numwc; ++i ) {
-        auto tr = place_trie( p2, multi_trie[ i ],
-                              tikz_point{ i * 2.5 * CHAR_WIDTH, -1.5 * CHAR_HEIGHT * height },
-                              std::to_string( i ) );
+        auto tr
+            = place_trie_wide( p2, multi_trie[ i ], p_alphabet,
+                               !i ? tikz_point{ 0.0, 0.0 } : ptr[ 0 ].vertex_position( i, height ),
+                               std::to_string( i ), distX, distY, charDiv );
         ptr.push_back( tr );
-        height += std::max( 1LLU, multi_trie[ i ].m_vertices[ 0 ][ 0 ].m_size );
+        height += multi_trie[ i ].m_vertices[ 0 ][ 0 ].m_size;
+    }
+    place_trie_depth_labels( p2, ptr[ 0 ], numwc, tikz_point{ 0, CHAR_HEIGHT * 3 / 4 } );
+    out.add_picture( p2 );
 
+    std::map<tikz_point, std::set<char>> extra_edges{ };
+
+    std::deque<std::deque<u64>> rems{ };
+    for( u64 i = 0; i <= numwc; ++i ) {
         if( i ) {
-            std::string rem{ };
-            for( auto c : p_alphabet ) {
+            std::deque<u64> rem{ };
+            for( u64 j = 0; j < p_alphabet.size( ); ++j ) {
+                auto c = p_alphabet[ j ];
                 if( !multi_trie[ i - 1 ].m_vertices[ 0 ][ 0 ].m_next.count( c ) ) {
-                    rem = std::string{ c };
-                    break;
+                    rem.push_back( j );
                 }
             }
+            rems.push_back( rem );
 
-            if( rem != EMPTY_STR ) {
-                place_trie_edge( p2, ptr[ i - 1 ][ TRIE_ROOT ], ptr[ i ][ TRIE_ROOT ],
-                                 stylized_string{ rem, EMPTY_STR, str_displ_t::SHOW_CHARACTERS },
-                                 OPT::COLOR( COLOR_C2.deemphasize( ) ) );
+            if( !rem.empty( ) ) {
+                for( u64 j = rem.size( ); j-- > 0; ) {
+                    extra_edges[ ptr[ i - 1 ][ TRIE_ROOT ].m_pos ].insert( p_alphabet[ rem[ j ] ] );
+
+                    place_diverted_trie_edge(
+                        p2, ptr[ i - 1 ][ TRIE_ROOT ], ptr[ i ][ TRIE_ROOT ],
+                        stylized_string{ std::string{ p_alphabet[ rem[ j ] ] }, EMPTY_STR,
+                                         str_displ_t::SHOW_CHARACTERS },
+                        j * distY, ( 2 + p_alphabet.size( ) - rem[ j ] ) * charDiv,
+                        j ? OPT::COLOR( COLOR_C2.deemphasize( ) )
+                          : OPT::COLOR( COLOR_C2.deemphasize_weak( ) ) );
+                }
             }
         }
     }
     out.add_picture( p2 );
 
+    // add dummy edges (2):
+    // for each non-edge, divert to next trie that has a corresponding (dummy) edge
+    auto opts  = OPT::COLOR( COLOR_C5.deemphasize( ) );
+    auto opts2 = OPT::COLOR( COLOR_C5.deemphasize_weak( ) );
+    for( const auto& [ s, cstr ] : constraints ) {
+        // for each previous trie, try to insert c starting from depth s
+        for( u64 i = 0; i < s; ++i ) {
+            auto tg = s - i;
+            if( multi_trie[ i ].m_vertices.size( ) <= tg ) {
+                // no string extends far enough
+                continue;
+            }
+            for( u64 j = 0; j < multi_trie[ i ].m_vertices[ tg ].size( ); ++j ) {
+                picture tmp{ p2 };
+                bool    broke = false;
+
+                trie_point posO{ TRIE_ROOT };
+                trie_point pos{ tg, j };
+                u64        i2 = 0;
+                for( ; i2 < cstr.size( ); ++i2 ) {
+                    place_trie_vertex( tmp, ptr[ i ][ pos ], opts2 );
+
+                    posO = ptr[ s ].next( posO, cstr[ i2 ] );
+                    if( !ptr[ i ][ pos ].m_next.count( cstr[ i2 ] ) ) {
+                        std::string c{ cstr[ i2 ] };
+                        u64         cpos  = p_alphabet.find( c );
+                        auto        label = stylized_string{ c };
+                        place_diverted_trie_edge( p2, ptr[ i ][ pos ], ptr[ s ][ posO ], label, 0.0,
+                                                  ( 2.666 + p_alphabet.size( ) - cpos ) * charDiv,
+                                                  opts );
+
+                        place_diverted_trie_edge(
+                            tmp, ptr[ i ][ pos ], ptr[ s ][ posO ], label, 0.0,
+                            ( 2.666 + p_alphabet.size( ) - cpos ) * charDiv, opts2 );
+
+                        broke = true;
+                        break;
+                    }
+
+                    auto        n = ptr[ i ].next( pos, cstr[ i2 ] );
+                    std::string c{ cstr[ i2 ] };
+                    u64         cpos  = p_alphabet.find( c );
+                    auto        label = stylized_string{ c };
+                    place_diverted_trie_edge( tmp, ptr[ i ][ pos ], ptr[ i ][ n ], label, 0.0,
+                                              ( 2 + p_alphabet.size( ) - cpos ) * charDiv, opts2 );
+                    pos = n;
+                }
+                if( !broke ) {
+                    // place_trie_vertex( p2, ptr[ i ][ pos ], opts );
+                    // place_trie_vertex( tmp, ptr[ i ][ pos ], opts2 );
+                }
+
+                out.add_picture( tmp );
+            }
+        }
+    }
+
+    out.add_picture( p2 );
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
@@ -402,5 +490,7 @@ int main( int p_argc, char* p_argv[] ) {
     wc_subst_picture( );
     wc_subst_picture( "g02b.tex", SUBST_BAD );
     trie_picture( );
+    trie_picture( "g03b.tex", "abc" );
+    trie_picture( "g03c.tex", "abc", { "aaaa", "aabb", "aacc", "abaa", "acaa", "abba" } );
     multi_trie_picture( );
 }
