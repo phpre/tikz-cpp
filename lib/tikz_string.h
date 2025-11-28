@@ -5,21 +5,12 @@
 #include "alg_breakpoint.h"
 #include "alg_trie.h"
 #include "defines.h"
+#include "tikz_flags.h"
 #include "tikz_graph.h"
 #include "tikz_picture.h"
 #include "tikz_stylized_string.h"
 
 namespace TIKZ {
-    constexpr double CHAR_WIDTH  = .5;
-    constexpr double CHAR_HEIGHT = .5;
-    constexpr double CHAR_GLOW   = .075;
-
-    constexpr color MAT_COL = COLOR_C1;
-    constexpr color DEL_COL = COLOR_C3;
-    constexpr color INS_COL = COLOR_C4;
-    constexpr color SUB_COL = COLOR_C5;
-    constexpr color SEP_COL = COLOR_C2;
-
     color color_for_bp( const breakpoint& p_bp );
 
     void place_separator( picture& p_pic, tikz_point p_PtopLeft, tikz_point p_TtopLeft,
@@ -73,7 +64,6 @@ namespace TIKZ {
                                            color p_topColor         = COLOR_NONE,
                                            color p_bottomColor      = COLOR_NONE );
 
-    constexpr double DEFAULT_SLICE_SPACING = 0.25;
     void place_graph_slices_stylized( picture& p_pic, const std::deque<graph_slice>& p_gs,
                                       breakpoint_repn p_alignment,
                                       color  p_portalVertexColor      = COLOR_BLACK.deemphasize( ),

@@ -16,10 +16,6 @@ namespace TIKZ {
         trie_point          m_parent{ };
     };
 
-    constexpr double DEFAULT_TRIE_VERTEX_DIST_X  = 2.5 * CHAR_WIDTH;
-    constexpr double DEFAULT_TRIE_VERTEX_DIST_Y  = -1.5 * CHAR_HEIGHT;
-    constexpr double DEFAULT_TRIE_CHAR_DIVERTION = CHAR_WIDTH / 6;
-
     class placed_trie {
       public:
         typedef std::map<trie_point, placed_trie_vertex> placed_trie_vertices_t;

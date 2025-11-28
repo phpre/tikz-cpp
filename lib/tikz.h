@@ -9,6 +9,7 @@
 #include "tikz_color.h"
 #include "tikz_command.h"
 #include "tikz_document.h"
+#include "tikz_flags.h"
 #include "tikz_graph.h"
 #include "tikz_option.h"
 #include "tikz_picture.h"

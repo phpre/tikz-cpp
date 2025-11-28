@@ -370,7 +370,10 @@ namespace TIKZ {
                                         / 2.0,
                                     p_PtopLeft.m_y
                                         + ( p_TtopLeft.m_y - CHAR_HEIGHT - p_PtopLeft.m_y ) / 2.0 },
-                        OPT::DOUBLE( p_color.to_bg( ) ) | OPT::DRAW( p_color.deemphasize( ) ), 3 );
+                        ( CROSS_FILL ? OPT::DOUBLE( p_color ) | OPT::DRAW( p_color.to_bg( ) )
+                                     : OPT::DOUBLE( p_color.to_bg( ) )
+                                           | OPT::DRAW( p_color.deemphasize( ) ) ),
+                        3 );
                 }
             }
         }
