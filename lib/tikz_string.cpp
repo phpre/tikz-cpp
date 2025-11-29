@@ -420,10 +420,14 @@ namespace TIKZ {
     std::pair<tikz_point, tikz_point>
     place_alignment( picture& p_pic, const stylized_string& p_P, tikz_point p_PtopLeft,
                      const stylized_string& p_T, tikz_point p_TtopLeft,
-                     const breakpoint_repn& p_brpnt, bool p_printBreakpoints,
-                     bool p_printExtraStringParts, bool p_compress, bool p_showMatchedCharacters ) {
+                     const breakpoint_repn& p_brpnt, alignment_style_t p_style ) {
         double pxpos = p_PtopLeft.m_x, txpos = p_TtopLeft.m_x;
         double sepWidth = 3 * CHAR_GLOW, extraGlow = 3.5 * CHAR_GLOW, smallGlow = 2 * CHAR_GLOW;
+
+        bool showMatchedCharacters = p_style & AT_SHOW_MATCHED_CHARACTERS;
+        bool compress              = p_style & AT_COMPRESS;
+        bool printBreakpoints      = p_style & AT_PRINT_BREAKPOINTS;
+        bool printExtraStringParts = p_style & AT_PRINT_EXTRA_STRING_PARTS;
 
         stylized_string pnew{ p_P.m_name, p_P.m_fragment,
                               p_P.m_displayStyle | str_displ_t::SHOW_CHARACTERS };
@@ -431,27 +435,27 @@ namespace TIKZ {
                               p_T.m_displayStyle | str_displ_t::SHOW_CHARACTERS };
 
         for( u64 i = p_P.m_fragment.closed_begin( ); i < p_P.m_fragment.open_end( ); ++i ) {
-            if( p_P.has_wildcard( i ) || p_showMatchedCharacters ) {
+            if( p_P.has_wildcard( i ) || showMatchedCharacters ) {
                 pnew.annotation_at_pos( i ) = p_P.annotation_at_pos( i );
             }
         }
         for( u64 i = p_T.m_fragment.closed_begin( ); i < p_T.m_fragment.open_end( ); ++i ) {
-            if( p_T.has_wildcard( i ) || p_showMatchedCharacters ) {
+            if( p_T.has_wildcard( i ) || showMatchedCharacters ) {
                 tnew.annotation_at_pos( i ) = p_T.annotation_at_pos( i );
             }
         }
 
-        if( p_compress ) {
+        if( compress ) {
             sepWidth = extraGlow = smallGlow = 0;
-            p_printBreakpoints               = false;
+            printBreakpoints                 = false;
         }
         double pxinit = pxpos, txinit = txpos;
 
-        if( p_printExtraStringParts ) {
+        if( printExtraStringParts ) {
             auto fragP = fragmentco{ p_P.m_fragment.closed_begin( ), p_brpnt.front( ).m_posP };
             auto fragT = fragmentco{ p_T.m_fragment.closed_begin( ), p_brpnt.front( ).m_posT };
             if( fragP.length( ) ) {
-                if( !p_compress ) {
+                if( !compress ) {
                     place_string( p_pic, p_P.slice( fragP ), tikz_point{ pxpos, p_PtopLeft.m_y } );
                 }
                 pxpos += CHAR_WIDTH * fragP.length( ) + smallGlow;
@@ -460,7 +464,7 @@ namespace TIKZ {
                 pxinit = pxpos;
             }
             if( fragT.length( ) ) {
-                if( !p_compress ) {
+                if( !compress ) {
                     place_string( p_pic, p_T.slice( fragT ), tikz_point{ txpos, p_TtopLeft.m_y } );
                 }
                 txpos += CHAR_WIDTH * fragT.length( ) + smallGlow;
@@ -473,7 +477,7 @@ namespace TIKZ {
         double last = pxpos, lastt = txpos;
         u64    shiftP = 0, shiftT = 0;
 
-        if( p_printBreakpoints ) {
+        if( printBreakpoints ) {
             // initial dummy breakpoint
             place_separator( p_pic, tikz_point{ pxpos, p_PtopLeft.m_y },
                              tikz_point{ txpos, p_TtopLeft.m_y }, SEP_COL.deemphasize( ) );
@@ -497,15 +501,15 @@ namespace TIKZ {
 
             if( fragT.length( ) > 0 && fragP.length( ) > 0 ) {
                 // matched fragment
-                place_matched_string_pair(
-                    p_pic, p_P.slice( fragP ), tikz_point{ pxpos, p_PtopLeft.m_y },
-                    p_T.slice( fragT ), tikz_point{ txpos, p_TtopLeft.m_y }, MAT_COL, p_compress );
+                place_matched_string_pair( p_pic, p_P.slice( fragP ),
+                                           tikz_point{ pxpos, p_PtopLeft.m_y }, p_T.slice( fragT ),
+                                           tikz_point{ txpos, p_TtopLeft.m_y }, MAT_COL, compress );
                 pxpos += CHAR_WIDTH * fragP.length( ) + extraGlow;
                 txpos += CHAR_WIDTH * fragT.length( ) + extraGlow;
             }
 
             // print next breakpoint
-            if( p_printBreakpoints ) {
+            if( printBreakpoints ) {
                 auto posx = pxpos, posxt = txpos;
                 auto extray = 0.0, extrayt = 0.0;
 
@@ -602,20 +606,20 @@ namespace TIKZ {
                     p_T.slice( { bp.m_posT, bp.m_posT + shiftT } )
                         .replace_data( str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS,
                                        std::string{ bp.m_charT }, bp.m_posT ),
-                    tikz_point{ txpos, p_TtopLeft.m_y }, color_for_bp( bp ), p_compress );
+                    tikz_point{ txpos, p_TtopLeft.m_y }, color_for_bp( bp ), compress );
                 pxpos += shiftP * CHAR_WIDTH + extraGlow;
                 txpos += shiftT * CHAR_WIDTH + extraGlow;
             }
         }
 
-        if( !p_compress && p_printExtraStringParts ) {
+        if( !compress && printExtraStringParts ) {
             auto fragP = fragmentco{ p_brpnt.back( ).m_posP, p_P.m_fragment.open_end( ) };
             auto fragT = fragmentco{ p_brpnt.back( ).m_posT, p_T.m_fragment.open_end( ) };
             auto corr  = smallGlow - extraGlow;
-            if( p_printBreakpoints ) { corr = smallGlow - sepWidth; }
+            if( printBreakpoints ) { corr = smallGlow - sepWidth; }
             if( fragP.length( ) ) {
                 pxpos += corr;
-                if( !p_compress ) {
+                if( !compress ) {
                     place_string( p_pic, p_P.slice( fragP ), tikz_point{ pxpos, p_PtopLeft.m_y } );
                 }
                 pxpos += CHAR_WIDTH * fragP.length( );
@@ -624,7 +628,7 @@ namespace TIKZ {
             }
             if( fragT.length( ) ) {
                 txpos += corr;
-                if( !p_compress ) {
+                if( !compress ) {
                     place_string( p_pic, p_T.slice( fragT ), tikz_point{ txpos, p_TtopLeft.m_y } );
                 }
                 txpos += CHAR_WIDTH * fragT.length( );
@@ -633,11 +637,46 @@ namespace TIKZ {
             }
         }
 
-        if( p_compress ) {
+        if( compress ) {
             place_string( p_pic, pnew, tikz_point{ pxinit, p_PtopLeft.m_y } );
             place_string( p_pic, tnew, tikz_point{ txinit, p_TtopLeft.m_y } );
         }
 
         return { tikz_point{ pxpos, p_PtopLeft.m_y }, tikz_point{ txpos, p_TtopLeft.m_y } };
     }
+
+    void place_highlighted_occurrence( picture& p_pic, const stylized_string& p_P,
+                                       tikz_point p_PtopLeft, const stylized_string& p_T,
+                                       tikz_point                         p_TtopLeft,
+                                       const std::deque<breakpoint_repn>& p_occs, u64 p_selectedOcc,
+                                       occ_style_t p_occstyle, alignment_style_t p_alstyle ) {
+        std::deque<bool> has_occ{ };
+        for( u64 y = 0; y < p_occs.size( ); ++y ) {
+            while( has_occ.size( ) < p_occs[ y ][ 0 ].m_posT ) { has_occ.push_back( false ); }
+            has_occ.push_back( true );
+            if( y != p_selectedOcc ) { continue; }
+
+            place_alignment( p_pic, p_P, p_PtopLeft, p_T, p_TtopLeft, p_occs[ y ], p_alstyle );
+
+            // place maru/batsu on top of each position so far
+            if( p_occstyle == occ_style_t::ALL_POS ) {
+                for( u64 i = 0; i <= p_occs[ y ][ 0 ].m_posT; ++i ) {
+                    if( has_occ[ i ] ) {
+                        p_pic.place_maru(
+                            p_TtopLeft + tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+                    } else {
+                        p_pic.place_batsu(
+                            p_TtopLeft + tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+                    }
+                }
+            } else if( p_occstyle == occ_style_t::STARTING_POS ) {
+                for( u64 i = 0; i <= y; ++i ) {
+                    p_pic.place_maru( p_TtopLeft
+                                      + tikz_point{ ( p_occs[ i ][ 0 ].m_posT + .5 ) * CHAR_WIDTH,
+                                                    CHAR_HEIGHT / 2 } );
+                }
+            }
+        }
+    }
+
 } // namespace TIKZ

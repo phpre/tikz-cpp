@@ -22,26 +22,6 @@ auto P_NAME = stylized_string{ P, "P", str_displ_t::SHOW_CHARACTERS | str_displ_
 auto OCCS_P_T     = compute_occs( P, T, WILDCARD );
 auto OCCS_P_T_ALL = compute_occs_with_mism( P, T, P.size( ), WILDCARD );
 
-void wildcards_picture( const std::string&                 p_name  = "g01.tex",
-                        const stylized_string&             p_pname = P_NAME,
-                        const stylized_string&             p_tname = T_NAME,
-                        const std::deque<breakpoint_repn>& p_occs  = OCCS_P_T ) {
-    document out{ };
-    for( u64 y = 0; y < p_occs.size( ); ++y ) {
-        picture p2{ };
-
-        p2.place_text( math_mode( VSIZE_CORRECTION + p_pname.m_name ),
-                       tikz_point{ -1 * CHAR_WIDTH, -3 * CHAR_HEIGHT } );
-        p2.place_text( math_mode( VSIZE_CORRECTION + p_tname.m_name ),
-                       tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
-
-        place_alignment( p2, p_pname, tikz_point{ 0.0, -2.5 * CHAR_HEIGHT }, p_tname,
-                         tikz_point{ 0.0, 0.0 }, p_occs[ y ], false, true, true, true );
-        out.add_picture( p2 );
-    }
-    document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
-}
-
 void wc_subst_picture( const std::string&     p_name      = "g02.tex",
                        const std::string      p_wcSubst   = SUBST_GOOD,
                        const std::string      p_substName = "\\varphi",
@@ -208,7 +188,6 @@ void wc_subst_picture( const std::string&     p_name      = "g02.tex",
         auto occspt_all = compute_occs_with_mism( P, Tr, P.size( ) );
         auto TNr        = p_t.fill_wildcards( p_wcSubst );
         TNr.m_name      = p_substName + "(" + p_t.m_name + ")";
-        wildcards_picture( "g" + p_name, p_p, TNr, occspt_all );
 
         tikz_point topLeftR1{ 0.0, 0.0 }, topLeftR2{ 0.0, -2.5 * CHAR_HEIGHT };
         tikz_point hdist{ 1 * CHAR_WIDTH, 0.0 };
@@ -238,8 +217,10 @@ void wc_subst_picture( const std::string&     p_name      = "g02.tex",
                        topLeftR2 + tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
         p6.place_text( math_mode( VSIZE_CORRECTION + str.m_name ),
                        topLeftR1 + tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+
+        out.add_picture( p6 );
+        add_occurrences_pictures( out, p_p, TNr, occspt_all );
     }
-    out.add_picture( p6 );
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
@@ -296,7 +277,7 @@ void multi_trie_picture( const std::string& p_name = "g04.tex", const std::strin
             p1.place_text( math_mode( VSIZE_CORRECTION + pN.m_name ),
                            tikz_point{ -1 * CHAR_WIDTH, -1.25 - ( 1.5 * y - .5 ) * CHAR_HEIGHT } );
             place_alignment( p1, pN, tikz_point{ 0.0, -.75 - 1.5 * y * CHAR_HEIGHT }, tN,
-                             tikz_point{ 0.0, 0.0 }, occs[ y ], false, true, true, true );
+                             tikz_point{ 0.0, 0.0 }, occs[ y ], AT_OCCS_DEFAULT );
 
             std::string constr{ }, cwc{ };
             u64         prefix = p_t.size( ) + 1;
@@ -517,8 +498,17 @@ int main( int p_argc, char* p_argv[] ) {
         MACRO_PATH = TEX_DIR + "macros";
     }
 
-    wildcards_picture( );
-    wildcards_picture( "g01b.tex", P_NAME, T_NAME, OCCS_P_T_ALL );
+    {
+        document out{ };
+        add_occurrences_pictures( out, P_NAME, T_NAME, OCCS_P_T );
+        document::output( OUT_DIR, "g01.tex", out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
+    }
+    {
+        document out{ };
+        add_occurrences_pictures( out, P_NAME, T_NAME, OCCS_P_T_ALL );
+        document::output( OUT_DIR, "g01b.tex", out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
+    }
+
     wc_subst_picture( );
     wc_subst_picture( "g02b.tex", SUBST_BAD );
     trie_picture( );

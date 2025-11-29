@@ -66,10 +66,10 @@ void picture_alignment( const std::string& p_name = "g02.tex" ) {
         place_alignment( p1, P_NAME, tikz_point{ 0.0, 0.0 }, T_NAME, tikz_point{ 0.0, 1.25 }, bp );
 
         place_alignment( p1, P_NAME, tikz_point{ 0.0, 3.5 }, T_NAME, tikz_point{ 0.0, 4.75 }, bp,
-                         false, false, true );
+                         AT_COMPRESS );
 
         place_alignment( p1, P_NAME, tikz_point{ 0.0, 6.5 }, T_NAME, tikz_point{ 0.0, 7.75 }, bp,
-                         false );
+                         AT_NONE );
     }
     out.add_picture( p1 );
     picture p2{ };
@@ -86,11 +86,12 @@ void picture_alignment( const std::string& p_name = "g02.tex" ) {
 
         for( u64 y = 0; y < bps.size( ); ++y ) {
             place_alignment( p2, P_NAME, tikz_point{ 0.0, -3.0 * y }, T_NAME,
-                             tikz_point{ 0.0, -3.0 * y + 1 }, bps[ y ], false, true, true );
+                             tikz_point{ 0.0, -3.0 * y + 1 }, bps[ y ],
+                             AT_PRINT_EXTRA_STRING_PARTS | AT_COMPRESS );
 
             place_alignment( p2, P_NAME, tikz_point{ ( 2 + T.length( ) ) * CHAR_WIDTH, -3.0 * y },
                              T_NAME, tikz_point{ ( 2 + T.length( ) ) * CHAR_WIDTH, -3.0 * y + 1 },
-                             bps[ y ], true, true );
+                             bps[ y ], AT_PRINT_BREAKPOINTS | AT_PRINT_EXTRA_STRING_PARTS );
         }
     }
     out.add_picture( p2 );
@@ -106,11 +107,12 @@ void picture_alignment( const std::string& p_name = "g02.tex" ) {
 
         for( u64 y = 0; y < bps.size( ); ++y ) {
             place_alignment( p3, P_NAME, tikz_point{ 0.0, -3.0 * y }, T_NAME,
-                             tikz_point{ 0.0, -3.0 * y + 1 }, bps[ y ], false, true, true );
+                             tikz_point{ 0.0, -3.0 * y + 1 }, bps[ y ],
+                             AT_PRINT_EXTRA_STRING_PARTS | AT_COMPRESS );
 
             place_alignment( p3, P_NAME, tikz_point{ ( 2 + T.length( ) ) * CHAR_WIDTH, -3.0 * y },
                              T_NAME, tikz_point{ ( 2 + T.length( ) ) * CHAR_WIDTH, -3.0 * y + 1 },
-                             bps[ y ], true, true );
+                             bps[ y ], AT_PRINT_EXTRA_STRING_PARTS | AT_PRINT_BREAKPOINTS );
         }
     }
     out.add_picture( p3 );

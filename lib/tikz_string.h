@@ -28,13 +28,30 @@ namespace TIKZ {
                                     tikz_point p_PtopLeft, const stylized_string& p_T,
                                     tikz_point p_TtopLeft, color p_color, bool p_compress = false );
 
+    typedef u8                  alignment_style_t;
+    constexpr alignment_style_t AT_NONE                     = 0;
+    constexpr alignment_style_t AT_PRINT_BREAKPOINTS        = ( 1 << 0 );
+    constexpr alignment_style_t AT_PRINT_EXTRA_STRING_PARTS = ( 1 << 1 );
+    constexpr alignment_style_t AT_COMPRESS                 = ( 1 << 2 );
+    constexpr alignment_style_t AT_SHOW_MATCHED_CHARACTERS  = ( 1 << 4 );
+
+    constexpr alignment_style_t AT_DEFAULT = AT_PRINT_BREAKPOINTS;
+    constexpr alignment_style_t AT_OCCS_DEFAULT
+        = AT_PRINT_EXTRA_STRING_PARTS | AT_COMPRESS | AT_SHOW_MATCHED_CHARACTERS;
+
     // Prints alignment P to T
     std::pair<tikz_point, tikz_point>
     place_alignment( picture& p_pic, const stylized_string& p_P, tikz_point p_PtopLeft,
                      const stylized_string& p_T, tikz_point p_TtopLeft,
-                     const breakpoint_repn& p_brpnt, bool p_printBreakpoints = true,
-                     bool p_printExtraStringParts = false, bool p_compress = false,
-                     bool p_showMatchedCharacters = false );
+                     const breakpoint_repn& p_brpnt, alignment_style_t p_style = AT_DEFAULT );
+
+    enum class occ_style_t { NO_ANNOTATION, STARTING_POS, ALL_POS, OCC_FULL };
+    void place_highlighted_occurrence( picture& p_pic, const stylized_string& p_P,
+                                       tikz_point p_PtopLeft, const stylized_string& p_T,
+                                       tikz_point                         p_TtopLeft,
+                                       const std::deque<breakpoint_repn>& p_occs, u64 p_selectedOcc,
+                                       occ_style_t       p_occstyle = occ_style_t::NO_ANNOTATION,
+                                       alignment_style_t p_alstyle  = AT_OCCS_DEFAULT );
 
     void place_alignment_graph_label( picture& p_pic, const stylized_string& p_Pname,
                                       const stylized_string& p_Tname,
