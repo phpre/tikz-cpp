@@ -97,7 +97,9 @@ $(FIGDIR)/%.pdf: $(FIGDIR)/%.tex
 	$(SILENTCMD)SOURCE_DATE_EPOCH=$(COMMIT_EPOCH) latexmk -f -silent -pdf -lualatex -use-make -output-directory=$(FIGDIR) $< >/dev/null || true
 	$(SILENTMSG) "built ... $^"
 
-figures:	$(PDFS)
+figures: $(PDFS)
+	@mkdir -p $(OUTDIR)
+	@pdfunite $^ $(OUTDIR)/combined.pdf
 
 generate_figures: $(GEN_FIGS)
 	@$(MAKE) -f $(THIS_FILE) figures
