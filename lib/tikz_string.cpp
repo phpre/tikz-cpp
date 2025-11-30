@@ -649,18 +649,19 @@ namespace TIKZ {
                                        tikz_point p_PtopLeft, const stylized_string& p_T,
                                        tikz_point                         p_TtopLeft,
                                        const std::deque<breakpoint_repn>& p_occs, u64 p_selectedOcc,
-                                       occ_style_t p_occstyle, alignment_style_t p_alstyle ) {
-        std::deque<bool> has_occ{ };
+                                       occ_style_t p_occstyle ) {
+        alignment_style_t alstyle = AT_OCCS_DEFAULT;
+        std::deque<bool>  has_occ{ };
         for( u64 y = 0; y < p_occs.size( ); ++y ) {
-            while( has_occ.size( ) < p_occs[ y ][ 0 ].m_posT ) { has_occ.push_back( false ); }
+            while( has_occ.size( ) < p_occs[ y ].front( ).m_posT ) { has_occ.push_back( false ); }
             has_occ.push_back( true );
             if( y != p_selectedOcc ) { continue; }
 
-            place_alignment( p_pic, p_P, p_PtopLeft, p_T, p_TtopLeft, p_occs[ y ], p_alstyle );
+            place_alignment( p_pic, p_P, p_PtopLeft, p_T, p_TtopLeft, p_occs[ y ], alstyle );
 
             // place maru/batsu on top of each position so far
             if( p_occstyle == occ_style_t::ALL_POS ) {
-                for( u64 i = 0; i <= p_occs[ y ][ 0 ].m_posT; ++i ) {
+                for( u64 i = 0; i <= p_occs[ y ].front( ).m_posT; ++i ) {
                     if( has_occ[ i ] ) {
                         p_pic.place_maru(
                             p_TtopLeft + tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
@@ -671,9 +672,28 @@ namespace TIKZ {
                 }
             } else if( p_occstyle == occ_style_t::STARTING_POS ) {
                 for( u64 i = 0; i <= y; ++i ) {
-                    p_pic.place_maru( p_TtopLeft
-                                      + tikz_point{ ( p_occs[ i ][ 0 ].m_posT + .5 ) * CHAR_WIDTH,
-                                                    CHAR_HEIGHT / 2 } );
+                    p_pic.place_maru(
+                        p_TtopLeft
+                        + tikz_point{ ( p_occs[ i ].front( ).m_posT + .5 ) * CHAR_WIDTH,
+                                      CHAR_HEIGHT / 2 } );
+                }
+            } else if( p_occstyle == occ_style_t::OCC_FULL ) {
+                auto opt = OPT::ROTATE( "45" ) | OPT::OUTER_SEP( "0pt" ) | OPT::INNER_SEP( "1pt" )
+                           | OPT::FILL( COLOR_C1.deemphasize_weak( ) );
+
+                for( u64 i = 0; i <= y; ++i ) {
+                    auto tl = p_TtopLeft
+                              + tikz_point{ ( p_occs[ i ].front( ).m_posT ) * CHAR_WIDTH,
+                                            CHAR_HEIGHT / 4 * ( i + 1 ) };
+                    auto tr = p_TtopLeft
+                              + tikz_point{ ( p_occs[ i ].back( ).m_posT ) * CHAR_WIDTH,
+                                            CHAR_HEIGHT / 4 * ( i + 1 ) };
+
+                    p_pic.place_node( tl, EMPTY_STR, opt );
+                    p_pic.place_node( tr, EMPTY_STR, opt );
+
+                    p_pic.place_line( tl, tr,
+                                      OPT::DRAW( COLOR_C1.deemphasize_weak( ) ) | OPT::LW_LINE );
                 }
             }
         }

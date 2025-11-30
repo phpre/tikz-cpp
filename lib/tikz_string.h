@@ -50,8 +50,7 @@ namespace TIKZ {
                                        tikz_point p_PtopLeft, const stylized_string& p_T,
                                        tikz_point                         p_TtopLeft,
                                        const std::deque<breakpoint_repn>& p_occs, u64 p_selectedOcc,
-                                       occ_style_t       p_occstyle = occ_style_t::NO_ANNOTATION,
-                                       alignment_style_t p_alstyle  = AT_OCCS_DEFAULT );
+                                       occ_style_t p_occstyle = occ_style_t::NO_ANNOTATION );
 
     void place_alignment_graph_label( picture& p_pic, const stylized_string& p_Pname,
                                       const stylized_string& p_Tname,
