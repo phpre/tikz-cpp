@@ -9,7 +9,7 @@ std::string MACRO_PATH   = TEX_DIR + "macros";
 std::string PROGRAM_NAME = "";
 
 void picture_structural_insight1( const std::string& p_name = "g01.tex",
-                                  occ_style_t p_style = occ_style_t::ALL_POS, u64 p_n = 16,
+                                  occ_style_t p_style = occ_style_t::STARTING_POS, u64 p_n = 16,
                                   u64 p_m = 8, u64 p_k = 3 ) {
     // T aaaabbbb
     // P   aabb

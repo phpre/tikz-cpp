@@ -237,9 +237,13 @@ void trie_picture( const std::string& p_name = "g03.tex", const std::string& p_a
             place_trie_string_on_coordinates( p1, tr, s, OPT::COLOR( COLOR_C3 ) );
             place_trie_depth_labels( p1, tr, tikz_point{ 0, CHAR_HEIGHT * 3 / 4 } );
         } else {
-            auto tr = place_trie_wide( p1, T, p_alphabet );
-            place_diverted_trie_string_on_coordinates(
-                p1, tr, s, p_alphabet, DEFAULT_TRIE_CHAR_DIVERTION, OPT::COLOR( COLOR_C3 ) );
+            double charDiv = 1.25 * DEFAULT_TRIE_CHAR_DIVERTION;
+            double distX   = DEFAULT_TRIE_VERTEX_DIST_X;
+            double distY   = 1.15 * DEFAULT_TRIE_VERTEX_DIST_Y;
+            auto tr = place_trie_wide( p1, T, p_alphabet, tikz_point{ 0.0, 0.0 }, EMPTY_STR, distX,
+                                       distY, charDiv );
+            place_diverted_trie_string_on_coordinates( p1, tr, s, p_alphabet, charDiv,
+                                                       OPT::COLOR( COLOR_C3 ) );
             place_trie_depth_labels( p1, tr, tikz_point{ 0, CHAR_HEIGHT * 3 / 4 } );
         }
         out.add_picture( p1 );
