@@ -87,6 +87,22 @@ namespace TIKZ {
         place_node( p_position, p_text, p_options, p_name );
     }
 
+    void picture::place_double_text( const std::string& p_text, tikz_position p_position,
+                                     color p_outlineColor, color p_fillColor, double p_outlineWidth,
+                                     const kv_store& p_options, const std::string& p_name,
+                                     render_mode_t p_renderMode, line_cap_mode_t p_lineCapMode,
+                                     line_join_mode_t p_lineJoinMode ) {
+        add_package( "pdfrender" );
+        std::string text
+            = "\\textpdfrender{"
+              + std::format( "TextRenderingMode={}, LineWidth={:5.3f}pt, LineCapStyle={}, "
+                             "LineJoinStyle={}, FillColor={}, StrokeColor={}",
+                             p_renderMode, p_outlineWidth, p_lineCapMode, p_lineJoinMode,
+                             p_fillColor.to_string( ), p_outlineColor.to_string( ) )
+              + "}{" + p_text + "}";
+        place_node( p_position, text, p_options, p_name );
+    }
+
     void picture::place_line( tikz_position p_topLeft, tikz_position p_bottomRight,
                               const kv_store& p_options ) {
         std::deque<std::shared_ptr<path_operation>> line{

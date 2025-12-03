@@ -115,7 +115,7 @@ namespace TIKZ {
             result += "]";
         }
 
-        if( m_name != EMPTY_STR ) { result += " (" + m_name + ")"; }
+        result += " (" + m_name + ")";
         if( !m_position.empty( ) ) { result += " at (" + m_position.to_string( ) + ")"; }
 
         if( !p_internal ) { result += ";"; }
