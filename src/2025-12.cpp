@@ -8,6 +8,253 @@ std::string COLOR_PATH   = TEX_DIR + "color_talk";
 std::string MACRO_PATH   = TEX_DIR + "macros";
 std::string PROGRAM_NAME = "";
 
+constexpr std::string T = "AAAcdaAAAaacAAaddAAAAA";
+constexpr std::string P = "AbAAbcdAAAdAAbddAAaAAA";
+
+constexpr std::string T2 = "DEFGHaJKLMcOPQAB";
+constexpr std::string P2 = "DEFGHIJKLMNOPQAB";
+
+const stylized_string S_NAME{ std::string{ "S" }, fragmentco{ 0, 0 } };
+const stylized_string T_NAME2{ std::string{ "T" }, fragmentco{ 0, T.size( ) } };
+const stylized_string P_NAME2{ std::string{ "P" }, fragmentco{ 0, P.size( ) } };
+
+const stylized_string T_NAME{ T, std::string{ "T" }, str_displ_t::FRAGMENT };
+const stylized_string P_NAME{ P, std::string{ "P" }, str_displ_t::FRAGMENT };
+const stylized_string T2_NAME{ T2, std::string{ "T" }, str_displ_t::FRAGMENT };
+const stylized_string P2_NAME{ P2, std::string{ "P" }, str_displ_t::FRAGMENT };
+
+const breakpoint_repn BP_P_T   = compute_breakpoints( P, T );
+const breakpoint_repn BP_P2_T2 = compute_breakpoints( P2, T2 );
+
+void alignment_picture( picture& p_pic, const std::string& p_P, const std::string& p_T ) {
+
+    auto tn
+        = stylized_string{ p_P, "T", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
+    auto pn
+        = stylized_string{ p_T, "P", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
+    breakpoint_repn bp = compute_breakpoints( p_P, p_T );
+    place_alignment( p_pic, pn, tikz_point{ 0.0, 0.0 }, tn, tikz_point{ 0.0, 1.25 }, bp,
+                     AT_COMPRESS );
+}
+
+void real_alignments_picture( const std::string& p_name = "g20.tex" ) {
+    document out{ };
+    picture  p1{ };
+    alignment_picture( p1, "saarbrücken", "saarbruecken" );
+    out.add_picture( p1 );
+    picture p2{ };
+    alignment_picture( p2, "saarbrücken", "sarrebruck" );
+    out.add_picture( p2 );
+    document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
+}
+
+void alignment_picture( const std::string& p_name   = "g21.tex",
+                        breakpoint_repn p_alignment = BP_P2_T2, stylized_string p_Tname = T2_NAME,
+                        stylized_string p_Pname = P2_NAME ) {
+    document out{ };
+
+    picture p1{ };
+    place_alignment( p1, p_Pname, tikz_point{ 0.0, 0.0 }, p_Tname, tikz_point{ 0.0, 1.25 },
+                     p_alignment, AT_COMPRESS );
+    out.add_picture( p1 );
+    document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
+}
+
+void alignment_graph_picture(
+    const std::string& p_name = "g22.tex",
+    stylized_string    p_Tname
+    = stylized_string{ T_NAME.m_name, T_NAME.m_fragment, str_displ_t ::POSITION },
+    stylized_string p_Pname
+    = stylized_string{ P_NAME.m_name, P_NAME.m_fragment, str_displ_t ::POSITION },
+    fragmentco p_fragment = fragmentco{ 0, 11 }, breakpoint_repn p_alignment = BP_P_T ) {
+
+    document out{ };
+    picture  p1{ OPT::YSCALE( ".93" ) };
+    {
+        auto fragT = align_fragment( p_alignment, p_fragment );
+
+        place_alignment_graph_label( p1, p_Pname.slice( p_fragment ), p_Tname.slice( fragT ) );
+        auto vg = place_alignment_graph( p1, P, p_fragment, T, fragT );
+        // highlight main diagonal
+        vg.place_diagonal_on_coordinates( p1, vertex ::marked_vertex( SEP_COL.deemphasize_weak( ) ),
+                                          1 + std::min( p_fragment.length( ), fragT.length( ) ) );
+        // print alignment
+        auto brpnt = breakpoint_slice( p_alignment, p_fragment );
+        place_alignment_on_coordinates( p1, vg, brpnt );
+    }
+    out.add_picture( p1 );
+    picture p2{ OPT::YSCALE( ".93" ) };
+    {
+        place_string_vertical(
+            p2, stylized_string{ "P\\position{p}", fragmentco{ 0, 1 }, str_displ_t ::NAME },
+            tikz_point{ -CHAR_WIDTH - .4, -.5 * CHAR_HEIGHT } );
+        picture scope{ { }, {} };
+        scope.place_rectangle( tikz_point{ -.67 * CHAR_WIDTH, .67 * CHAR_HEIGHT },
+                               tikz_point{ .67 * CHAR_WIDTH, -2.67 * CHAR_HEIGHT }, OPT::CLIP );
+        auto vg = place_alignment_graph(
+            scope, "PPP", { 0, 3 }, "TTT", { 0, 2 }, tikz_point{ 2 * CHAR_WIDTH, -2 * CHAR_HEIGHT },
+            tikz_point{ -2 * CHAR_WIDTH, 2 * CHAR_WIDTH }, COLOR_TEXT );
+        place_selected_arrow( scope, vg.label_for_pos( 1, 1 ), vg.label_for_pos( 1, 2 ), DEL_COL,
+                              DEL_COL.to_bg( ), -90.0 );
+        p2.add_scope( scope );
+        p2.place_text( math_mode( "\\small w( P\\position{p} \\to \\varepsilon )" ),
+                       tikz_point{ 2 * CHAR_WIDTH, -1 * CHAR_HEIGHT },
+                       OPT::FILL( COLOR_WHITE ) | OPT::XSCALE( ".8" ) | OPT::TEXT_COLOR( DEL_COL )
+                           | OPT::INNER_SEP( "1pt" ) );
+    }
+    out.add_picture( p2 );
+    picture p3{ OPT::YSCALE( ".93" ) };
+    {
+        place_string( p3,
+                      stylized_string{ "T\\position{t}", fragmentco{ 0, 1 }, str_displ_t ::NAME },
+                      tikz_point{ .5 * CHAR_WIDTH, CHAR_HEIGHT + .4 } );
+
+        picture scope{ { }, {} };
+        scope.place_rectangle( tikz_point{ -.67 * CHAR_WIDTH, .67 * CHAR_HEIGHT },
+                               tikz_point{ 2.67 * CHAR_WIDTH, -.67 * CHAR_HEIGHT }, OPT::CLIP );
+        auto vg = place_alignment_graph(
+            scope, "PPP", { 0, 2 }, "TTT", { 0, 3 }, tikz_point{ 2 * CHAR_WIDTH, -2 * CHAR_HEIGHT },
+            tikz_point{ -2 * CHAR_WIDTH, 2 * CHAR_WIDTH }, COLOR_TEXT );
+        place_selected_arrow( scope, vg.label_for_pos( 1, 1 ), vg.label_for_pos( 2, 1 ), INS_COL,
+                              INS_COL.to_bg( ), -0.0 );
+        p3.add_scope( scope );
+        p3.place_text( math_mode( "\\small w( \\varepsilon \\to T\\position{t} )" ),
+                       tikz_point{ 1 * CHAR_WIDTH, -1.25 * CHAR_HEIGHT },
+                       OPT::FILL( COLOR_WHITE ) | OPT::XSCALE( ".8" ) | OPT::TEXT_COLOR( INS_COL )
+                           | OPT::INNER_SEP( "1pt" ) );
+    }
+    out.add_picture( p3 );
+    picture p4{ OPT::YSCALE( ".93" ) };
+    {
+        place_string( p4,
+                      stylized_string{ "T\\position{t}", fragmentco{ 0, 1 }, str_displ_t ::NAME },
+                      tikz_point{ .5 * CHAR_WIDTH, CHAR_HEIGHT + .4 } );
+        place_string_vertical(
+            p4, stylized_string{ "P\\position{p}", fragmentco{ 0, 1 }, str_displ_t ::NAME },
+            tikz_point{ -CHAR_WIDTH - .4, -.5 * CHAR_HEIGHT } );
+
+        picture scope{ { }, {} };
+        scope.place_rectangle( tikz_point{ -.67 * CHAR_WIDTH, .67 * CHAR_HEIGHT },
+                               tikz_point{ 2.67 * CHAR_WIDTH, -2.67 * CHAR_HEIGHT }, OPT::CLIP );
+        auto vg = place_alignment_graph(
+            scope, "PPP", { 0, 3 }, "TTT", { 0, 3 }, tikz_point{ 2 * CHAR_WIDTH, -2 * CHAR_HEIGHT },
+            tikz_point{ -2 * CHAR_WIDTH, 2 * CHAR_WIDTH }, COLOR_TEXT );
+        p4.add_scope( scope );
+        p4.place_text( math_mode( "\\small w( P\\position{p} \\to T\\position{t})" ),
+                       tikz_point{ 1.3 * CHAR_WIDTH, -.7 * CHAR_HEIGHT },
+                       OPT::FILL( COLOR_WHITE ) | OPT::XSCALE( ".8" ) | OPT::TEXT_COLOR( SUB_COL )
+                           | OPT::INNER_SEP( "1pt" ) | OPT::ANCHOR_WEST );
+        p4.place_text( math_mode( "\\small 0" ), tikz_point{ .7 * CHAR_WIDTH, -1.3 * CHAR_HEIGHT },
+                       OPT::FILL( COLOR_WHITE ) | OPT::XSCALE( ".8" ) | OPT::TEXT_COLOR( MAT_COL )
+                           | OPT::INNER_SEP( "1pt" ) | OPT::ANCHOR_EAST );
+
+        place_selected_arrow( p4, vg.label_for_pos( 1, 1 ) + ") + (0.0, -.05",
+                              vg.label_for_pos( 2, 2 ) + ") + ( 0.0, -.05", MAT_COL,
+                              MAT_COL.to_bg( ), -45.0 );
+
+        place_selected_arrow( p4, vg.label_for_pos( 1, 1 ) + ") + (0.0, +.05",
+                              vg.label_for_pos( 2, 2 ) + ") + ( 0.0, +.05", SUB_COL,
+                              SUB_COL.to_bg( ), -45.0 );
+    }
+    out.add_picture( p4 );
+    document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
+}
+
+void slices_picture( const std::string& p_name = "g23.tex", stylized_string p_Pname = P_NAME,
+                     stylized_string p_Tname = S_NAME, fragmentco p_fragment = fragmentco{ 0, 11 },
+                     u64 p_d = 1, breakpoint_repn p_alignment = BP_P_T, const std::string& p_P = P,
+                     const std::string& p_T = T ) {
+    auto pname_s = stylized_string{ p_Pname.m_name, p_Pname.m_fragment, str_displ_t ::NAME };
+    auto tname_s = stylized_string{ p_Tname.m_name, p_Tname.m_fragment, str_displ_t ::NAME };
+
+    auto align = breakpoint_slice( p_alignment, p_fragment );
+    auto gs    = graph_slice::from_alignment( align, p_d );
+
+    // full picture of every slice
+    document out{ };
+    picture  p1{ OPT::YSCALE( ".9" ) };
+    {
+        place_graph_slices( p1, gs, p_alignment, p_P, p_T, COLOR_BLACK.deemphasize( ), COLOR_NONE,
+                            COLOR_NONE, COLOR_NONE );
+        place_graph_slices_t_labels( p1, gs, p_Tname, p_Pname );
+        // place_graph_slices_p_labels( p1, gs, p_d );
+        place_string_vertical( p1, pname_s.slice( p_fragment ),
+                               tikz_point{ -CHAR_WIDTH - .25, .0 } );
+    }
+    out.add_picture( p1 );
+    picture p2{ OPT::YSCALE( ".9" ) };
+    {
+        place_graph_slices_stylized( p2, gs, p_alignment );
+        place_graph_slices_t_labels( p2, gs, p_Tname, p_Pname, true );
+        // place_graph_slices_p_labels( p2, gs, p_d );
+        place_string_vertical( p2, pname_s.slice( p_fragment ),
+                               tikz_point{ -CHAR_WIDTH - .25, .0 } );
+    }
+    out.add_picture( p2 );
+
+    // left-pure-right decomposition
+    auto    tpb_decomp = graph_slice::top_pure_bot_decomp( gs );
+    picture p3{ OPT::YSCALE( ".9" ) };
+    {
+        place_graph_slices( p3, tpb_decomp, p_alignment, p_P, p_T, COLOR_BLACK.deemphasize( ),
+                            COLOR_NONE, COLOR_NONE );
+        place_graph_slices_t_labels( p3, tpb_decomp, p_Tname, p_Pname, true );
+        place_string_vertical( p3, pname_s.slice( p_fragment ),
+                               tikz_point{ -CHAR_WIDTH - .25, .0 } );
+    }
+    out.add_picture( p3 );
+    picture p4{ OPT::YSCALE( ".9" ) };
+    {
+        place_graph_slices_stylized( p4, tpb_decomp, p_alignment );
+        place_graph_slices_t_labels( p4, tpb_decomp, p_Tname, p_Pname, true );
+        place_string_vertical( p4, pname_s.slice( p_fragment ),
+                               tikz_point{ -CHAR_WIDTH - .25, .0 } );
+    }
+    out.add_picture( p4 );
+
+    // fully merged
+    auto    merged = graph_slice::merged_slice( gs, p_fragment );
+    picture p5{ OPT::YSCALE( ".9" ) };
+    {
+        place_graph_slices( p5, { merged }, p_alignment, p_P, p_T, COLOR_NONE,
+                            COLOR_BLACK.deemphasize( ), COLOR_NONE, COLOR_NONE );
+        place_alignment_graph_label( p5, pname_s.slice( p_fragment ),
+                                     tname_s.slice( merged.fragment_t( ) ) );
+    }
+    out.add_picture( p5 );
+    picture p6{ OPT::YSCALE( ".9" ) };
+    {
+        place_graph_slices_stylized( p6, { merged }, p_alignment, COLOR_BLACK.deemphasize( ),
+                                     COLOR_NONE, SEP_COL.deemphasize( ), SEP_COL.deemphasize( ),
+                                     MAT_COL.deemphasize( ), COLOR_BLACK.deemphasize( ) );
+        place_alignment_graph_label( p6, pname_s.slice( p_fragment ),
+                                     tname_s.slice( merged.fragment_t( ) ) );
+    }
+    out.add_picture( p6 );
+    document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
+}
+
+void picture_string( const std::string& p_name = "g03.tex", u64 p_n = 12, u64 p_m = 3 ) {
+    auto tn = stylized_string{ "T", fragmentco{ 0, p_n }, str_displ_t::NAME };
+    auto pn = stylized_string{ "P", fragmentco{ 0, p_m }, str_displ_t::NAME };
+
+    document out{ };
+    picture  p1{ };
+
+    place_string( p1, tn, tikz_point{ 0.0, 0.0 } );
+    place_string( p1, pn, tikz_point{ ( p_n - p_m ) / 2.0 * CHAR_WIDTH, -1.5 * CHAR_HEIGHT } );
+
+    out.add_picture( p1 );
+    picture p2{ };
+
+    place_string( p2, tn.color_invert( ), tikz_point{ 0.0, 0.0 } );
+    place_string( p2, pn.color_invert( ),
+                  tikz_point{ ( p_n - p_m ) / 2.0 * CHAR_WIDTH, -1.5 * CHAR_HEIGHT } );
+
+    out.add_picture( p2 );
+    document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
+}
+
 void picture_filter_verify( const std::string& p_name = "g02.tex", u64 p_n = 12, u64 p_m = 3,
                             u64 p_k = 1, u64 p_srand = 0, u64 p_batch = 3 ) {
     srand( p_srand );
@@ -227,11 +474,11 @@ void picture_standard_trick( const std::string& p_name = "g01.tex", u64 p_n = 12
         }
         name += "}{";
         if( !j ) {
-            name += " k + |P| + \\ell";
+            name += " k + p + \\ell";
         } else if( j + p_l >= p_n - p_m + p_k + 1 ) {
-            name += "|T|";
+            name += "t";
         } else {
-            name += std::format( " k + |P| + {}\\ell", 1 + ( j / p_l ) );
+            name += std::format( " k + p + {}\\ell", 1 + ( j / p_l ) );
         }
         name += "}";
 
@@ -347,6 +594,7 @@ int main( int p_argc, char* p_argv[] ) {
     }
 
     CROSS_FILL = true;
+    // real_alignments_picture( );
     picture_structural_insight1( );
     picture_structural_insight1( "g11b.tex", occ_style_t::NO_ANNOTATION );
     picture_structural_insight2( );
@@ -355,4 +603,15 @@ int main( int p_argc, char* p_argv[] ) {
     CROSS_FILL = false;
     picture_standard_trick( );
     picture_filter_verify( );
+    picture_string( );
+
+    alignment_picture( );
+    alignment_picture( "g21b.tex", breakpoint_slice( BP_P_T, { 0, BP_P2_T2.back( ).m_posP } ),
+                       T_NAME2.slice( align_fragment( BP_P_T, { 0, BP_P2_T2.back( ).m_posP } ) ),
+                       P_NAME2.slice( { 0, BP_P2_T2.back( ).m_posP } ) );
+    alignment_graph_picture( );
+    slices_picture( );
+    slices_picture( "g23b.tex", P_NAME, P_NAME, fragmentco{ 0, 11 }, 1,
+                    trivial_alignment( fragmentco{ 0, 11 } ), P, P );
+    slices_picture( "g23c.tex", P_NAME, S_NAME, fragmentco{ 0, 11 }, 1, BP_P2_T2, P2, T2 );
 }
