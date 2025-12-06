@@ -28,12 +28,16 @@ namespace TIKZ {
                                     tikz_point p_PtopLeft, const stylized_string& p_T,
                                     tikz_point p_TtopLeft, color p_color, bool p_compress = false );
 
+    void place_edit_cost( picture& p_pic, u64 p_cost, tikz_position p_position, color p_color,
+                          color p_bgColor );
+
     typedef u8                  alignment_style_t;
     constexpr alignment_style_t AT_NONE                     = 0;
     constexpr alignment_style_t AT_PRINT_BREAKPOINTS        = ( 1 << 0 );
     constexpr alignment_style_t AT_PRINT_EXTRA_STRING_PARTS = ( 1 << 1 );
     constexpr alignment_style_t AT_COMPRESS                 = ( 1 << 2 );
     constexpr alignment_style_t AT_SHOW_MATCHED_CHARACTERS  = ( 1 << 4 );
+    constexpr alignment_style_t AT_SHOW_EDIT_COST           = ( 1 << 5 );
 
     constexpr alignment_style_t AT_DEFAULT = AT_PRINT_BREAKPOINTS;
     constexpr alignment_style_t AT_OCCS_DEFAULT

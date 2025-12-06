@@ -88,6 +88,7 @@ namespace TIKZ {
         const tikz_option ROTATE{ "rotate", "0" };
         const tikz_option XSCALE{ "xscale", "1" };
         const tikz_option YSCALE{ "yscale", "1" };
+        const tikz_option SCALE{ "scale", "1" };
 
         const tikz_option OUTER_SEP{ "outer sep", "auto" };
         const tikz_option INNER_SEP{ "inner sep", ".3333em" };

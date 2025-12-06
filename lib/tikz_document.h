@@ -1,5 +1,6 @@
 #pragma once
 #include <deque>
+#include <fstream>
 #include <set>
 #include <string>
 
@@ -22,8 +23,8 @@ namespace TIKZ {
                          const std::string& p_colorPath = EMPTY_STR,
                          const std::string& p_macroPath = EMPTY_STR ) const;
 
-        static FILE* open_or_abort( const std::string& p_path );
-        static void  indent( FILE* p_out, u64 p_indentLevel = 1, u64 p_indent = 4 );
+        static std::ofstream open_or_abort( const std::string& p_path );
+        static void indent( std::ofstream& p_out, u64 p_indentLevel = 1, u64 p_indent = 4 );
         static bool output( const std::string& p_path, const std::string& p_name, render_t p_render,
                             u64 p_indent = 4 );
     };

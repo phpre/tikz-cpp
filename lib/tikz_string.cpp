@@ -5,16 +5,30 @@
 #include "tikz_util.h"
 
 namespace TIKZ {
-    const tikz_option XSCALE_TO_WIDTH = OPT::XSCALE( "{min(1, \\twd)}" );
-    const tikz_option YSCALE_TO_WIDTH = OPT::YSCALE( "{min(1, \\twd)}" );
-    math_command      width_macro( double p_width, const std::string& p_text ) {
+    const tikz_option XSCALE_TO_WIDTH  = OPT::XSCALE( "{min(1, \\twd)}" );
+    const tikz_option YSCALE_TO_WIDTH  = OPT::YSCALE( "{min(1, \\twd)}" );
+    const tikz_option XSCALE_TO_HEIGHT = OPT::XSCALE( "{min(1, \\thg)}" );
+    const tikz_option YSCALE_TO_HEIGHT = OPT::YSCALE( "{min(1, \\thg)}" );
+    math_command      width_macro( double p_width, const std::string& p_text,
+                                   const std::string& p_unit = "1cm" ) {
         std::string buf;
         if( p_text == EMPTY_STR ) {
-            buf = std::format( "{:5.3f} * 1cm / width(\" \")", p_width );
+            buf = std::format( "{:5.3f} * {} / width(\" \")", p_width, p_unit );
         } else {
-            buf = std::format( "{:5.3f} * 1cm / width(\"{}\")", p_width, p_text );
+            buf = std::format( "{:5.3f} * {} / width(\"{}\")", p_width, p_unit, p_text );
         }
         return math_command{ "twd", buf };
+    }
+
+    math_command height_macro( double p_height, const std::string& p_text,
+                               const std::string& p_unit = "1cm" ) {
+        std::string buf;
+        if( p_text == EMPTY_STR ) {
+            buf = std::format( "{:5.3f} * {} / height(\" \")", p_height, p_unit );
+        } else {
+            buf = std::format( "{:5.3f} * {} / height(\"{}\")", p_height, p_unit, p_text );
+        }
+        return math_command{ "thg", buf };
     }
 
     void place_single_character( picture& p_pic, const stylized_string& p_S, u64 p_pos,
@@ -382,6 +396,25 @@ namespace TIKZ {
         if( !p_compress && p_T.length( ) ) { place_string( p_pic, p_T, p_TtopLeft ); }
     }
 
+    void place_edit_cost( picture& p_pic, u64 p_cost, tikz_position p_position, color p_color,
+                          color p_bgColor ) {
+        // circle of bg color, cost on top
+        p_pic.place_node( p_position, EMPTY_STR,
+                          OPT::DRAW( p_bgColor ) | OPT::FILL( p_bgColor ) | OPT::LW_SUPPORT_LINE
+                              | OPT::CIRCLE | OPT::DOUBLE( p_color )
+                              | OPT::INNER_SEP( std::format( "{:5.3f}pt", 4 * CHAR_WIDTH ) ) );
+
+        // todo add width macro
+
+        p_pic.add_command( std::make_shared<math_command>(
+            width_macro( 6 * CHAR_WIDTH, math_mode( std::to_string( p_cost ) ), "1pt" ) ) );
+        p_pic.add_command( std::make_shared<math_command>(
+            height_macro( 6 * CHAR_WIDTH, math_mode( std::to_string( p_cost ) ), "1pt" ) ) );
+        p_pic.place_text( math_mode( std::to_string( p_cost ) ), p_position,
+                          OPT::INNER_SEP( "0pt" ) | OPT::TEXT_COLOR( p_color ) | XSCALE_TO_WIDTH
+                              | YSCALE_TO_HEIGHT | OPT::TRANSFORM_SHAPE );
+    }
+
     std::string char_or_empty( char p_char, const std::string& p_wildcard ) {
         if( !p_char ) { return "\\varepsilon"; }
         char wc = ( p_wildcard == EMPTY_STR || !p_wildcard.length( ) ) ? 0 : p_wildcard[ 0 ];
@@ -428,6 +461,7 @@ namespace TIKZ {
         bool compress              = p_style & AT_COMPRESS;
         bool printBreakpoints      = p_style & AT_PRINT_BREAKPOINTS;
         bool printExtraStringParts = p_style & AT_PRINT_EXTRA_STRING_PARTS;
+        bool costs                 = p_style & AT_SHOW_EDIT_COST;
 
         stylized_string pnew{ p_P.m_name, p_P.m_fragment,
                               p_P.m_displayStyle | str_displ_t::SHOW_CHARACTERS };
@@ -572,6 +606,7 @@ namespace TIKZ {
                 shiftP = 0;
                 shiftT = 0;
             } else {
+                tikz_point cost_pos{ 0.0, 0.0 };
                 if( bp.m_charT && bp.m_charP ) { // substitution
                     shiftP = 1;
                     shiftT = 1;
@@ -584,18 +619,23 @@ namespace TIKZ {
                     if( !tnew.has_wildcard( bp.m_posT ) ) {
                         tnew.highlight_position( bp.m_posT, color_for_bp( bp ) );
                     }
+                    cost_pos = tikz_point{
+                        ( txpos + ( .5 ) * CHAR_WIDTH + pxpos + ( .5 ) * CHAR_WIDTH ) / 2.0,
+                        p_PtopLeft.m_y + ( p_TtopLeft.m_y - CHAR_HEIGHT - p_PtopLeft.m_y ) / 2.0 };
                 } else if( bp.m_charT ) { // insertion
                     shiftT = 1;
                     shiftP = 0;
 
                     tnew[ bp.m_posT ] = std::string{ bp.m_charT };
                     tnew.highlight_position( bp.m_posT, color_for_bp( bp ) );
+                    cost_pos = tikz_point{ txpos + ( .5 ) * CHAR_WIDTH, p_TtopLeft.m_y };
                 } else if( bp.m_charP ) { // deletion
                     shiftP = 1;
                     shiftT = 0;
 
                     pnew[ bp.m_posP ] = std::string{ bp.m_charP };
                     pnew.highlight_position( bp.m_posP, color_for_bp( bp ) );
+                    cost_pos = tikz_point{ pxpos + ( .5 ) * CHAR_WIDTH, p_PtopLeft.m_y };
                 }
                 place_matched_string_pair(
                     p_pic,
@@ -607,6 +647,10 @@ namespace TIKZ {
                         .replace_data( str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS,
                                        std::string{ bp.m_charT }, bp.m_posT ),
                     tikz_point{ txpos, p_TtopLeft.m_y }, color_for_bp( bp ), compress );
+                if( costs ) {
+                    p_pic.place_coordinate( cost_pos,
+                                            std::format( "costp-{}-{}", bp.m_posP, bp.m_posT ) );
+                }
                 pxpos += shiftP * CHAR_WIDTH + extraGlow;
                 txpos += shiftT * CHAR_WIDTH + extraGlow;
             }
@@ -640,6 +684,15 @@ namespace TIKZ {
         if( compress ) {
             place_string( p_pic, pnew, tikz_point{ pxinit, p_PtopLeft.m_y } );
             place_string( p_pic, tnew, tikz_point{ txinit, p_TtopLeft.m_y } );
+        }
+
+        if( costs ) {
+            for( const auto& bp : p_brpnt ) {
+                if( !bp.m_charT && !bp.m_charP ) { continue; }
+                place_edit_cost( p_pic, bp.m_cost,
+                                 std::format( "costp-{}-{}", bp.m_posP, bp.m_posT ),
+                                 color_for_bp( bp ), color_for_bp( bp ).to_bg( ) );
+            }
         }
 
         return { tikz_point{ pxpos, p_PtopLeft.m_y }, tikz_point{ txpos, p_TtopLeft.m_y } };

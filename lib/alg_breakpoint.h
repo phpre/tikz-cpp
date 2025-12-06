@@ -1,5 +1,6 @@
 #pragma once
 #include <deque>
+#include <map>
 #include <string>
 
 #include "alg_fragmentco.h"
@@ -12,14 +13,27 @@ namespace ALG {
         u64  m_posT;
         char m_charP;
         char m_charT;
+        u64  m_cost;
 
         breakpoint( u64 p_posP, u64 p_posT, char p_charP = 0, char p_charT = 0 )
             : m_posP{ p_posP }, m_posT{ p_posT }, m_charP{ p_charP }, m_charT{ p_charT } {
+            m_cost = ( p_charP != p_charT );
         }
 
         breakpoint( point p_pos, char p_charP = 0, char p_charT = 0 )
             : m_posP{ p_pos.first }, m_posT{ p_pos.second }, m_charP{ p_charP },
               m_charT{ p_charT } {
+            m_cost = ( p_charP != p_charT );
+        }
+
+        explicit breakpoint( u64 p_posP, u64 p_posT, u64 p_cost, char p_charP, char p_charT )
+            : m_posP{ p_posP }, m_posT{ p_posT }, m_charP{ p_charP }, m_charT{ p_charT },
+              m_cost{ p_cost } {
+        }
+
+        explicit breakpoint( point p_pos, u64 p_cost, char p_charP, char p_charT )
+            : m_posP{ p_pos.first }, m_posT{ p_pos.second }, m_charP{ p_charP }, m_charT{ p_charT },
+              m_cost{ p_cost } {
         }
 
         inline bool is_dummy( ) const {
@@ -32,7 +46,7 @@ namespace ALG {
 
         inline breakpoint operator-( const breakpoint& p_rhs ) const {
             return breakpoint{ this->m_posP - p_rhs.m_posP, this->m_posT - p_rhs.m_posT,
-                               this->m_charP, this->m_charT };
+                               this->m_cost, this->m_charP, this->m_charT };
         }
 
         inline long shift( ) const {
@@ -47,6 +61,9 @@ namespace ALG {
             return shift_before( ) + shift( );
         }
     };
+
+    typedef std::pair<char, char>  edit_op;
+    typedef std::map<edit_op, u64> cost_table;
 
     typedef std::deque<breakpoint> breakpoint_repn;
 
@@ -64,10 +81,17 @@ namespace ALG {
         return res;
     }
 
-    // computes optimal (unweighted) edit distance alignment of P onto T
     breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& p_T,
+                                         const cost_table&  p_w,
                                          const std::string& p_wildcard   = WILDCARD,
                                          bool               p_wcInOutput = true );
+
+    // computes optimal (unweighted) edit distance alignment of P onto T
+    inline breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& p_T,
+                                                const std::string& p_wildcard   = WILDCARD,
+                                                bool               p_wcInOutput = true ) {
+        return compute_breakpoints( p_P, p_T, { }, p_wildcard, p_wcInOutput );
+    }
 
     std::deque<breakpoint_repn> compute_occs_with_edits( const std::string& p_P,
                                                          const std::string& p_T, u64 p_threshold,

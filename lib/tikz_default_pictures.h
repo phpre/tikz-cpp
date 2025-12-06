@@ -7,4 +7,8 @@ namespace TIKZ {
                                    const stylized_string&             p_tname,
                                    const std::deque<breakpoint_repn>& p_occs,
                                    occ_style_t p_style = occ_style_t::NO_ANNOTATION );
+
+    void add_alignment_picture( document& p_out, const std::string& p_P, const std::string& p_T,
+                                const cost_table& p_cost = { },
+                                alignment_style_t p_style  = AT_COMPRESS | AT_SHOW_MATCHED_CHARACTERS );
 } // namespace TIKZ

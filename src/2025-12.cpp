@@ -26,25 +26,37 @@ const stylized_string P2_NAME{ P2, std::string{ "P" }, str_displ_t::FRAGMENT };
 const breakpoint_repn BP_P_T   = compute_breakpoints( P, T );
 const breakpoint_repn BP_P2_T2 = compute_breakpoints( P2, T2 );
 
-void alignment_picture( picture& p_pic, const std::string& p_P, const std::string& p_T ) {
-
-    auto tn
-        = stylized_string{ p_P, "T", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
-    auto pn
-        = stylized_string{ p_T, "P", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
-    breakpoint_repn bp = compute_breakpoints( p_P, p_T );
-    place_alignment( p_pic, pn, tikz_point{ 0.0, 0.0 }, tn, tikz_point{ 0.0, 1.25 }, bp,
-                     AT_COMPRESS );
-}
-
 void real_alignments_picture( const std::string& p_name = "g20.tex" ) {
     document out{ };
-    picture  p1{ };
-    alignment_picture( p1, "saarbrücken", "saarbruecken" );
-    out.add_picture( p1 );
-    picture p2{ };
-    alignment_picture( p2, "saarbrücken", "sarrebruck" );
-    out.add_picture( p2 );
+    add_alignment_picture( out,
+                           "saarbr\xfc"
+                           "cken",
+                           "saarbruecken" );
+    add_alignment_picture( out,
+                           "saarbr\xfc"
+                           "cken",
+                           "sarrebruck" );
+    add_alignment_picture( out, "0PIN1CIV", "OPINION" );
+    add_alignment_picture( out, "0PIN1CIV", "PICNIC" );
+
+    cost_table w{
+        { { '0', 'O' }, 1 },
+        { { '1', 'I' }, 1 },
+        { { 'C', 'O' }, 1 },
+    };
+    std::string alph = "0PIN1CIVOPINIONPICNIC";
+    for( auto c : alph ) {
+        for( auto d : alph ) {
+            if( !w.count( { c, d } ) ) { w[ { c, d } ] = 2; }
+        }
+        if( !w.count( { c, 0 } ) ) { w[ { c, 0 } ] = 1; }
+        if( !w.count( { 0, c } ) ) { w[ { 0, c } ] = 10; }
+    }
+    add_alignment_picture( out, "0PIN1CIV", "OPINION", w,
+                           AT_COMPRESS | AT_SHOW_MATCHED_CHARACTERS | AT_SHOW_EDIT_COST );
+    add_alignment_picture( out, "0PIN1CIV", "PICNIC", w,
+                           AT_COMPRESS | AT_SHOW_MATCHED_CHARACTERS | AT_SHOW_EDIT_COST );
+
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
@@ -594,7 +606,7 @@ int main( int p_argc, char* p_argv[] ) {
     }
 
     CROSS_FILL = true;
-    // real_alignments_picture( );
+    real_alignments_picture( );
     picture_structural_insight1( );
     picture_structural_insight1( "g11b.tex", occ_style_t::NO_ANNOTATION );
     picture_structural_insight2( );

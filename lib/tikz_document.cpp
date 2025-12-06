@@ -1,7 +1,20 @@
-#include <cstdio>
+#include <locale>
 #include "tikz_document.h"
 
 namespace TIKZ {
+    std::string fix_encoding( const std::string& p_string ) {
+        std::string res;
+        for( u8 c : p_string ) {
+            if( c < 0x80 ) {
+                res.push_back( c );
+            } else {
+                res.push_back( 0xc0 | c >> 6 );
+                res.push_back( 0x80 | ( c & 0x3f ) );
+            }
+        }
+        return res;
+    }
+
     document::document( ) : _packages{ "mathtools", "tikz" }, _libraries{ "calc" }, _pictures{ } {
     }
 
@@ -11,32 +24,27 @@ namespace TIKZ {
         _pictures.push_back( p_picture );
     }
 
-    FILE* document::open_or_abort( const std::string& p_path ) {
-        FILE* out = fopen( p_path.c_str( ), "w" );
-        if( !out ) {
-            fprintf( stderr, "IO error" );
-            return nullptr;
-        }
-        return out;
+    std::ofstream document::open_or_abort( const std::string& p_path ) {
+        std::ofstream res( p_path );
+        res.imbue( std::locale( "en_US.UTF-8" ) );
+        return res;
     }
 
-    void document::indent( FILE* p_out, u64 p_indentLevel, u64 p_indent ) {
-        char buffer[ 10 ] = { 0 };
-        snprintf( buffer, 9, "%%%llu s", p_indentLevel * p_indent );
-        fprintf( p_out, buffer, "" );
+    void document::indent( std::ofstream& p_out, u64 p_indentLevel, u64 p_indent ) {
+        p_out << std::format( "{:{}s}", " ", p_indentLevel * p_indent );
     }
 
     bool document::output( const std::string& p_path, const std::string& p_name, render_t p_render,
                            u64 p_indent ) {
-        FILE* doc = open_or_abort( p_path + p_name );
+
+        auto doc = open_or_abort( p_path + p_name );
         if( !doc ) { return false; }
 
         for( const auto& [ i, s ] : p_render ) {
             indent( doc, i, p_indent );
-            fprintf( doc, "%s\n", s.c_str( ) );
+            doc << fix_encoding( s ) << std::endl;
         }
-
-        fclose( doc );
+        doc.close( );
         return true;
     }
 

@@ -2,6 +2,12 @@
 
 namespace ALG {
     bool match( char p_P, char p_T, char p_wc ) {
+        if( !p_P && !p_T ) {
+            return true;
+        } else if( !p_P || !p_T ) {
+            return false;
+        }
+
         if( !p_wc ) {
             return p_P == p_T;
         } else {
@@ -9,25 +15,37 @@ namespace ALG {
         }
     }
 
+    u64 get_cost( const cost_table& p_w, char p_p, char p_t, char p_wc ) {
+        if( match( p_p, p_t, p_wc ) ) { return 0; }
+        if( p_w.count( { p_p, p_t } ) ) { return p_w.at( { p_p, p_t } ); }
+        return 1;
+    }
+
     breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& p_T,
-                                         const std::string& p_wildcard, bool p_wcInOutput ) {
+                                         const cost_table& p_w, const std::string& p_wildcard,
+                                         bool p_wcInOutput ) {
         auto m = p_P.size( );
         auto n = p_T.size( );
 
         char wc = ( p_wildcard == EMPTY_STR || !p_wildcard.length( ) ) ? 0 : p_wildcard[ 0 ];
 
-        auto nw_dp = std::deque<std::deque<u64>>{ m + 1, std::deque<u64>( n + 1, 0 ) };
-        for( u64 i = 0; i <= m; ++i ) { nw_dp[ i ][ 0 ] = i; }
-        for( u64 j = 0; j <= n; ++j ) { nw_dp[ 0 ][ j ] = j; }
+        auto nw_dp      = std::deque<std::deque<u64>>{ m + 1, std::deque<u64>( n + 1, 0 ) };
+        nw_dp[ 0 ][ 0 ] = 0;
+        for( u64 i = 1; i <= m; ++i ) {
+            nw_dp[ i ][ 0 ] = nw_dp[ i - 1 ][ 0 ] + get_cost( p_w, p_P[ i - 1 ], 0, wc );
+        }
+        for( u64 j = 1; j <= n; ++j ) {
+            nw_dp[ 0 ][ j ] = nw_dp[ 0 ][ j - 1 ] + get_cost( p_w, 0, p_T[ j - 1 ], wc );
+        }
 
         for( u64 i = 1; i <= m; ++i ) {
             for( u64 j = 1; j <= n; ++j ) {
-                nw_dp[ i ][ j ] = std::min( nw_dp[ i - 1 ][ j ] + 1, nw_dp[ i ][ j - 1 ] + 1 );
-                if( match( p_P[ i - 1 ], p_T[ j - 1 ], wc ) ) {
-                    nw_dp[ i ][ j ] = std::min( nw_dp[ i ][ j ], nw_dp[ i - 1 ][ j - 1 ] );
-                } else {
-                    nw_dp[ i ][ j ] = std::min( nw_dp[ i ][ j ], nw_dp[ i - 1 ][ j - 1 ] + 1 );
-                }
+                nw_dp[ i ][ j ]
+                    = std::min( nw_dp[ i - 1 ][ j ] + get_cost( p_w, p_P[ i - 1 ], 0, wc ),
+                                nw_dp[ i ][ j - 1 ] + get_cost( p_w, 0, p_T[ j - 1 ], wc ) );
+                nw_dp[ i ][ j ] = std::min( nw_dp[ i ][ j ],
+                                            nw_dp[ i - 1 ][ j - 1 ]
+                                                + get_cost( p_w, p_P[ i - 1 ], p_T[ j - 1 ], wc ) );
             }
         }
 
@@ -44,17 +62,29 @@ namespace ALG {
                 pos = point{ i - 1, j - 1 };
 
                 if( p_wcInOutput && ( p_P[ i - 1 ] == wc || p_T[ j - 1 ] == wc ) ) {
-                    res.push_front( breakpoint{ pos, p_P[ i - 1 ], p_T[ j - 1 ] } );
+                    res.push_front( breakpoint{ pos,
+                                                get_cost( p_w, p_P[ i - 1 ], p_T[ j - 1 ], wc ),
+                                                p_P[ i - 1 ], p_T[ j - 1 ] } );
                 }
-            } else if( i && j && nw_dp[ i ][ j ] == 1 + nw_dp[ i - 1 ][ j - 1 ] ) {
+            } else if( i && j
+                       && nw_dp[ i ][ j ]
+                              == get_cost( p_w, p_P[ i - 1 ], p_T[ j - 1 ], wc )
+                                     + nw_dp[ i - 1 ][ j - 1 ] ) {
                 pos = point{ i - 1, j - 1 };
-                res.push_front( breakpoint{ pos, p_P[ i - 1 ], p_T[ j - 1 ] } );
-            } else if( i && nw_dp[ i ][ j ] == 1 + nw_dp[ i - 1 ][ j ] ) {
+                res.push_front( breakpoint{ pos, get_cost( p_w, p_P[ i - 1 ], p_T[ j - 1 ], wc ),
+                                            p_P[ i - 1 ], p_T[ j - 1 ] } );
+            } else if( i
+                       && nw_dp[ i ][ j ]
+                              == get_cost( p_w, p_P[ i - 1 ], 0, wc ) + nw_dp[ i - 1 ][ j ] ) {
                 pos = point{ i - 1, j };
-                res.push_front( breakpoint{ pos, p_P[ i - 1 ], 0 } );
-            } else if( j && nw_dp[ i ][ j ] == 1 + nw_dp[ i ][ j - 1 ] ) {
+                res.push_front(
+                    breakpoint{ pos, get_cost( p_w, p_P[ i - 1 ], 0, wc ), p_P[ i - 1 ], 0 } );
+            } else if( j
+                       && nw_dp[ i ][ j ]
+                              == get_cost( p_w, 0, p_T[ j - 1 ], wc ) + nw_dp[ i ][ j - 1 ] ) {
                 pos = point{ i, j - 1 };
-                res.push_front( breakpoint{ pos, 0, p_T[ j - 1 ] } );
+                res.push_front(
+                    breakpoint{ pos, get_cost( p_w, 0, p_T[ j - 1 ], wc ), 0, p_T[ j - 1 ] } );
             } else {
                 fprintf( stderr, "You screwed up.\n" );
                 pos = point{ 0, 0 };
