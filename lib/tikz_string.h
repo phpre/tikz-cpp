@@ -21,9 +21,25 @@ namespace TIKZ {
                        const kv_store& p_options = { }, bool p_openBegin = false,
                        bool p_openEnd = false );
 
+    inline void place_string( picture& p_pic, const std::string& p_string, tikz_point p_StopLeft,
+                              const kv_store& p_options = { }, bool p_openBegin = false,
+                              bool p_openEnd = false ) {
+        auto tn = stylized_string{ p_string, EMPTY_STR,
+                                   str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
+        place_string( p_pic, tn, p_StopLeft, p_options, p_openBegin, p_openEnd );
+    }
+
     void place_string_vertical( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft,
                                 const kv_store& p_options = { }, bool p_openBegin = false,
                                 bool p_openEnd = false );
+
+    inline void place_string_vertical( picture& p_pic, const std::string& p_string,
+                                       tikz_point p_StopLeft, const kv_store& p_options = { },
+                                       bool p_openBegin = false, bool p_openEnd = false ) {
+        auto tn = stylized_string{ p_string, EMPTY_STR,
+                                   str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
+        place_string_vertical( p_pic, tn, p_StopLeft, p_options, p_openBegin, p_openEnd );
+    }
 
     inline void place_string_sequence( picture& p_pic, const std::deque<stylized_string>& p_S,
                                        tikz_point p_StopLeft, const kv_store& p_options = { },

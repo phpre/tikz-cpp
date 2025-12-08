@@ -36,8 +36,6 @@ void alignments_picture( const std::string& p_name = "g20.tex" ) {
                            "saarbr\xfc"
                            "cken",
                            "sarrebruck" );
-    add_alignment_picture( out, "0PIN1CIV", "OPINION" );
-    add_alignment_picture( out, "0PIN1CIV", "PICNIC" );
 
     cost_table w{
         { { '0', 'O' }, 1 },
@@ -53,8 +51,22 @@ void alignments_picture( const std::string& p_name = "g20.tex" ) {
         if( !w.count( { 0, c } ) ) { w[ { 0, c } ] = 10; }
     }
     add_alignment_picture( out, "0PIN1CIV", "OPINION", w,
+                           AT_COMPRESS | AT_SHOW_MATCHED_CHARACTERS );
+
+    breakpoint_repn fake_al{
+        breakpoint{ 0, 0 },
+        breakpoint{ 0, 0, 1, '0', 0 },
+        breakpoint{ 3, 2, 10, 0, 'C' },
+        breakpoint{ 4, 4, 1, '1', 'I' },
+        breakpoint{ 6, 6, 1, 'I', 0 },
+        breakpoint{ 7, 6, 1, 'V', 0 },
+        breakpoint{ 8, 6 },
+    };
+
+    add_alignment_picture( out, "0PIN1CIV", "PICNIC", fake_al );
+    add_alignment_picture( out, "0PIN1CIV", "OPINION", w,
                            AT_COMPRESS | AT_SHOW_MATCHED_CHARACTERS | AT_SHOW_EDIT_COST );
-    add_alignment_picture( out, "0PIN1CIV", "PICNIC", w,
+    add_alignment_picture( out, "0PIN1CIV", "PICNIC", fake_al,
                            AT_COMPRESS | AT_SHOW_MATCHED_CHARACTERS | AT_SHOW_EDIT_COST );
 
     bool cf    = CROSS_FILL;
@@ -66,6 +78,8 @@ void alignments_picture( const std::string& p_name = "g20.tex" ) {
         P_NAME2.slice( { 0, BP_P2_T2.back( ).m_posP } ) );
     CROSS_FILL = cf;
 
+    add_alignment_picture( out, "0PIN1CIV", "PICNIC", w,
+                           AT_COMPRESS | AT_SHOW_MATCHED_CHARACTERS | AT_SHOW_EDIT_COST );
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
@@ -261,6 +275,10 @@ void picture_string( const std::string& p_name = "g03.tex", u64 p_n = 12, u64 p_
                   tikz_point{ ( p_n - p_m ) / 2.0 * CHAR_WIDTH, -1.5 * CHAR_HEIGHT } );
 
     out.add_picture( p2 );
+
+    add_string_picture( out, "OPINION" );
+    add_string_picture( out, "0PIN1CIV" );
+    add_string_picture( out, "PICNIC" );
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
@@ -602,6 +620,48 @@ void picture_structural_insight2( const std::string& p_name = "g12.tex",
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
+void picture_structural_insight3( const std::string& p_name = "g13.tex",
+                                  occ_style_t p_style = occ_style_t::OCC_FULL, u64 p_n = 24,
+                                  u64 p_m = 12, u64 p_k = 2 ) {
+    // T aaaaaaaaaaaa baabaabaabaa
+    // P       aaaaaa baabaa
+
+    std::string T{ }, P{ };
+    for( u64 i = 0; i < p_n / 6; ++i ) { T += "aaa"; }
+    for( u64 i = 0; i < p_m / 6; ++i ) { P += "aaa"; }
+
+    for( u64 i = 0; i < p_n / 6; ++i ) { T += "baa"; }
+    for( u64 i = 0; i < p_m / 6; ++i ) { P += "baa"; }
+
+    auto occs = compute_occs_with_edits( P, T, p_k );
+
+    auto tn = stylized_string{ T, "T", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
+    auto pn = stylized_string{ P, "P", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
+
+    for( u64 i = 0; i < p_n / 2; i += 3 ) {
+        tn.annotation_at_pos( p_n / 2 + i ).m_displayStyle
+            |= chr_displ_t::RENDER_AS_FORMER_WILDCARD;
+    }
+    for( u64 i = 0; i < p_m / 2; i += 3 ) {
+        pn.annotation_at_pos( p_m / 2 + i ).m_displayStyle
+            |= chr_displ_t::RENDER_AS_FORMER_WILDCARD;
+    }
+
+    // reorder occs
+    auto occsre = std::deque<breakpoint_repn>{ };
+    for( const auto& o : occs ) {
+        if( o[ 0 ].m_posT >= p_n / 2 - p_m / 2 ) { occsre.push_back( o ); }
+    }
+    std::reverse( occs.begin( ), occs.end( ) );
+    for( const auto& o : occs ) {
+        if( o[ 0 ].m_posT < p_n / 2 - p_m / 2 ) { occsre.push_back( o ); }
+    }
+
+    document out{ };
+    add_occurrences_pictures( out, pn, tn, occsre, p_style );
+    document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
+}
+
 int main( int p_argc, char* p_argv[] ) {
     PROGRAM_NAME = p_argv[ 0 ];
     if( p_argc > 1 ) { OUT_DIR = std::string{ p_argv[ 1 ] }; }
@@ -618,6 +678,8 @@ int main( int p_argc, char* p_argv[] ) {
     picture_structural_insight1( "g11b.tex", occ_style_t::NO_ANNOTATION );
     picture_structural_insight2( );
     picture_structural_insight2( "g12b.tex", occ_style_t::NO_ANNOTATION );
+    picture_structural_insight3( );
+    picture_structural_insight3( "g13b.tex", occ_style_t::NO_ANNOTATION );
 
     CROSS_FILL = false;
     picture_standard_trick( );

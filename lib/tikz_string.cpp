@@ -632,7 +632,8 @@ namespace TIKZ {
 
                     tnew[ bp.m_posT ] = std::string{ bp.m_charT };
                     tnew.highlight_position( bp.m_posT, color_for_bp( bp ) );
-                    cost_pos = tikz_point{ txpos + ( .5 ) * CHAR_WIDTH, p_TtopLeft.m_y };
+                    cost_pos
+                        = tikz_point{ txpos + ( .5 ) * CHAR_WIDTH, p_TtopLeft.m_y - CHAR_HEIGHT };
                 } else if( bp.m_charP ) { // deletion
                     shiftP = 1;
                     shiftT = 0;

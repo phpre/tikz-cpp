@@ -2,6 +2,12 @@
 #include "tikz_string.h"
 
 namespace TIKZ {
+    void add_string_picture( document& p_out, const std::string& p_string ) {
+        picture pic{ };
+        place_string( pic, p_string, tikz_point{ 0.0, 0.0 } );
+        p_out.add_picture( pic );
+    }
+
     void add_occurrences_pictures( document& p_out, const stylized_string& p_pname,
                                    const stylized_string&             p_tname,
                                    const std::deque<breakpoint_repn>& p_occs,
@@ -20,14 +26,17 @@ namespace TIKZ {
 
     void add_alignment_picture( document& p_out, const std::string& p_P, const std::string& p_T,
                                 const cost_table& p_cost, alignment_style_t p_style ) {
-
-        auto            tn = stylized_string{ p_T, "T",
-                                   str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
-        auto            pn = stylized_string{ p_P, "P",
-                                   str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
         breakpoint_repn bp = compute_breakpoints( p_P, p_T, p_cost );
+        add_alignment_picture( p_out, p_P, p_T, bp, p_style );
+    }
 
-        add_alignment_picture( p_out, bp, tn, pn, p_style );
+    void add_alignment_picture( document& p_out, const std::string& p_P, const std::string& p_T,
+                                breakpoint_repn p_alignment, alignment_style_t p_style ) {
+        auto tn = stylized_string{ p_T, "T",
+                                   str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
+        auto pn = stylized_string{ p_P, "P",
+                                   str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
+        add_alignment_picture( p_out, p_alignment, tn, pn, p_style );
     }
 
     void add_alignment_picture( document& p_out, breakpoint_repn p_alignment,
