@@ -5,6 +5,7 @@
 #include "alg_fragmentco.h"
 #include "defines.h"
 #include "tikz_color.h"
+#include "tikz_option.h"
 #include "tikz_util.h"
 
 namespace TIKZ {
@@ -23,51 +24,62 @@ namespace TIKZ {
         return res;
     }
 
+    typedef u64 displ_t;
+    namespace chr_displ_t {
+        constexpr displ_t DEFAULT                   = 0;
+        constexpr displ_t SHOW_ID_IF_WILDCARD       = ( 1 << 0 );
+        constexpr displ_t SHOW_SYMBOL_IF_WILDCARD   = ( 1 << 1 );
+        constexpr displ_t RENDER_AS_FORMER_WILDCARD = ( 1 << 2 );
+    } // namespace chr_displ_t
+
     struct character_annotation {
         color       m_bgColor        = COLOR_NONE;
         color       m_textColor      = COLOR_NONE;
         std::string m_symbol         = EMPTY_STR;
         std::string m_wildcardSymbol = EMPTY_STR;
         u64         m_wildcardId     = 0;
-        bool        m_showSymbol     = false;
-        bool        m_showId         = false;
-        bool        m_wasWildcard    = false;
+        displ_t     m_displayStyle   = chr_displ_t::DEFAULT;
 
         inline bool is_wildcard( ) const {
             return m_wildcardSymbol != EMPTY_STR;
         }
-        inline bool was_wildcard( ) const {
-            return m_wasWildcard;
+        inline bool render_as_former_wc( ) const {
+            return m_displayStyle & chr_displ_t::RENDER_AS_FORMER_WILDCARD;
+        }
+        inline bool show_symbol_if_wc( ) const {
+            return m_displayStyle & chr_displ_t::SHOW_SYMBOL_IF_WILDCARD;
+        }
+        inline bool show_id_if_wc( ) const {
+            return m_displayStyle & chr_displ_t::SHOW_ID_IF_WILDCARD;
         }
     };
     typedef std::map<u64, character_annotation> string_annotation;
 
-    typedef u64 displ_t;
-    struct str_displ_t {
-        static constexpr displ_t IS_ROTATABLE = ( 1 << 0 );    // text should be rotated for
-                                                               // vertical strings
-        static constexpr displ_t SHOW_POSITIONS  = ( 1 << 1 ); // show individual position (S[ 1 ])
-        static constexpr displ_t SHOW_CHARACTERS = ( 1 << 2 ); // show character annotations
-        static constexpr displ_t SHOW_WILDCARDS  = ( 1 << 3 ); // show wildcard annotations
-        static constexpr displ_t GROUP_POSITIONS = ( 1 << 4 ); // group consecutive positions
-                                                               // (S[ 1 ], S[ 0 .. 3 ]
-        static constexpr displ_t USE_TYPEWRITER = ( 1 << 5 );  // use typewriter font to
-                                                               // display the name
-                                                               // (instead of math mode)
+    namespace str_displ_t {
+        constexpr displ_t IS_ROTATABLE = ( 1 << 0 );    // text should be rotated for
+                                                        // vertical strings
+        constexpr displ_t SHOW_POSITIONS  = ( 1 << 1 ); // show individual position (S[ 1 ])
+        constexpr displ_t SHOW_CHARACTERS = ( 1 << 2 ); // show character annotations
+        constexpr displ_t SHOW_WILDCARDS  = ( 1 << 3 ); // show wildcard annotations
+        constexpr displ_t GROUP_POSITIONS = ( 1 << 4 ); // group consecutive positions
+                                                        // (S[ 1 ], S[ 0 .. 3 ]
+        constexpr displ_t USE_TYPEWRITER = ( 1 << 5 );  // use typewriter font to
+                                                        // display the name
+                                                        // (instead of math mode)
 
-        static constexpr displ_t MAX = ( 1 << 6 );
+        constexpr displ_t MAX = ( 1 << 6 );
 
         // helper aliases
-        static constexpr displ_t CHARACTERS       = SHOW_POSITIONS | SHOW_CHARACTERS;
-        static constexpr displ_t FRAGMENT         = SHOW_POSITIONS | GROUP_POSITIONS | IS_ROTATABLE;
-        static constexpr displ_t NAME             = GROUP_POSITIONS;
-        static constexpr displ_t NAME_ROTATE      = IS_ROTATABLE | GROUP_POSITIONS;
-        static constexpr displ_t POSITION         = SHOW_POSITIONS;
-        static constexpr displ_t SINGLE_CHARACTER = USE_TYPEWRITER;
-        static constexpr displ_t FRAGMENT_WILDCARD
+        constexpr displ_t CHARACTERS       = SHOW_POSITIONS | SHOW_CHARACTERS;
+        constexpr displ_t FRAGMENT         = SHOW_POSITIONS | GROUP_POSITIONS | IS_ROTATABLE;
+        constexpr displ_t NAME             = GROUP_POSITIONS;
+        constexpr displ_t NAME_ROTATE      = IS_ROTATABLE | GROUP_POSITIONS;
+        constexpr displ_t POSITION         = SHOW_POSITIONS;
+        constexpr displ_t SINGLE_CHARACTER = USE_TYPEWRITER;
+        constexpr displ_t FRAGMENT_WILDCARD
             = SHOW_POSITIONS | GROUP_POSITIONS | IS_ROTATABLE | SHOW_WILDCARDS;
-        static constexpr displ_t POSITION_WILDCARD = SHOW_POSITIONS | SHOW_WILDCARDS;
-    };
+        constexpr displ_t POSITION_WILDCARD = SHOW_POSITIONS | SHOW_WILDCARDS;
+    } // namespace str_displ_t
 
     enum align_t { AN_CENTER = 0, AN_BEGIN = 1, AN_END = 2 };
 
@@ -82,6 +94,11 @@ namespace TIKZ {
         std::string m_name = EMPTY_STR; // stores name of the string, actual characters are stored
                                         // as annotations
         string_annotation m_annotation = { };
+
+        kv_store m_outlineOptions = { }; // extra options for rendering the outline of the
+                                         // string
+        kv_store m_fillOptions = { };    // extra options for rendering the background of the
+                                         // string
 
         // constructors for when individual characters should be printed
         stylized_string( const std::string& p_data, const std::string& p_name = EMPTY_STR,
@@ -151,8 +168,8 @@ namespace TIKZ {
             return annotation_at_pos( p_pos ).is_wildcard( );
         }
 
-        inline bool had_wildcard( u64 p_pos ) const {
-            return annotation_at_pos( p_pos ).was_wildcard( );
+        inline bool render_as_former_wc( u64 p_pos ) const {
+            return annotation_at_pos( p_pos ).render_as_former_wc( );
         }
 
         inline void highlight_position( u64 p_pos, color p_color ) {
@@ -184,7 +201,7 @@ namespace TIKZ {
 
             while( end < m_fragment.open_end( ) ) {
                 if( ( m_displayStyle & str_displ_t::SHOW_WILDCARDS )
-                    && ( has_wildcard( end ) || had_wildcard( end ) ) ) {
+                    && ( has_wildcard( end ) || render_as_former_wc( end ) ) ) {
                     if( end == p_closedBegin ) {
                         return { fragment_t::FT_WILDCARD,
                                  fragmentco{ p_closedBegin, p_closedBegin + 1 } };
@@ -247,27 +264,27 @@ namespace TIKZ {
         }
 
         inline stylized_string add_wildcards( const std::deque<u64>& p_wildcardPositions,
-                                              bool p_showId = false, bool p_showSymbol = false,
-                                              u64                p_startId  = 0,
+                                              displ_t p_charDisplayStyle    = chr_displ_t::DEFAULT,
+                                              u64     p_startId             = 0,
                                               const std::string& p_wildcard = WILDCARD ) const {
             auto res = *this;
             for( u64 i : p_wildcardPositions ) {
                 res.m_annotation[ i ].m_wildcardSymbol = p_wildcard;
                 res.m_annotation[ i ].m_wildcardId     = p_startId++;
-                res.m_annotation[ i ].m_showSymbol     = p_showSymbol;
-                res.m_annotation[ i ].m_showId         = p_showId;
+                res.m_annotation[ i ].m_displayStyle   = p_charDisplayStyle;
             }
             return res;
         }
 
-        inline stylized_string add_wildcards( const std::string& p_mask, bool p_showId = false,
-                                              bool p_showSymbol = false, u64 p_startId = 0,
+        inline stylized_string add_wildcards( const std::string& p_mask,
+                                              displ_t p_charDisplayStyle    = chr_displ_t::DEFAULT,
+                                              u64     p_startId             = 0,
                                               const std::string& p_wildcard = WILDCARD ) const {
             std::deque<u64> pos{ };
             for( size_t i = 0; i < p_mask.size( ); ++i ) {
                 if( std::string{ p_mask[ i ] } == p_wildcard ) { pos.push_back( i ); }
             }
-            return add_wildcards( pos, p_showId, p_showSymbol, p_startId, p_wildcard );
+            return add_wildcards( pos, p_charDisplayStyle, p_startId, p_wildcard );
         }
 
         inline stylized_string fill_wildcards( const std::string& p_substitution,
@@ -279,7 +296,7 @@ namespace TIKZ {
                     res.m_annotation[ p ].m_wildcardSymbol = EMPTY_STR;
                     res.m_annotation[ p ].m_wildcardId     = 0;
                     res.m_annotation[ p ].m_symbol         = p_substitution[ a.m_wildcardId ];
-                    res.m_annotation[ p ].m_wasWildcard    = true;
+                    res.m_annotation[ p ].m_displayStyle |= chr_displ_t::RENDER_AS_FORMER_WILDCARD;
                 }
             }
             return res;
@@ -337,17 +354,31 @@ namespace TIKZ {
             res.m_displayStyle = p_displayStyleOverride;
             return res;
         }
+
+        // keeps data of current string, extends fragment to accommodate any annotations
+        // of extra positions
+        inline stylized_string operator-( const stylized_string& p_other ) const {
+            auto res = *this;
+
+            res.m_fragment = res.m_fragment.extend( p_other.m_fragment );
+            for( u64 i = res.m_fragment.closed_begin( ); i < res.m_fragment.open_end( ); ++i ) {
+                if( !res.has_annotation_at_pos( i ) && p_other.has_annotation_at_pos( i ) ) {
+                    res.m_annotation[ i ] = p_other.annotation_at_pos( i );
+                }
+            }
+            return res;
+        }
     };
 
-    inline stylized_string wildcard_string( fragmentco p_indices, bool p_showId = false,
-                                            bool               p_showSymbol = false,
-                                            const std::string& p_wildcard   = WILDCARD ) {
+    inline stylized_string wildcard_string( fragmentco p_indices,
+                                            displ_t    p_charDisplayStyle = chr_displ_t::DEFAULT,
+                                            const std::string& p_wildcard = WILDCARD ) {
         std::string s{ "" };
         for( auto i = p_indices.closed_begin( ); i < p_indices.open_end( ); ++i ) {
             s += p_wildcard;
         }
 
         return stylized_string{ s, EMPTY_STR, str_displ_t::SHOW_WILDCARDS }.add_wildcards(
-            s, p_showId, p_showSymbol, p_indices.closed_begin( ), p_wildcard );
+            s, p_charDisplayStyle, p_indices.closed_begin( ), p_wildcard );
     }
 } // namespace TIKZ

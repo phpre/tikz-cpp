@@ -64,14 +64,14 @@ namespace TIKZ {
                                OPT::LW_OUTLINE | OPT::ROUNDED_CORNERS( "1pt" ) | OPT::FILL( col ) );
 
         const auto& wc = p_S.m_annotation.at( p_pos );
-        if( wc.m_wasWildcard ) {
+        if( wc.render_as_former_wc( ) ) {
             auto text = wc.m_symbol;
             p_pic.add_command( std::make_shared<math_command>( width_macro( CHAR_WIDTH, text ) ) );
             p_pic.place_node( p_center, text_typewriter( VSIZE_CORRECTION + text ),
                               OPT::TEXT_COLOR( bgcol ) );
         } else {
             // print wildcard symbol
-            if( wc.m_showSymbol ) {
+            if( wc.show_symbol_if_wc( ) ) {
                 p_pic.place_node( p_center, text_typewriter( wc.m_wildcardSymbol ),
                                   OPT::TEXT_COLOR( bgcol ) );
             } else {
@@ -80,7 +80,7 @@ namespace TIKZ {
                                   OPT::TEXT_COLOR( bgcol ) );
             }
             // print wildcard index
-            if( wc.m_showId ) {
+            if( wc.show_id_if_wc( ) ) {
                 auto text  = math_mode( std::to_string( wc.m_wildcardId ) );
                 auto ftext = textsize_tiny( text );
 
@@ -201,13 +201,14 @@ namespace TIKZ {
     }
 
     void place_string( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft,
-                       const kv_store& p_options ) {
+                       const kv_store& p_options, bool p_openBegin, bool p_openEnd ) {
         if( !p_S.length( ) ) { return; }
         double cor3 = -0.035;
-        p_pic.place_rectangle( tikz_point{ p_StopLeft.m_x + cor3, p_StopLeft.m_y - cor3 },
-                               tikz_point{ p_StopLeft.m_x + p_S.length( ) * CHAR_WIDTH - cor3,
-                                           p_StopLeft.m_y - CHAR_HEIGHT + cor3 },
-                               OPT::ROUNDED_CORNERS( "2pt" ) | OPT::FILL( p_S.m_fillColor ) );
+        p_pic.place_rectangle(
+            tikz_point{ p_StopLeft.m_x + ( !p_openBegin ) * cor3, p_StopLeft.m_y - cor3 },
+            tikz_point{ p_StopLeft.m_x + p_S.length( ) * CHAR_WIDTH - ( !p_openEnd ) * cor3,
+                        p_StopLeft.m_y - CHAR_HEIGHT + cor3 },
+            OPT::ROUNDED_CORNERS( "2pt" ) | OPT::FILL( p_S.m_fillColor ) | p_S.m_outlineOptions );
         // for each character, print a small rectangle
         for( u64 i = 0; i < p_S.length( ); ++i ) {
             double cor1 = i ? .01 : 0, cor2 = ( i + 1 < p_S.length( ) ) ? .01 : 0;
@@ -221,10 +222,11 @@ namespace TIKZ {
         }
         // fill draw white box with label
         cor3 = 0.015;
-        p_pic.place_rectangle( tikz_point{ p_StopLeft.m_x + cor3, p_StopLeft.m_y - cor3 },
-                               tikz_point{ p_StopLeft.m_x + p_S.length( ) * CHAR_WIDTH - cor3,
-                                           p_StopLeft.m_y - CHAR_HEIGHT + cor3 },
-                               OPT::ROUNDED_CORNERS( "1pt" ) | OPT::FILL( p_S.m_fillColor ) );
+        p_pic.place_rectangle(
+            tikz_point{ p_StopLeft.m_x + ( !p_openBegin ) * cor3, p_StopLeft.m_y - cor3 },
+            tikz_point{ p_StopLeft.m_x + p_S.length( ) * CHAR_WIDTH - ( !p_openEnd ) * cor3,
+                        p_StopLeft.m_y - CHAR_HEIGHT + cor3 },
+            OPT::ROUNDED_CORNERS( "1pt" ) | OPT::FILL( p_S.m_fillColor ) | p_S.m_fillOptions );
         for( u64 i = 0; i < p_S.length( ); ++i ) {
             double cor1 = i ? .04 : .05, cor2 = ( i + 1 < p_S.length( ) ) ? .04 : .05;
             auto   ann = p_S.annotation_at_pos( i );
@@ -241,7 +243,7 @@ namespace TIKZ {
         double cor4 = .02;
         auto smno = OPT::FILL( p_S.m_color ) | OPT::CIRCLE | OPT::INNER_SEP( "0.1pt" ) | p_options;
         // add little dots to highlight parts between characters
-        for( u64 i = 1; i < p_S.length( ); ++i ) {
+        for( u64 i = !p_openBegin; i < p_S.length( ); ++i ) {
             p_pic.place_node( tikz_point{ p_StopLeft.m_x + i * CHAR_WIDTH, p_StopLeft.m_y - cor4 },
                               EMPTY_STR, smno );
             p_pic.place_node(
@@ -251,13 +253,14 @@ namespace TIKZ {
     }
 
     void place_string_vertical( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft,
-                                const kv_store& p_options ) {
+                                const kv_store& p_options, bool p_openBegin, bool p_openEnd ) {
         if( !p_S.length( ) ) { return; }
         double cor3 = -0.035;
-        p_pic.place_rectangle( tikz_point{ p_StopLeft.m_x + cor3, p_StopLeft.m_y - cor3 },
-                               tikz_point{ p_StopLeft.m_x + CHAR_WIDTH - cor3,
-                                           p_StopLeft.m_y - p_S.length( ) * CHAR_HEIGHT + cor3 },
-                               OPT::ROUNDED_CORNERS( "2pt" ) | OPT::FILL( p_S.m_fillColor ) );
+        p_pic.place_rectangle(
+            tikz_point{ p_StopLeft.m_x + cor3, p_StopLeft.m_y - ( !p_openBegin ) * cor3 },
+            tikz_point{ p_StopLeft.m_x + CHAR_WIDTH - cor3,
+                        p_StopLeft.m_y - p_S.length( ) * CHAR_HEIGHT + ( !p_openEnd ) * cor3 },
+            OPT::ROUNDED_CORNERS( "2pt" ) | OPT::FILL( p_S.m_fillColor ) | p_S.m_outlineOptions );
         // for each character, print a small rectangle
         for( u64 i = 0; i < p_S.length( ); ++i ) {
             double cor1 = i ? .01 : 0, cor2 = ( i + 1 < p_S.length( ) ) ? .01 : 0;
@@ -271,10 +274,11 @@ namespace TIKZ {
         }
         // fill draw white box with label
         cor3 = 0.015;
-        p_pic.place_rectangle( tikz_point{ p_StopLeft.m_x + cor3, p_StopLeft.m_y - cor3 },
-                               tikz_point{ p_StopLeft.m_x + CHAR_WIDTH - cor3,
-                                           p_StopLeft.m_y - p_S.length( ) * CHAR_HEIGHT + cor3 },
-                               OPT::ROUNDED_CORNERS( "1pt" ) | OPT::FILL( p_S.m_fillColor ) );
+        p_pic.place_rectangle(
+            tikz_point{ p_StopLeft.m_x + cor3, p_StopLeft.m_y - ( !p_openBegin ) * cor3 },
+            tikz_point{ p_StopLeft.m_x + CHAR_WIDTH - cor3,
+                        p_StopLeft.m_y - p_S.length( ) * CHAR_HEIGHT + ( !p_openEnd ) * cor3 },
+            OPT::ROUNDED_CORNERS( "1pt" ) | OPT::FILL( p_S.m_fillColor ) | p_S.m_fillOptions );
 
         for( u64 i = 0; i < p_S.length( ); ++i ) {
             double cor1 = i ? .04 : 0.05, cor2 = ( i + 1 < p_S.length( ) ) ? .04 : .05;
@@ -294,7 +298,7 @@ namespace TIKZ {
         double cor4 = .02;
         auto smno = OPT::FILL( p_S.m_color ) | OPT::CIRCLE | OPT::INNER_SEP( "0.1pt" ) | p_options;
         // add little dots to highlight parts between characters
-        for( u64 i = 1; i < p_S.length( ); ++i ) {
+        for( u64 i = !p_openBegin; i < p_S.length( ); ++i ) {
             p_pic.place_node( tikz_point{ p_StopLeft.m_x + cor4, p_StopLeft.m_y - i * CHAR_HEIGHT },
                               EMPTY_STR, smno );
             p_pic.place_node(

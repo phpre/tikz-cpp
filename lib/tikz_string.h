@@ -18,10 +18,34 @@ namespace TIKZ {
 
     // Prints a string S
     void place_string( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft,
-                       const kv_store& p_options = { } );
+                       const kv_store& p_options = { }, bool p_openBegin = false,
+                       bool p_openEnd = false );
 
     void place_string_vertical( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft,
-                                const kv_store& p_options = { } );
+                                const kv_store& p_options = { }, bool p_openBegin = false,
+                                bool p_openEnd = false );
+
+    inline void place_string_sequence( picture& p_pic, const std::deque<stylized_string>& p_S,
+                                       tikz_point p_StopLeft, const kv_store& p_options = { },
+                                       bool p_openBegin = false, bool p_openEnd = false ) {
+        for( u64 i = 0, j = p_S.size( ); i < j; ++i ) {
+            place_string( p_pic, p_S[ i ], p_StopLeft, p_options, i ? false : p_openBegin,
+                          ( i < j - 1 ) ? false : p_openEnd );
+            p_StopLeft.m_x += CHAR_WIDTH * p_S[ i ].length( );
+        }
+    }
+
+    inline void place_string_sequence_vertical( picture&                           p_pic,
+                                                const std::deque<stylized_string>& p_S,
+                                                tikz_point                         p_StopLeft,
+                                                const kv_store&                    p_options = { },
+                                                bool p_openBegin = false, bool p_openEnd = false ) {
+        for( u64 i = 0, j = p_S.size( ); i < j; ++i ) {
+            place_string( p_pic, p_S[ i ], p_StopLeft, p_options, i ? false : p_openBegin,
+                          ( i < j - 1 ) ? false : p_openEnd );
+            p_StopLeft.m_y -= CHAR_HEIGHT * p_S[ i ].length( );
+        }
+    }
 
     // assumes T is on top, P on bottom
     void place_matched_string_pair( picture& p_pic, const stylized_string& p_P,

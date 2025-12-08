@@ -21,14 +21,21 @@ namespace TIKZ {
     void add_alignment_picture( document& p_out, const std::string& p_P, const std::string& p_T,
                                 const cost_table& p_cost, alignment_style_t p_style ) {
 
-        picture         pic{ };
         auto            tn = stylized_string{ p_T, "T",
                                    str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
         auto            pn = stylized_string{ p_P, "P",
                                    str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
         breakpoint_repn bp = compute_breakpoints( p_P, p_T, p_cost );
-        place_alignment( pic, pn, tikz_point{ 0.0, 0.0 }, tn, tikz_point{ 0.0, 1.25 }, bp,
-                         p_style );
+
+        add_alignment_picture( p_out, bp, tn, pn, p_style );
+    }
+
+    void add_alignment_picture( document& p_out, breakpoint_repn p_alignment,
+                                stylized_string p_Tname, stylized_string p_Pname,
+                                alignment_style_t p_style ) {
+        picture pic{ };
+        place_alignment( pic, p_Pname, tikz_point{ 0.0, 0.0 }, p_Tname, tikz_point{ 0.0, 1.25 },
+                         p_alignment, p_style );
         p_out.add_picture( pic );
     }
 

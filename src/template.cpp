@@ -22,7 +22,8 @@ void picture_string( const std::string& p_name = "g01.tex" ) {
                        OPT::ROTATE( "90" ) | OPT::ANCHOR_WEST );
     }
     for( u64 i = 0; i < str_displ_t::MAX; i += 2 ) {
-        auto S = stylized_string{ data, name, i }.add_wildcards( std::deque<u64>{ 0, 1, 5 }, true );
+        auto S  = stylized_string{ data, name, i }.add_wildcards( std::deque<u64>{ 0, 1, 5 },
+                                                                  chr_displ_t::SHOW_ID_IF_WILDCARD );
         auto SI = S.color_invert( );
         place_string( p1, S, tikz_point{ .0, -CHAR_HEIGHT * 1.0 * i } );
         place_string( p1, SI,
@@ -40,7 +41,8 @@ void picture_string( const std::string& p_name = "g01.tex" ) {
     out.add_picture( p1 );
     picture p2{ };
     for( u64 i = 0; i < str_displ_t::MAX / 2; ++i ) {
-        auto S = stylized_string{ data, name, i }.add_wildcards( std::deque<u64>{ 0, 1, 5 }, true );
+        auto S  = stylized_string{ data, name, i }.add_wildcards( std::deque<u64>{ 0, 1, 5 },
+                                                                  chr_displ_t::SHOW_ID_IF_WILDCARD );
         auto SI = S.color_invert( );
         place_string_vertical( p2, S, tikz_point{ CHAR_WIDTH * 2.0 * i, .0 } );
         place_string_vertical(
@@ -57,8 +59,8 @@ void picture_alignment( const std::string& p_name = "g02.tex" ) {
         std::string T = "abab" + WILDCARD + "abcaab" + WILDCARD + "a" + WILDCARD + "a";
         std::string P = "babcabcaccabaab";
 
-        auto T_NAME
-            = stylized_string{ T, "T", str_displ_t::FRAGMENT_WILDCARD }.add_wildcards( T, true );
+        auto T_NAME = stylized_string{ T, "T", str_displ_t::FRAGMENT_WILDCARD }.add_wildcards(
+            T, chr_displ_t::SHOW_ID_IF_WILDCARD );
         auto P_NAME = stylized_string{ P, "P", str_displ_t::FRAGMENT_WILDCARD };
 
         auto bp = compute_breakpoints( P, T, WILDCARD );
@@ -78,8 +80,8 @@ void picture_alignment( const std::string& p_name = "g02.tex" ) {
                         + WILDCARD + "a" + WILDCARD + "a";
         std::string P = "bcaaa";
 
-        auto T_NAME
-            = stylized_string{ T, "T", str_displ_t::FRAGMENT_WILDCARD }.add_wildcards( T, true );
+        auto T_NAME = stylized_string{ T, "T", str_displ_t::FRAGMENT_WILDCARD }.add_wildcards(
+            T, chr_displ_t::SHOW_ID_IF_WILDCARD );
         auto P_NAME = stylized_string{ P, "P", str_displ_t::FRAGMENT_WILDCARD };
 
         auto bps = compute_occs( P, T, WILDCARD );

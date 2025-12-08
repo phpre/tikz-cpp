@@ -26,7 +26,7 @@ const stylized_string P2_NAME{ P2, std::string{ "P" }, str_displ_t::FRAGMENT };
 const breakpoint_repn BP_P_T   = compute_breakpoints( P, T );
 const breakpoint_repn BP_P2_T2 = compute_breakpoints( P2, T2 );
 
-void real_alignments_picture( const std::string& p_name = "g20.tex" ) {
+void alignments_picture( const std::string& p_name = "g20.tex" ) {
     document out{ };
     add_alignment_picture( out,
                            "saarbr\xfc"
@@ -57,18 +57,15 @@ void real_alignments_picture( const std::string& p_name = "g20.tex" ) {
     add_alignment_picture( out, "0PIN1CIV", "PICNIC", w,
                            AT_COMPRESS | AT_SHOW_MATCHED_CHARACTERS | AT_SHOW_EDIT_COST );
 
-    document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
-}
+    bool cf    = CROSS_FILL;
+    CROSS_FILL = false;
+    add_alignment_picture( out, BP_P2_T2, T2_NAME, P2_NAME, AT_COMPRESS );
+    add_alignment_picture(
+        out, breakpoint_slice( BP_P_T, { 0, BP_P2_T2.back( ).m_posP } ),
+        T_NAME2.slice( align_fragment( BP_P_T, { 0, BP_P2_T2.back( ).m_posP } ) ),
+        P_NAME2.slice( { 0, BP_P2_T2.back( ).m_posP } ) );
+    CROSS_FILL = cf;
 
-void alignment_picture( const std::string& p_name   = "g21.tex",
-                        breakpoint_repn p_alignment = BP_P2_T2, stylized_string p_Tname = T2_NAME,
-                        stylized_string p_Pname = P2_NAME ) {
-    document out{ };
-
-    picture p1{ };
-    place_alignment( p1, p_Pname, tikz_point{ 0.0, 0.0 }, p_Tname, tikz_point{ 0.0, 1.25 },
-                     p_alignment, AT_COMPRESS );
-    out.add_picture( p1 );
     document::output( OUT_DIR, p_name, out.render( FONT_PATH, COLOR_PATH, MACRO_PATH ) );
 }
 
@@ -544,8 +541,14 @@ void picture_structural_insight1( const std::string& p_name = "g11.tex",
     auto tn = stylized_string{ T, "T", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
     auto pn = stylized_string{ P, "P", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
 
-    for( u64 i = 0; i < p_n / 2; ++i ) { tn.annotation_at_pos( p_n / 2 + i ).m_wasWildcard = true; }
-    for( u64 i = 0; i < p_m / 2; ++i ) { pn.annotation_at_pos( p_m / 2 + i ).m_wasWildcard = true; }
+    for( u64 i = 0; i < p_n / 2; ++i ) {
+        tn.annotation_at_pos( p_n / 2 + i ).m_displayStyle
+            |= chr_displ_t::RENDER_AS_FORMER_WILDCARD;
+    }
+    for( u64 i = 0; i < p_m / 2; ++i ) {
+        pn.annotation_at_pos( p_m / 2 + i ).m_displayStyle
+            |= chr_displ_t::RENDER_AS_FORMER_WILDCARD;
+    }
 
     // reorder occs
     auto occsre = std::deque<breakpoint_repn>{ };
@@ -584,10 +587,14 @@ void picture_structural_insight2( const std::string& p_name = "g12.tex",
     auto pn = stylized_string{ P, "P", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
 
     for( u64 i = 0; i < p_n; ++i ) {
-        if( T[ i ] == 'b' ) { tn.annotation_at_pos( i ).m_wasWildcard = true; }
+        if( T[ i ] == 'b' ) {
+            tn.annotation_at_pos( i ).m_displayStyle |= chr_displ_t::RENDER_AS_FORMER_WILDCARD;
+        }
     }
     for( u64 i = 0; i < p_m; ++i ) {
-        if( P[ i ] == 'b' ) { pn.annotation_at_pos( i ).m_wasWildcard = true; }
+        if( P[ i ] == 'b' ) {
+            pn.annotation_at_pos( i ).m_displayStyle |= chr_displ_t::RENDER_AS_FORMER_WILDCARD;
+        }
     }
 
     document out{ };
@@ -606,7 +613,7 @@ int main( int p_argc, char* p_argv[] ) {
     }
 
     CROSS_FILL = true;
-    real_alignments_picture( );
+    alignments_picture( );
     picture_structural_insight1( );
     picture_structural_insight1( "g11b.tex", occ_style_t::NO_ANNOTATION );
     picture_structural_insight2( );
@@ -617,10 +624,6 @@ int main( int p_argc, char* p_argv[] ) {
     picture_filter_verify( );
     picture_string( );
 
-    alignment_picture( );
-    alignment_picture( "g21b.tex", breakpoint_slice( BP_P_T, { 0, BP_P2_T2.back( ).m_posP } ),
-                       T_NAME2.slice( align_fragment( BP_P_T, { 0, BP_P2_T2.back( ).m_posP } ) ),
-                       P_NAME2.slice( { 0, BP_P2_T2.back( ).m_posP } ) );
     alignment_graph_picture( );
     slices_picture( );
     slices_picture( "g23b.tex", P_NAME, P_NAME, fragmentco{ 0, 11 }, 1,

@@ -16,7 +16,7 @@ std::string SUBST_GOOD = "aabbaaa";
 std::string SUBST_BAD  = "abcabca";
 
 auto T_NAME = stylized_string{ T, "T", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS }
-                  .add_wildcards( T, true );
+                  .add_wildcards( T, chr_displ_t::SHOW_ID_IF_WILDCARD );
 auto P_NAME = stylized_string{ P, "P", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
 
 auto OCCS_P_T     = compute_occs( P, T, WILDCARD );
@@ -259,7 +259,7 @@ void multi_trie_picture( const std::string& p_name = "g04.tex", const std::strin
     stylized_string pN{ p_p, "P", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
     stylized_string tN
         = stylized_string{ p_t, "T", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS }
-              .add_wildcards( p_t, true, false, 0, p_wildcard );
+              .add_wildcards( p_t, chr_displ_t::SHOW_ID_IF_WILDCARD, 0, p_wildcard );
 
     // compute occs w/ wildcards of p in t.
     auto occs  = compute_occs( p_p, p_t, p_wildcard );
@@ -303,7 +303,7 @@ void multi_trie_picture( const std::string& p_name = "g04.tex", const std::strin
 
             auto c = stylized_string{ cwc, "C_{" + std::to_string( y ) + "}",
                                       str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS }
-                         .add_wildcards( cwc, false, false, 0, p_wildcard );
+                         .add_wildcards( cwc, chr_displ_t::DEFAULT, 0, p_wildcard );
 
             p1.place_text( math_mode( VSIZE_CORRECTION + c.m_name ),
                            tikz_point{ ( 3 + p_t.length( ) ) * CHAR_WIDTH - 1 * CHAR_WIDTH,

@@ -26,6 +26,10 @@ namespace ALG {
             return m_begin + 1;
         }
 
+        inline fragmentco extend( fragmentco p_other ) const {
+            return { std::min( m_begin, p_other.m_begin ), std::max( m_end, p_other.m_end ) };
+        }
+
         inline fragmentco d_slice( u64 p_d, u64 p_i ) const {
             auto i{ p_i };
             if( i <= 2 * p_d ) {
