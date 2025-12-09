@@ -45,8 +45,8 @@ auto                               add_simple_picture( std::function<void( )> p_
 //
 // ---------------------------------------------------------------------------------------------
 
-void add_standard_trick_picture( document& p_doc, u64 p_n = 12, u64 p_m = 3, u64 p_k = 1,
-                                 u64 p_l = 4 ) {
+void add_standard_trick_pictures( document& p_doc, u64 p_n = 12, u64 p_m = 3, u64 p_k = 1,
+                                  u64 p_l = 4 ) {
     auto tn = stylized_string{ "T", fragmentco{ 0, p_n }, str_displ_t::NAME };
     auto pn = stylized_string{ "P", fragmentco{ 0, p_m }, str_displ_t::NAME };
 
@@ -296,9 +296,9 @@ void add_filter_verify_pictures( document& p_doc, u64 p_n = 12, u64 p_m = 3, u64
     }
 }
 
-void add_slices_picture( document& p_doc, stylized_string p_Pname, stylized_string p_Tname,
-                         fragmentco p_fragment, u64 p_d, breakpoint_repn p_alignment,
-                         const std::string& p_P, const std::string& p_T ) {
+void add_slices_pictures( document& p_doc, stylized_string p_Pname, stylized_string p_Tname,
+                          fragmentco p_fragment, u64 p_d, breakpoint_repn p_alignment,
+                          const std::string& p_P, const std::string& p_T ) {
     auto pname_s = stylized_string{ p_Pname.m_name, p_Pname.m_fragment, str_displ_t ::NAME };
     auto tname_s = stylized_string{ p_Tname.m_name, p_Tname.m_fragment, str_displ_t ::NAME };
 
@@ -353,7 +353,7 @@ void add_slices_picture( document& p_doc, stylized_string p_Pname, stylized_stri
     }
 }
 
-void add_pt_picture( document& p_doc, u64 p_n = 12, u64 p_m = 3 ) {
+void add_pt_pictures( document& p_doc, u64 p_n = 12, u64 p_m = 3 ) {
     auto tn = stylized_string{ "T", fragmentco{ 0, p_n }, str_displ_t::NAME };
     auto pn = stylized_string{ "P", fragmentco{ 0, p_m }, str_displ_t::NAME };
 
@@ -368,8 +368,9 @@ void add_pt_picture( document& p_doc, u64 p_n = 12, u64 p_m = 3 ) {
     }
 }
 
-void add_structural_insight_1_picture( document& p_doc, occ_style_t p_style = occ_style_t::OCC_FULL,
-                                       u64 p_n = 16, u64 p_m = 8, u64 p_k = 3 ) {
+void add_structural_insight_1_pictures( document&   p_doc,
+                                        occ_style_t p_style = occ_style_t::OCC_FULL, u64 p_n = 16,
+                                        u64 p_m = 8, u64 p_k = 3 ) {
     // T aaaabbbb
     // P   aabb
 
@@ -407,8 +408,9 @@ void add_structural_insight_1_picture( document& p_doc, occ_style_t p_style = oc
     add_occurrences_pictures( p_doc, pn, tn, occsre, p_style );
 }
 
-void add_structural_insight_2_picture( document& p_doc, occ_style_t p_style = occ_style_t::OCC_FULL,
-                                       u64 p_n = 16, u64 p_m = 8, u64 p_k = 4, u64 p_srand = 0 ) {
+void add_structural_insight_2_pictures( document&   p_doc,
+                                        occ_style_t p_style = occ_style_t::OCC_FULL, u64 p_n = 16,
+                                        u64 p_m = 8, u64 p_k = 4, u64 p_srand = 0 ) {
     // T aabaababa
     // P   abab
     srand( p_srand );
@@ -440,8 +442,9 @@ void add_structural_insight_2_picture( document& p_doc, occ_style_t p_style = oc
     add_occurrences_pictures( p_doc, pn, tn, occs, p_style );
 }
 
-void add_structural_insight_3_picture( document& p_doc, occ_style_t p_style = occ_style_t::OCC_FULL,
-                                       u64 p_n = 24, u64 p_m = 12, u64 p_k = 2 ) {
+void add_structural_insight_3_pictures( document&   p_doc,
+                                        occ_style_t p_style = occ_style_t::OCC_FULL, u64 p_n = 24,
+                                        u64 p_m = 12, u64 p_k = 2 ) {
     // T aaaaaaaaaaaa baabaabaabaa
     // P       aaaaaa baabaa
 
@@ -511,15 +514,15 @@ FILE_SIMPLE( f_wapm_kt, {
         T_NAME2.slice( align_fragment( BP_P_T, { 0, BP_P2_T2.back( ).m_posP } ) ),
         P_NAME2.slice( { 0, BP_P2_T2.back( ).m_posP } ) );
 
-    add_slices_picture( doc, P_NAME, S_NAME, fragmentco{ 0, 11 }, 1, BP_P_T, P, T );
+    add_slices_pictures( doc, P_NAME, S_NAME, fragmentco{ 0, 11 }, 1, BP_P_T, P, T );
 
     add_alignment_graph_explanation_picture( doc );
 
     CROSS_FILL = cf;
 } )
-FILE_SIMPLE( f_apm_standard_trick, { add_standard_trick_picture( doc ); } )
-FILE_SIMPLE( f_qapm_concl, { add_pt_picture( doc ); } )
-FILE_SIMPLE( f_qapm_intro, { add_standard_trick_picture( doc ); } )
+FILE_SIMPLE( f_apm_standard_trick, { add_standard_trick_pictures( doc ); } )
+FILE_SIMPLE( f_qapm_concl, { add_pt_pictures( doc ); } )
+FILE_SIMPLE( f_qapm_intro, { add_standard_trick_pictures( doc ); } )
 FILE_SIMPLE( f_def_apm_ed, {
     bool cf    = CROSS_FILL;
     CROSS_FILL = true;
@@ -601,14 +604,14 @@ FILE_SIMPLE( f_def_wed, {
 FILE_SIMPLE( f_pmwe_str_examples_mr, {
     bool cf    = CROSS_FILL;
     CROSS_FILL = true;
-    add_structural_insight_3_picture( doc, occ_style_t::NO_ANNOTATION );
+    add_structural_insight_3_pictures( doc, occ_style_t::NO_ANNOTATION );
     CROSS_FILL = cf;
 } )
 FILE_SIMPLE( f_pmwm_str_examples_mr, {
     bool cf    = CROSS_FILL;
     CROSS_FILL = true;
-    add_structural_insight_1_picture( doc, occ_style_t::NO_ANNOTATION );
-    add_structural_insight_2_picture( doc, occ_style_t::NO_ANNOTATION );
+    add_structural_insight_1_pictures( doc, occ_style_t::NO_ANNOTATION );
+    add_structural_insight_2_pictures( doc, occ_style_t::NO_ANNOTATION );
     CROSS_FILL = cf;
 } )
 FILE_SIMPLE( f_wed_intro_example, {
