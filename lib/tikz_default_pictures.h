@@ -26,4 +26,14 @@ namespace TIKZ {
                                 stylized_string p_Tname, stylized_string p_Pname,
                                 alignment_style_t p_style
                                 = AT_COMPRESS | AT_SHOW_MATCHED_CHARACTERS );
+
+    void add_alignment_graph_picture( document& p_doc, const std::string& p_T,
+                                      stylized_string p_Tname, const std::string& p_P,
+                                      stylized_string p_Pname, fragmentco p_fragment,
+                                      breakpoint_repn p_alignment, bool p_highlightMD = false );
+
+    void add_alignment_graph_explanation_picture( document& p_doc, const std::string& p_Tname = "T",
+                                                  const std::string& p_Pname    = "P",
+                                                  const std::string& p_Tposname = "t",
+                                                  const std::string& p_Pposname = "p" );
 } // namespace TIKZ

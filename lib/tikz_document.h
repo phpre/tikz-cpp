@@ -38,10 +38,10 @@ namespace TIKZ {
                             u64 p_indent = 4 );
     };
 
-#define WITH_DOCUMENT( p_varName, p_outDir, p_fontPath, p_colorPath, p_macroPath ) \
-    for( document p_varName{ }; !p_varName.is_final( );                            \
-         p_varName.finalize( ),                                                    \
-         document::output( p_outDir, p_name,                                       \
+#define WITH_DOCUMENT( p_varName, p_fileName, p_outDir, p_fontPath, p_colorPath, p_macroPath ) \
+    for( document p_varName{ }; !p_varName.is_final( );                                        \
+         p_varName.finalize( ),                                                                \
+         document::output( p_outDir, p_fileName,                                               \
                            p_varName.render( p_fontPath, p_colorPath, p_macroPath ) ) )
 
 #define WITH_PICTURE( p_varName, p_picArgs, p_docName )       \
