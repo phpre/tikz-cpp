@@ -17,6 +17,7 @@ namespace TIKZ {
         std::set<std::string>                _libraries;
         kv_store                             _options;
         std::deque<std::shared_ptr<command>> _content;
+        bool                                 _final = false;
 
       public:
         // extra basic option so that they don't need to be specified when other options
@@ -26,6 +27,13 @@ namespace TIKZ {
 
         render_t render( u64                p_startIndent = 1,
                          const std::string& p_environName = "tikzpicture" ) const;
+
+        inline void finalize( ) {
+            _final = true;
+        }
+        inline bool is_final( ) const {
+            return _final;
+        }
 
         std::set<std::string> libraries( ) const;
         std::set<std::string> packages( ) const;

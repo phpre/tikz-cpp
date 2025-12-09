@@ -15,10 +15,13 @@ namespace TIKZ {
         return res;
     }
 
-    document::document( ) : _packages{ "mathtools", "tikz" }, _libraries{ "calc" }, _pictures{ } {
+    document::document( )
+        : _packages{ "mathtools", "tikz" }, _libraries{ "calc" }, _pictures{ }, _final{ false } {
     }
 
     void document::add_picture( const picture& p_picture ) {
+        if( _final ) { return; }
+
         _libraries.insert_range( p_picture.libraries( ) );
         _packages.insert_range( p_picture.packages( ) );
         _pictures.push_back( p_picture );
