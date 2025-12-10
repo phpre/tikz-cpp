@@ -38,6 +38,11 @@ namespace TIKZ {
                                                    const std::string& p_Tposname = "t",
                                                    const std::string& p_Pposname = "p" );
 
+    void add_slices_pictures( document& p_doc, stylized_string p_Pname, stylized_string p_Tname,
+                              fragmentco p_fragment, u64 p_d, breakpoint_repn p_alignment,
+                              const std::string& p_P, const std::string& p_T,
+                              bool p_simplePlabel = true );
+
     void add_trie_construction_pictures( document& p_doc, const std::string& p_alphabet,
                                          const std::deque<std::string>& p_str );
 } // namespace TIKZ

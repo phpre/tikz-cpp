@@ -263,63 +263,6 @@ void add_filter_verify_pictures( document& p_doc, u64 p_n = 12, u64 p_m = 3, u64
     }
 }
 
-void add_slices_pictures( document& p_doc, stylized_string p_Pname, stylized_string p_Tname,
-                          fragmentco p_fragment, u64 p_d, breakpoint_repn p_alignment,
-                          const std::string& p_P, const std::string& p_T ) {
-    auto pname_s = stylized_string{ p_Pname.m_name, p_Pname.m_fragment, str_displ_t ::NAME };
-    auto tname_s = stylized_string{ p_Tname.m_name, p_Tname.m_fragment, str_displ_t ::NAME };
-
-    auto align = breakpoint_slice( p_alignment, p_fragment );
-    auto gs    = graph_slice::from_alignment( align, p_d );
-
-    // full picture of every slice
-    WITH_PICTURE( p1, { OPT::YSCALE( ".9" ) }, p_doc ) {
-        place_graph_slices( p1, gs, p_alignment, p_P, p_T, COLOR_BLACK.deemphasize( ), COLOR_NONE,
-                            COLOR_NONE, COLOR_NONE );
-        place_graph_slices_t_labels( p1, gs, p_Tname, p_Pname );
-        place_string_vertical( p1, pname_s.slice( p_fragment ),
-                               tikz_point{ -CHAR_WIDTH - .25, .0 } );
-    }
-    WITH_PICTURE( p2, { OPT::YSCALE( ".9" ) }, p_doc ) {
-        place_graph_slices_stylized( p2, gs, p_alignment );
-        place_graph_slices_t_labels( p2, gs, p_Tname, p_Pname, true );
-        place_string_vertical( p2, pname_s.slice( p_fragment ),
-                               tikz_point{ -CHAR_WIDTH - .25, .0 } );
-    }
-
-    // left-pure-right decomposition
-    auto tpb_decomp = graph_slice::top_pure_bot_decomp( gs );
-    WITH_PICTURE( p3, { OPT::YSCALE( ".9" ) }, p_doc ) {
-        place_graph_slices( p3, tpb_decomp, p_alignment, p_P, p_T, COLOR_BLACK.deemphasize( ),
-                            COLOR_NONE, COLOR_NONE );
-        place_graph_slices_t_labels( p3, tpb_decomp, p_Tname, p_Pname, true );
-        place_string_vertical( p3, pname_s.slice( p_fragment ),
-                               tikz_point{ -CHAR_WIDTH - .25, .0 } );
-    }
-    WITH_PICTURE( p4, { OPT::YSCALE( ".9" ) }, p_doc ) {
-        place_graph_slices_stylized( p4, tpb_decomp, p_alignment );
-        place_graph_slices_t_labels( p4, tpb_decomp, p_Tname, p_Pname, true );
-        place_string_vertical( p4, pname_s.slice( p_fragment ),
-                               tikz_point{ -CHAR_WIDTH - .25, .0 } );
-    }
-
-    // fully merged
-    auto merged = graph_slice::merged_slice( gs, p_fragment );
-    WITH_PICTURE( p5, { OPT::YSCALE( ".9" ) }, p_doc ) {
-        place_graph_slices( p5, { merged }, p_alignment, p_P, p_T, COLOR_NONE,
-                            COLOR_BLACK.deemphasize( ), COLOR_NONE, COLOR_NONE );
-        place_alignment_graph_label( p5, pname_s.slice( p_fragment ),
-                                     tname_s.slice( merged.fragment_t( ) ) );
-    }
-    WITH_PICTURE( p6, { OPT::YSCALE( ".9" ) }, p_doc ) {
-        place_graph_slices_stylized( p6, { merged }, p_alignment, COLOR_BLACK.deemphasize( ),
-                                     COLOR_NONE, SEP_COL.deemphasize( ), SEP_COL.deemphasize( ),
-                                     MAT_COL.deemphasize( ), COLOR_BLACK.deemphasize( ) );
-        place_alignment_graph_label( p6, pname_s.slice( p_fragment ),
-                                     tname_s.slice( merged.fragment_t( ) ) );
-    }
-}
-
 void add_pt_pictures( document& p_doc, u64 p_n = 12, u64 p_m = 3 ) {
     auto tn = stylized_string{ "T", fragmentco{ 0, p_n }, str_displ_t::NAME };
     auto pn = stylized_string{ "P", fragmentco{ 0, p_m }, str_displ_t::NAME };
