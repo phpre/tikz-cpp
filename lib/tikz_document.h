@@ -7,6 +7,7 @@
 #include "defines.h"
 #include "tikz_picture.h"
 #include "tikz_point.h"
+#include "tikz_simple_pic.h"
 
 namespace TIKZ {
     class document {
@@ -37,15 +38,4 @@ namespace TIKZ {
         static bool output( const std::string& p_path, const std::string& p_name, render_t p_render,
                             u64 p_indent = 4 );
     };
-
-#define WITH_DOCUMENT( p_varName, p_fileName, p_outDir, p_fontPath, p_colorPath, p_macroPath ) \
-    for( document p_varName{ }; !p_varName.is_final( );                                        \
-         p_varName.finalize( ),                                                                \
-         document::output( p_outDir, p_fileName,                                               \
-                           p_varName.render( p_fontPath, p_colorPath, p_macroPath ) ) )
-
-#define WITH_PICTURE( p_varName, p_picArgs, p_docName )       \
-    for( picture p_varName p_picArgs; !p_varName.is_final( ); \
-         p_varName.finalize( ), p_docName.add_picture( p_varName ) )
-
 } // namespace TIKZ

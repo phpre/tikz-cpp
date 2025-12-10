@@ -1,12 +1,10 @@
 #include "tikz.h"
 using namespace TIKZ;
-
-std::string OUT_DIR      = "../figs/";
-std::string TEX_DIR      = "../tex/";
-std::string FONT_PATH    = TEX_DIR + "font";
-std::string COLOR_PATH   = TEX_DIR + "color";
-std::string MACRO_PATH   = TEX_DIR + "macros";
-std::string PROGRAM_NAME = "";
+std::string OUTDIR_DEFAULT  = "../figs/";
+std::string TEXDIR_DEFAULT  = "../tex/";
+std::string FONT_FILENAME   = "font";
+std::string COLOR_FILENAME  = "color";
+std::string MACROS_FILENAME = "macros";
 
 constexpr std::string T = "AAAcdaAAAaacAAaddAAAAA";
 constexpr std::string P = "AbAAbcdAAAdAAbddAAaAAA";

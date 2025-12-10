@@ -14,12 +14,10 @@ typedef std::pair<u64, u64> point;
 
 typedef std::deque<std::pair<u64, std::string>> render_t;
 
-constexpr std::string EMPTY_STR = "";
-constexpr std::string WILDCARD  = "*";
-
-namespace ALG {
-}
-
+namespace ALG {}
 namespace TIKZ {
     using namespace ALG;
 }
+
+constexpr std::string EMPTY_STR = "";
+constexpr std::string WILDCARD  = "*";

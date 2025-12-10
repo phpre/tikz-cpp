@@ -1,5 +1,6 @@
 #include "tikz_default_pictures.h"
 #include "tikz_string.h"
+#include "tikz_string_trie.h"
 
 namespace TIKZ {
     void add_string_picture( document& p_out, const std::string& p_string ) {
@@ -69,10 +70,10 @@ namespace TIKZ {
         }
     }
 
-    void add_alignment_graph_explanation_picture( document& p_doc, const std::string& p_Tname,
-                                                  const std::string& p_Pname,
-                                                  const std::string& p_Tposname,
-                                                  const std::string& p_Pposname ) {
+    void add_alignment_graph_explanation_pictures( document& p_doc, const std::string& p_Tname,
+                                                   const std::string& p_Pname,
+                                                   const std::string& p_Tposname,
+                                                   const std::string& p_Pposname ) {
         std::string Pp = std::format( "{}\\position{{{}}}", p_Pname, p_Pposname );
         std::string Tp = std::format( "{}\\position{{{}}}", p_Tname, p_Tposname );
 
@@ -147,6 +148,31 @@ namespace TIKZ {
             place_selected_arrow( p4, vg.label_for_pos( 1, 1 ) + ") + (0.0, +.05",
                                   vg.label_for_pos( 2, 2 ) + ") + ( 0.0, +.05", SUB_COL,
                                   SUB_COL.to_bg( ), -45.0 );
+        }
+    }
+
+    void add_trie_construction_pictures( document& p_doc, const std::string& p_alphabet,
+                                         const std::deque<std::string>& p_str ) {
+        trie T;
+        for( const auto& s : p_str ) {
+            picture p1{ };
+            WITH_PICTURE( p1, { }, p_doc ) {
+                T.insert( s );
+                if( p_alphabet == EMPTY_STR ) {
+                    auto tr = place_trie( p1, T );
+                    place_trie_string_on_coordinates( p1, tr, s, OPT::COLOR( COLOR_C3 ) );
+                    place_trie_depth_labels( p1, tr, tikz_point{ 0, CHAR_HEIGHT * 3 / 4 } );
+                } else {
+                    double charDiv = 1.25 * DEFAULT_TRIE_CHAR_DIVERTION;
+                    double distX   = DEFAULT_TRIE_VERTEX_DIST_X;
+                    double distY   = 1.15 * DEFAULT_TRIE_VERTEX_DIST_Y;
+                    auto tr = place_trie_wide( p1, T, p_alphabet, tikz_point{ 0.0, 0.0 }, EMPTY_STR,
+                                               distX, distY, charDiv );
+                    place_diverted_trie_string_on_coordinates( p1, tr, s, p_alphabet, charDiv,
+                                                               OPT::COLOR( COLOR_C3 ) );
+                    place_trie_depth_labels( p1, tr, tikz_point{ 0, CHAR_HEIGHT * 3 / 4 } );
+                }
+            }
         }
     }
 

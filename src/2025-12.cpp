@@ -1,43 +1,10 @@
-#include <functional>
 #include "tikz.h"
 using namespace TIKZ;
-std::string OUT_DIR, TEX_DIR;
-std::string FONT_PATH, COLOR_PATH, MACRO_PATH;
-std::string PROGRAM_NAME;
-
-std::deque<std::function<void( )>> SIMPLE_PICS{ };
-auto                               add_simple_picture( std::function<void( )> p_f ) {
-    SIMPLE_PICS.push_back( p_f );
-    return SIMPLE_PICS.size( );
-}
-
-#define MAIN( ... )                                  \
-    int main( int p_argc, char* p_argv[] ) {         \
-        PROGRAM_NAME = p_argv[ 0 ];                  \
-        if( p_argc > 1 ) {                           \
-            OUT_DIR = std::string{ p_argv[ 1 ] };    \
-        } else {                                     \
-            OUT_DIR = "../figs/";                    \
-        }                                            \
-        if( p_argc > 2 ) {                           \
-            TEX_DIR = std::string{ p_argv[ 2 ] };    \
-        } else {                                     \
-            TEX_DIR = "../tex/";                     \
-        }                                            \
-        FONT_PATH  = TEX_DIR + "font_talk";          \
-        COLOR_PATH = TEX_DIR + "color_talk";         \
-        MACRO_PATH = TEX_DIR + "macros";             \
-        for( const auto& s : SIMPLE_PICS ) { s( ); } \
-        __VA_ARGS__                                  \
-    }
-
-#define FILE_SIMPLE( p_name, ... )                                                              \
-    void pic_##p_name( ) {                                                                      \
-        WITH_DOCUMENT( doc, "p_" #p_name ".tex", OUT_DIR, FONT_PATH, COLOR_PATH, MACRO_PATH ) { \
-            __VA_ARGS__                                                                         \
-        }                                                                                       \
-    }                                                                                           \
-    auto __##p_name = add_simple_picture( pic_##p_name );
+std::string OUTDIR_DEFAULT  = "../figs/";
+std::string TEXDIR_DEFAULT  = "../tex/";
+std::string FONT_FILENAME   = "font_talk";
+std::string COLOR_FILENAME  = "color_talk";
+std::string MACROS_FILENAME = "macros";
 
 // ---------------------------------------------------------------------------------------------
 //
@@ -488,7 +455,7 @@ void add_structural_insight_3_pictures( document&   p_doc,
 //
 // ---------------------------------------------------------------------------------------------
 
-FILE_SIMPLE( f_wapm_kt, {
+FILE_SIMPLE( p_f_wapm_kt, {
     constexpr std::string T      = "AAAcdaAAAaacAAaddAAAAA";
     constexpr std::string P      = "AbAAbcdAAAdAAbddAAaAAA";
     const breakpoint_repn BP_P_T = compute_breakpoints( P, T );
@@ -516,14 +483,14 @@ FILE_SIMPLE( f_wapm_kt, {
 
     add_slices_pictures( doc, P_NAME, S_NAME, fragmentco{ 0, 11 }, 1, BP_P_T, P, T );
 
-    add_alignment_graph_explanation_picture( doc );
+    add_alignment_graph_explanation_pictures( doc );
 
     CROSS_FILL = cf;
 } )
-FILE_SIMPLE( f_apm_standard_trick, { add_standard_trick_pictures( doc ); } )
-FILE_SIMPLE( f_qapm_concl, { add_pt_pictures( doc ); } )
-FILE_SIMPLE( f_qapm_intro, { add_standard_trick_pictures( doc ); } )
-FILE_SIMPLE( f_def_apm_ed, {
+FILE_SIMPLE( p_f_apm_standard_trick, { add_standard_trick_pictures( doc ); } )
+FILE_SIMPLE( p_f_qapm_concl, { add_pt_pictures( doc ); } )
+FILE_SIMPLE( p_f_qapm_intro, { add_standard_trick_pictures( doc ); } )
+FILE_SIMPLE( p_f_def_apm_ed, {
     bool cf    = CROSS_FILL;
     CROSS_FILL = true;
     add_alignment_picture( doc,
@@ -536,7 +503,7 @@ FILE_SIMPLE( f_def_apm_ed, {
                            "sarrebruck" );
     CROSS_FILL = cf;
 } )
-FILE_SIMPLE( f_def_ed, {
+FILE_SIMPLE( p_f_def_ed, {
     bool cf    = CROSS_FILL;
     CROSS_FILL = true;
     cost_table w{
@@ -570,7 +537,7 @@ FILE_SIMPLE( f_def_ed, {
                            AT_COMPRESS | AT_SHOW_MATCHED_CHARACTERS );
     CROSS_FILL = cf;
 } )
-FILE_SIMPLE( f_def_wed, {
+FILE_SIMPLE( p_f_def_wed, {
     cost_table w{
         { { '0', 'O' }, 1 },
         { { '1', 'I' }, 1 },
@@ -601,25 +568,25 @@ FILE_SIMPLE( f_def_wed, {
     add_alignment_picture( doc, "0PIN1CIV", "PICNIC", w,
                            AT_COMPRESS | AT_SHOW_MATCHED_CHARACTERS | AT_SHOW_EDIT_COST );
 } )
-FILE_SIMPLE( f_pmwe_str_examples_mr, {
+FILE_SIMPLE( p_f_pmwe_str_examples_mr, {
     bool cf    = CROSS_FILL;
     CROSS_FILL = true;
     add_structural_insight_3_pictures( doc, occ_style_t::NO_ANNOTATION );
     CROSS_FILL = cf;
 } )
-FILE_SIMPLE( f_pmwm_str_examples_mr, {
+FILE_SIMPLE( p_f_pmwm_str_examples_mr, {
     bool cf    = CROSS_FILL;
     CROSS_FILL = true;
     add_structural_insight_1_pictures( doc, occ_style_t::NO_ANNOTATION );
     add_structural_insight_2_pictures( doc, occ_style_t::NO_ANNOTATION );
     CROSS_FILL = cf;
 } )
-FILE_SIMPLE( f_wed_intro_example, {
+FILE_SIMPLE( p_f_wed_intro_example, {
     add_string_picture( doc, "OPINION" );
     add_string_picture( doc, "0PIN1CIV" );
     add_string_picture( doc, "PICNIC" );
 } )
-FILE_SIMPLE( f_apm_filter_verify, {
+FILE_SIMPLE( p_f_apm_filter_verify, {
     bool cf    = CROSS_FILL;
     CROSS_FILL = false;
     add_filter_verify_pictures( doc, 12, 3, 1, 0, 3 );
