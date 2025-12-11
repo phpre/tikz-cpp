@@ -105,6 +105,7 @@ namespace TIKZ {
         const tikz_option LW_OUTLINE{ "line width", "1pt" };
         const tikz_option LW_SUPPORT_LINE{ "line width", ".5pt" };
         const tikz_option LW_THICK_SUPPORT_LINE{ "line width", ".75pt" };
+        const tikz_option LW_PATTERN_LINE{ "line width", ".75pt" };
 
         const tikz_option LINE_CAP{ "line cap", "butt" };
         const tikz_option LINE_CAP_RECT{ "line cap", "rect" };
@@ -138,6 +139,10 @@ namespace TIKZ {
 
         const tikz_option RADIUS{ "radius", "3pt" };
 
+        const tikz_option PATTERN_COLOR{ "pattern color", COLOR_TEXT.to_string( ) };
+        const tikz_option PATTERN_ANGLE{ "angle", "0" };
+        const tikz_option PATTERN_DISTANCE{ "distance", ".5pt" };
+
         inline tikz_option postaction( kv_store p_options ) {
             return tikz_option{ "postaction", EMPTY_STR, "{" + p_options.to_string( ) + "}",
                                 p_options.libraries( ), p_options.packages( ) };
@@ -162,6 +167,14 @@ namespace TIKZ {
                        LINE_WIDTH( std::format( "{:5.3f}pt", p_doubleDistance ) )
                        | tikz_option{ std::format( "shorten >={:5.3}pt", p_outlineWidth / 2 ) }
                        | tikz_option{ std::format( "shorten <=0pt" ) } | p_innerOptions );
+        }
+
+        inline tikz_option pattern( const std::string& p_patternName, kv_store p_options = { } ) {
+            auto libs = p_options.libraries( );
+            libs.insert( "patterns.meta" );
+            return tikz_option{ "pattern", EMPTY_STR,
+                                std::format( "{{{}[{}]}}", p_patternName, p_options.to_string( ) ),
+                                libs, p_options.packages( ) };
         }
 
     } // namespace OPT
