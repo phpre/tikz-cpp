@@ -133,6 +133,30 @@ namespace TIKZ {
         virtual render_t render_op( u64 p_startIndent = 2 ) const;
     };
 
+    struct scope_operation : public path_operation {
+      protected:
+        std::deque<std::shared_ptr<path_operation>> m_operations;
+
+      public:
+        inline scope_operation( std::deque<std::shared_ptr<path_operation>> p_operations )
+            : path_operation( tikz_position{ } ), m_operations{ p_operations } {
+        }
+
+        virtual inline std::set<std::string> libraries( ) const {
+            std::set<std::string> res{ };
+            for( const auto& op : m_operations ) { res.insert_range( op->libraries( ) ); }
+            return res;
+        }
+
+        virtual inline std::set<std::string> packages( ) const {
+            std::set<std::string> res{ };
+            for( const auto& op : m_operations ) { res.insert_range( op->packages( ) ); }
+            return res;
+        }
+
+        virtual render_t render_op( u64 p_startIndent = 1 ) const;
+    };
+
     struct path_command : public command {
         tikz_position                               m_startPosition;
         std::deque<std::shared_ptr<path_operation>> m_operations;

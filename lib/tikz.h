@@ -8,6 +8,7 @@
 
 #include "tikz_color.h"
 #include "tikz_command.h"
+#include "tikz_default_paths.h"
 #include "tikz_default_pictures.h"
 #include "tikz_document.h"
 #include "tikz_flags.h"

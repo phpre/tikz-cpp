@@ -12,6 +12,18 @@ std::string MACROS_FILENAME = "macros";
 //
 // ---------------------------------------------------------------------------------------------
 
+void add_pillar_meta_picture( document& p_doc, const kv_store& p_metaOptions = { } ) {
+}
+
+void add_pillar_implementation_picture( document& p_doc, const std::string& p_impName,
+                                        const kv_store& p_impOptions = { } ) {
+}
+
+void add_pillar_combined_picture( document& p_doc, const std::string& p_impName,
+                                  const kv_store& p_metaAptions = { },
+                                  const kv_store& p_impOptions  = { } ) {
+}
+
 void add_standard_trick_pictures( document& p_doc, u64 p_n = 12, u64 p_m = 3, u64 p_k = 1,
                                   u64 p_l = 4 ) {
     auto tn = stylized_string{ "T", fragmentco{ 0, p_n }, str_displ_t::NAME };

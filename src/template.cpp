@@ -12,6 +12,46 @@ std::string MACROS_FILENAME = "macros";
 //
 // ---------------------------------------------------------------------------------------------
 
+void add_puzzle_demo_picture( document& p_doc ) {
+    WITH_PICTURE( pic, { }, p_doc ) {
+        place_puzzle_piece( pic, tikz_point{ -1.0, 1 },
+                            OPT::LW_OUTLINE | OPT::DRAW( COLOR_TEXT )
+                                | OPT::ROUNDED_CORNERS( "6pt" )
+                                | OPT::FILL( COLOR_TEXT.deemphasize_weak( ) ),
+                            puzzle_bend_t::CURVED_OUT, puzzle_bend_t::CURVED_IN,
+                            puzzle_bend_t::CURVED_OUT, puzzle_bend_t::CURVED_OUT );
+        place_puzzle_piece( pic, tikz_point{ 1.0, 1 },
+                            OPT::LW_OUTLINE | OPT::DRAW( COLOR_C1 ) | OPT::ROUNDED_CORNERS( "6pt" )
+                                | OPT::FILL( COLOR_C1.deemphasize( ) ) );
+        place_puzzle_piece( pic, tikz_point{ -1.0, -1 },
+                            OPT::LW_OUTLINE | OPT::DRAW( COLOR_C3 ) | OPT::ROUNDED_CORNERS( "6pt" )
+                                | OPT::FILL( COLOR_C3.deemphasize( ) ),
+                            puzzle_bend_t::CURVED_IN, puzzle_bend_t::CURVED_IN,
+                            puzzle_bend_t::CURVED_IN, puzzle_bend_t::CURVED_OUT );
+        place_puzzle_piece( pic, tikz_point{ 1.0, -1 },
+                            OPT::LW_OUTLINE | OPT::DRAW( COLOR_C5 ) | OPT::ROUNDED_CORNERS( "6pt" )
+                                | OPT::FILL( COLOR_C5.deemphasize( ) ),
+                            puzzle_bend_t::STRAIGHT, puzzle_bend_t::STRAIGHT,
+                            puzzle_bend_t::CURVED_OUT, puzzle_bend_t::CURVED_OUT );
+
+        /*
+    \pic[thick, black!80, fill=black!65, rounded corners=6pt] (-1) at (-1,1) {puzzle
+    piece=-1/1/1/1};
+    \pic[thick,
+        draw=c1!80, pattern={Lines[distance=1mm, angle=45, line width=0.3mm]}, pattern color=c1!50,
+        rounded corners=6pt] (0) at (1,1) {puzzle piece};
+    \pic[thick,
+        draw=c3!80, pattern={Lines[distance=1mm, angle=-45, line width=0.3mm]}, pattern color=c3!50,
+        rounded corners=6pt] (2) at (-1,-1) {puzzle piece=-1/1/-1/-1};
+    \pic[thick,
+        draw=c5!80, pattern={Hatch[distance=1mm, angle=45, line width=0.2mm]}, pattern
+        color=c5!50,
+        rounded corners=6pt] (1) at (1,-1) {puzzle
+    piece=-1/-1/1/1};
+    */
+    }
+}
+
 void add_string_demo_pictures( document& p_doc ) {
     std::deque<std::string> optname{ "rotatable",      "show positions",  "show characters",
                                      "show wildcards", "group positions", "use typewriter" };
@@ -126,6 +166,7 @@ void add_alignment_demo_pictures( document& p_doc ) {
 
 FILE_SIMPLE( g01, { add_string_demo_pictures( doc ); } )
 FILE_SIMPLE( g02, { add_alignment_demo_pictures( doc ); } )
+FILE_SIMPLE( g03, { add_puzzle_demo_picture( doc ); } )
 
 // ---------------------------------------------------------------------------------------------
 //

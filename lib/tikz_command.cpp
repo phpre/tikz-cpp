@@ -22,6 +22,16 @@ namespace TIKZ {
         return result;
     }
 
+    render_t scope_operation::render_op( u64 p_startIndent ) const {
+        render_t result{ };
+        result.push_back( { p_startIndent, "{" } );
+        for( const auto& op : m_operations ) {
+            result.append_range( op->render_op( 1 + p_startIndent ) );
+        }
+        result.push_back( { p_startIndent, "}" } );
+        return result;
+    }
+
     render_t arc_to_operation::render_op( u64 p_startIndent ) const {
         return { { p_startIndent, std::format( "arc ({:5.3f}:{:5.3f}:{:5.3f}pt)", m_startAngle,
                                                m_endAngle, m_radius ) } };
