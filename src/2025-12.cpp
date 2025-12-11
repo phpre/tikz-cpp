@@ -12,16 +12,68 @@ std::string MACROS_FILENAME = "macros";
 //
 // ---------------------------------------------------------------------------------------------
 
+const tikz_option XSCALE_TO_WIDTH = OPT::XSCALE( "{min(1, \\twd)}" );
+math_command      width_macro( double p_width, const std::string& p_text,
+                               const std::string& p_unit = "1cm" ) {
+    return math_command{ "twd",
+                         std::format( "{:5.3f} * {} / width(\"{}\")", p_width, p_unit, p_text ) };
+}
+
+void place_pillar_meta( picture& p_pic, const kv_store& p_metaOptions = { } ) {
+    p_pic.place_rectangle( tikz_point{ -1.8, 2.2 }, tikz_point{ 1.8, -1.2 },
+                           OPT::LINE_WIDTH( "2.5pt" ) | OPT::DRAW( COLOR_TEXT.to_flavor_bg( ) )
+                               | OPT::ROUNDED_CORNERS( "8pt" )
+                               | OPT::FILL( COLOR_BLACK.to_flavor_bg( ) ) | p_metaOptions );
+    p_pic.place_rectangle( tikz_point{ -1.8, 2.2 }, tikz_point{ 1.8, -1.2 },
+                           OPT::LW_LINE | OPT::DRAW( COLOR_TEXT ) | OPT::ROUNDED_CORNERS( "8pt" )
+                               | OPT::FILL( COLOR_BLACK.to_flavor_bg( ) ) | p_metaOptions );
+    p_pic.place_text( textsize_LARGE( text_typewriter( "PILLAR" ) ), tikz_point{ 0, 1.8 } );
+    p_pic.place_text( "meta algorithm", tikz_point{ 0, 1.3 } );
+
+    place_puzzle_piece( p_pic, tikz_point{ 0.0, 0.0 },
+                        OPT::LW_OUTLINE | OPT::DRAW( COLOR_TEXT ) | OPT::ROUNDED_CORNERS( "6pt" )
+                            | OPT::FILL( COLOR_WHITE ) | p_metaOptions );
+}
+
+void place_pillar_implementation( picture& p_pic, const std::string& p_impName, color p_impColor,
+                                  const kv_store& p_impOptions = { } ) {
+    place_puzzle_piece( p_pic, tikz_point{ 0.0, 0.0 },
+                        OPT::LW_DOUBLE_BG | OPT::DRAW( p_impColor.to_flavor_bg( ) )
+                            | OPT::FILL( p_impColor.to_flavor_bg( ) )
+                            | OPT::ROUNDED_CORNERS( "6pt" ) );
+    place_puzzle_piece( p_pic, tikz_point{ 0.0, 0.0 },
+                        OPT::LW_OUTLINE | OPT::DRAW( p_impColor )
+                            | OPT::FILL( p_impColor.deemphasize( ) ) | OPT::ROUNDED_CORNERS( "6pt" )
+                            | p_impOptions );
+
+    p_pic.add_command( std::make_shared<math_command>( width_macro( 1.35, p_impName ) ) );
+    p_pic.place_text( textsize_large( p_impName ), tikz_point{ 0.0, 0.0 },
+                      XSCALE_TO_WIDTH | OPT::ROUNDED_CORNERS( "3pt" ) | OPT::FILL_OPACITY( ".8" )
+                          | OPT::FILL( p_impColor.to_flavor_bg( ) ) );
+    p_pic.place_text( textsize_large( p_impName ), tikz_point{ 0.0, 0.0 },
+                      XSCALE_TO_WIDTH | OPT::TEXT_COLOR( p_impColor.deemphasize_weak( ) ) );
+}
+
 void add_pillar_meta_picture( document& p_doc, const kv_store& p_metaOptions = { } ) {
+    WITH_PICTURE( pic, { }, p_doc ) {
+        place_pillar_meta( pic, p_metaOptions );
+    }
 }
 
 void add_pillar_implementation_picture( document& p_doc, const std::string& p_impName,
-                                        const kv_store& p_impOptions = { } ) {
+                                        color p_impColor, const kv_store& p_impOptions = { } ) {
+    WITH_PICTURE( pic, { }, p_doc ) {
+        place_pillar_implementation( pic, p_impName, p_impColor, p_impOptions );
+    }
 }
 
-void add_pillar_combined_picture( document& p_doc, const std::string& p_impName,
-                                  const kv_store& p_metaAptions = { },
+void add_pillar_combined_picture( document& p_doc, const std::string& p_impName, color p_impColor,
+                                  const kv_store& p_metaOptions = { },
                                   const kv_store& p_impOptions  = { } ) {
+    WITH_PICTURE( pic, { }, p_doc ) {
+        place_pillar_meta( pic, p_metaOptions );
+        place_pillar_implementation( pic, p_impName, p_impColor, p_impOptions );
+    }
 }
 
 void add_standard_trick_pictures( document& p_doc, u64 p_n = 12, u64 p_m = 3, u64 p_k = 1,
@@ -40,11 +92,11 @@ void add_standard_trick_pictures( document& p_doc, u64 p_n = 12, u64 p_m = 3, u6
     p1.place_node( tikz_point{ ( -1 ) * CHAR_WIDTH, 0.0 } );
     for( u64 i = 0; i < p_n - p_m + p_k + 1; ++i ) {
         if( i == fa1s ) {
-            p1.place_hatena( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+            place_hatena( p1, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
         } else {
-            p1.place_hatena( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
-                             COLOR_C2.deemphasize_weak( ).deemphasize( ),
-                             COLOR_C2.to_bg( ).deemphasize( ) );
+            place_hatena( p1, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
+                          COLOR_C2.deemphasize_weak( ).deemphasize( ),
+                          COLOR_C2.to_bg( ).deemphasize( ) );
         }
     }
     place_string( p1, pn, tikz_point{ fa1s * CHAR_WIDTH, -2.5 * CHAR_HEIGHT } );
@@ -70,11 +122,11 @@ void add_standard_trick_pictures( document& p_doc, u64 p_n = 12, u64 p_m = 3, u6
 
     for( u64 i = 0; i < p_n - p_m + p_k + 1; ++i ) {
         if( i == fa2s ) {
-            p2.place_hatena( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+            place_hatena( p2, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
         } else {
-            p2.place_hatena( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
-                             COLOR_C2.deemphasize_weak( ).deemphasize( ),
-                             COLOR_C2.to_bg( ).deemphasize( ) );
+            place_hatena( p2, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
+                          COLOR_C2.deemphasize_weak( ).deemphasize( ),
+                          COLOR_C2.to_bg( ).deemphasize( ) );
         }
     }
 
@@ -96,11 +148,11 @@ void add_standard_trick_pictures( document& p_doc, u64 p_n = 12, u64 p_m = 3, u6
 
     for( u64 i = 0; i < p_n - p_m + p_k + 1; ++i ) {
         if( i == fa3s ) {
-            p1.place_hatena( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+            place_hatena( p1, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
         } else {
-            p1.place_hatena( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
-                             COLOR_C2.deemphasize_weak( ).deemphasize( ),
-                             COLOR_C2.to_bg( ).deemphasize( ) );
+            place_hatena( p1, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
+                          COLOR_C2.deemphasize_weak( ).deemphasize( ),
+                          COLOR_C2.to_bg( ).deemphasize( ) );
         }
     }
 
@@ -136,11 +188,11 @@ void add_standard_trick_pictures( document& p_doc, u64 p_n = 12, u64 p_m = 3, u6
 
         for( u64 i = j; i < std::min( p_n - p_m + p_k + 1, j + p_l ); ++i ) {
             if( i == fa3s ) {
-                p4.place_hatena( tikz_point{ ( i - j + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+                place_hatena( p4, tikz_point{ ( i - j + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
             } else {
-                p4.place_hatena( tikz_point{ ( i - j + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
-                                 COLOR_C2.deemphasize_weak( ).deemphasize( ),
-                                 COLOR_C2.to_bg( ).deemphasize( ) );
+                place_hatena( p4, tikz_point{ ( i - j + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
+                              COLOR_C2.deemphasize_weak( ).deemphasize( ),
+                              COLOR_C2.to_bg( ).deemphasize( ) );
             }
         }
 
@@ -170,7 +222,7 @@ void add_filter_verify_pictures( document& p_doc, u64 p_n = 12, u64 p_m = 3, u64
         p1.place_node( tikz_point{ 0.0, .9 * CHAR_HEIGHT } );
         place_string( p1, tn, tikz_point{ 0.0, 0.0 } );
         for( u64 i = 0; i < p_n - p_m + p_k + 1; ++i ) {
-            p1.place_hatena( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+            place_hatena( p1, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
         }
     }
 
@@ -180,10 +232,10 @@ void add_filter_verify_pictures( document& p_doc, u64 p_n = 12, u64 p_m = 3, u64
         place_string( p2, tn, tikz_point{ 0.0, 0.0 } );
         for( u64 i = 0; i < p_n - p_m + p_k + 1; ++i ) {
             if( rand( ) % 13 < 6 ) {
-                p2.place_batsu( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+                place_batsu( p2, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
             } else {
                 left.insert( i );
-                p2.place_hatena( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+                place_hatena( p2, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
             }
         }
     }
@@ -194,15 +246,15 @@ void add_filter_verify_pictures( document& p_doc, u64 p_n = 12, u64 p_m = 3, u64
         for( u64 i = 0; i < p_n - p_m + p_k + 1; ++i ) {
             if( left.count( i ) ) {
                 if( rand( ) % 7 < 3 ) {
-                    p3.place_batsu( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+                    place_batsu( p3, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
                 } else {
                     good.insert( i );
-                    p3.place_maru( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+                    place_maru( p3, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
                 }
             } else {
-                p3.place_batsu( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
-                                COLOR_C3.deemphasize_weak( ).deemphasize( ),
-                                COLOR_C3.deemphasize( ).deemphasize( ) );
+                place_batsu( p3, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
+                             COLOR_C3.deemphasize_weak( ).deemphasize( ),
+                             COLOR_C3.deemphasize( ).deemphasize( ) );
             }
         }
     }
@@ -214,23 +266,23 @@ void add_filter_verify_pictures( document& p_doc, u64 p_n = 12, u64 p_m = 3, u64
             for( u64 i = 0; i < p_n - p_m + p_k + 1; ++i ) {
                 if( left.count( i ) ) {
                     if( i < n && good.count( i ) ) {
-                        p4.place_maru( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+                        place_maru( p4, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
                     } else if( i < n ) {
-                        p4.place_batsu( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+                        place_batsu( p4, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
                     } else if( i == n ) {
-                        p4.place_hatena( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
-                                         COLOR_C2.deemphasize_weak( ), COLOR_C2.to_bg( ),
-                                         OPT::FILL( COLOR_C5.to_bg( ) ) | OPT::RECTANGLE
-                                             | OPT::ROUNDED_CORNERS );
+                        place_hatena( p4, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
+                                      COLOR_C2.deemphasize_weak( ), COLOR_C2.to_bg( ),
+                                      OPT::FILL( COLOR_C5.to_bg( ) ) | OPT::RECTANGLE
+                                          | OPT::ROUNDED_CORNERS );
                     } else {
-                        p4.place_hatena( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
-                                         COLOR_C2.deemphasize_weak( ).deemphasize( ),
-                                         COLOR_C2.to_bg( ).deemphasize( ) );
+                        place_hatena( p4, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
+                                      COLOR_C2.deemphasize_weak( ).deemphasize( ),
+                                      COLOR_C2.to_bg( ).deemphasize( ) );
                     }
                 } else {
-                    p4.place_batsu( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
-                                    COLOR_C3.deemphasize_weak( ).deemphasize( ),
-                                    COLOR_C3.deemphasize( ).deemphasize( ) );
+                    place_batsu( p4, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
+                                 COLOR_C3.deemphasize_weak( ).deemphasize( ),
+                                 COLOR_C3.deemphasize( ).deemphasize( ) );
                 }
             }
             place_string( p4, tn, tikz_point{ 0.0, 0.0 } );
@@ -250,23 +302,23 @@ void add_filter_verify_pictures( document& p_doc, u64 p_n = 12, u64 p_m = 3, u64
             for( u64 i = 0; i < p_n - p_m + p_k + 1; ++i ) {
                 if( left.count( i ) ) {
                     if( i < *batch.begin( ) && good.count( i ) ) {
-                        p4.place_maru( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+                        place_maru( p4, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
                     } else if( i < *batch.begin( ) ) {
-                        p4.place_batsu( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+                        place_batsu( p4, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
                     } else if( batch.count( i ) ) {
-                        p4.place_hatena( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
-                                         COLOR_C2.deemphasize_weak( ), COLOR_C2.to_bg( ),
-                                         OPT::FILL( COLOR_C5.to_bg( ) ) | OPT::RECTANGLE
-                                             | OPT::ROUNDED_CORNERS );
+                        place_hatena( p4, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
+                                      COLOR_C2.deemphasize_weak( ), COLOR_C2.to_bg( ),
+                                      OPT::FILL( COLOR_C5.to_bg( ) ) | OPT::RECTANGLE
+                                          | OPT::ROUNDED_CORNERS );
                     } else {
-                        p4.place_hatena( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
-                                         COLOR_C2.deemphasize_weak( ).deemphasize( ),
-                                         COLOR_C2.to_bg( ).deemphasize( ) );
+                        place_hatena( p4, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
+                                      COLOR_C2.deemphasize_weak( ).deemphasize( ),
+                                      COLOR_C2.to_bg( ).deemphasize( ) );
                     }
                 } else {
-                    p4.place_batsu( tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
-                                    COLOR_C3.deemphasize_weak( ).deemphasize( ),
-                                    COLOR_C3.deemphasize( ).deemphasize( ) );
+                    place_batsu( p4, tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 },
+                                 COLOR_C3.deemphasize_weak( ).deemphasize( ),
+                                 COLOR_C3.deemphasize( ).deemphasize( ) );
                 }
             }
             place_string( p4, tn, tikz_point{ 0.0, 0.0 } );
@@ -443,7 +495,15 @@ FILE_SIMPLE( p_f_wapm_kt, {
     CROSS_FILL = cf;
 } )
 FILE_SIMPLE( p_f_apm_standard_trick, { add_standard_trick_pictures( doc ); } )
-FILE_SIMPLE( p_f_qapm_concl, { add_pt_pictures( doc ); } )
+FILE_SIMPLE( p_f_qapm_concl, {
+    add_pt_pictures( doc );
+    add_pillar_combined_picture( doc, "Quantum", COLOR_C3, { },
+                                 OPT::PATTERN_LINES_45
+                                     | OPT::PATTERN_COLOR( COLOR_C3.deemphasize( ) ) );
+    add_pillar_combined_picture( doc, "Compressed", COLOR_C1, { },
+                                 OPT::PATTERN_LINES_135
+                                     | OPT::PATTERN_COLOR( COLOR_C1.deemphasize( ) ) );
+} )
 FILE_SIMPLE( p_f_qapm_intro, { add_standard_trick_pictures( doc ); } )
 FILE_SIMPLE( p_f_def_apm_ed, {
     bool cf    = CROSS_FILL;
@@ -546,6 +606,57 @@ FILE_SIMPLE( p_f_apm_filter_verify, {
     CROSS_FILL = false;
     add_filter_verify_pictures( doc, 12, 3, 1, 0, 3 );
     CROSS_FILL = cf;
+} )
+FILE_SIMPLE( p_f_apm_pillar, {
+    add_pillar_meta_picture( doc );
+
+    WITH_PICTURE( pic, { }, doc ) {
+        pic.place_text( textsize_LARGE( text_typewriter( "PILLAR" ) ), tikz_point{ 0, 1.8 } );
+        pic.place_text( "implementation", tikz_point{ 0, 1.3 } );
+
+        picture s3{ { }, {} };
+        place_pillar_implementation( s3, "Compressed", COLOR_C1,
+                                     OPT::PATTERN_LINES_135
+                                         | OPT::PATTERN_COLOR( COLOR_C1.deemphasize( ) ) );
+        pic.add_scope( s3 );
+
+        picture s2{ { OPT::XSHIFT( "-20" ) | OPT::YSHIFT( "-40" ) }, {} };
+        place_pillar_implementation( s2, "Dynamic", COLOR_C4,
+                                     OPT::PATTERN_LINES_180
+                                         | OPT::PATTERN_COLOR( COLOR_C4.deemphasize( ) ) );
+        pic.add_scope( s2 );
+
+        picture s1{ { OPT::XSHIFT( "25" ) | OPT::YSHIFT( "-28" ) }, {} };
+        place_pillar_implementation( s1, "Standard", COLOR_C5,
+                                     OPT::PATTERN_LINES_90
+                                         | OPT::PATTERN_COLOR( COLOR_C5.deemphasize( ) ) );
+        pic.add_scope( s1 );
+    }
+
+    WITH_PICTURE( pic, { }, doc ) {
+        pic.place_text( textsize_LARGE( "Fast Algorithm" ), tikz_point{ 0, 2.6 } );
+
+        picture s3{ { }, {} };
+        place_pillar_meta( s3 );
+        place_pillar_implementation( s3, "Compressed", COLOR_C1,
+                                     OPT::PATTERN_LINES_135
+                                         | OPT::PATTERN_COLOR( COLOR_C1.deemphasize( ) ) );
+        pic.add_scope( s3 );
+
+        picture s2{ { OPT::XSHIFT( "-30" ) | OPT::YSHIFT( "-50" ) }, {} };
+        place_pillar_meta( s2 );
+        place_pillar_implementation( s2, "Dynamic", COLOR_C4,
+                                     OPT::PATTERN_LINES_180
+                                         | OPT::PATTERN_COLOR( COLOR_C4.deemphasize( ) ) );
+        pic.add_scope( s2 );
+
+        picture s1{ { OPT::XSHIFT( "45" ) | OPT::YSHIFT( "-30" ) }, {} };
+        place_pillar_meta( s1 );
+        place_pillar_implementation( s1, "Standard", COLOR_C5,
+                                     OPT::PATTERN_LINES_90
+                                         | OPT::PATTERN_COLOR( COLOR_C5.deemphasize( ) ) );
+        pic.add_scope( s1 );
+    }
 } )
 
 // ---------------------------------------------------------------------------------------------

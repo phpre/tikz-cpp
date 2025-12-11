@@ -106,52 +106,5 @@ namespace TIKZ {
 
         void place_simple_path( std::deque<tikz_position> p_coords,
                                 const kv_store&           p_options = OPT::ROUNDED_CORNERS );
-        // special stuff
-
-        void place_cross( tikz_position p_position, const kv_store& p_options = { },
-                          double p_lineWidth = 2.5, double p_size = 5,
-                          const std::string& p_name = EMPTY_STR );
-        void place_circle( tikz_position p_position, const kv_store& p_options = { },
-                           double p_lineWidth = 2.5, double p_size = 5,
-                           const std::string& p_name = EMPTY_STR );
-
-        void place_double_cross( tikz_position p_position, const kv_store& p_options = { },
-                                 double p_lineWidth = 2.5, double p_outlineWidth = .5,
-                                 double p_size = 5, const std::string& p_name = EMPTY_STR );
-
-        void place_double_circle( tikz_position p_position, const kv_store& p_options = { },
-                                  double p_lineWidth = 2.5, double p_outlineWidth = .5,
-                                  double p_size = 5, const std::string& p_name = EMPTY_STR );
-
-        inline void place_batsu( tikz_position   p_position,
-                                 color           p_outlineColor = COLOR_C3.deemphasize_weak( ),
-                                 color           p_fillColor    = COLOR_C3.deemphasize( ),
-                                 const kv_store& p_options = { }, double p_lineWidth = 2.5,
-                                 double p_outlineWidth = .5, double p_size = 5,
-                                 const std::string& p_name = EMPTY_STR ) {
-            place_double_cross(
-                p_position, OPT::DRAW( p_outlineColor ) | OPT::DOUBLE( p_fillColor ) | p_options,
-                p_lineWidth, p_outlineWidth, p_size, p_name );
-        }
-
-        inline void place_maru( tikz_position   p_position,
-                                color           p_outlineColor = COLOR_C1.deemphasize_weak( ),
-                                color           p_fillColor    = COLOR_C1.deemphasize( ),
-                                const kv_store& p_options = { }, double p_lineWidth = 2.5,
-                                double p_outlineWidth = .5, double p_size = 5,
-                                const std::string& p_name = EMPTY_STR ) {
-            place_double_circle(
-                p_position, OPT::DRAW( p_outlineColor ) | OPT::DOUBLE( p_fillColor ) | p_options,
-                p_lineWidth, p_outlineWidth, p_size, p_name );
-        }
-
-        inline void place_hatena( tikz_position   p_position,
-                                  color           p_outlineColor = COLOR_C2.deemphasize_weak( ),
-                                  color           p_fillColor    = COLOR_C2.to_bg( ),
-                                  const kv_store& p_options = { }, double p_outlineWidth = .5,
-                                  const std::string& p_name = EMPTY_STR ) {
-            place_double_text( "\\textbf{\\Large ?}", p_position, p_outlineColor, p_fillColor,
-                               p_outlineWidth, p_options, p_name );
-        }
     };
 } // namespace TIKZ

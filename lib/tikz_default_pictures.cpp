@@ -1,3 +1,4 @@
+#include "tikz_default_paths.h"
 #include "tikz_default_pictures.h"
 #include "tikz_string.h"
 #include "tikz_string_trie.h"

@@ -78,8 +78,10 @@ namespace TIKZ {
         const tikz_option DRAW{ "draw", COLOR_TEXT.to_string( ) };
         const tikz_option FILL{ "fill", COLOR_TEXT.to_string( ) };
 
-        const tikz_option CLIP{ "clip" };
-        const tikz_option TRANSFORM_SHAPE{ "transform shape" };
+        const tikz_option FILL_OPACITY{ "fill opacity", "1" };
+
+        const kv_store CLIP            = tikz_option{ "clip" };
+        const kv_store TRANSFORM_SHAPE = tikz_option{ "transform shape" };
 
         const tikz_option DOUBLE{ "double", COLOR_WHITE.to_string( ) };
         const tikz_option DOUBLE_DISTANCE{ "double distance", "1.25pt" };
@@ -90,32 +92,36 @@ namespace TIKZ {
         const tikz_option YSCALE{ "yscale", "1" };
         const tikz_option SCALE{ "scale", "1" };
 
+        const tikz_option XSHIFT{ "xshift", "0" };
+        const tikz_option YSHIFT{ "yshift", "0" };
+
         const tikz_option OUTER_SEP{ "outer sep", "auto" };
         const tikz_option INNER_SEP{ "inner sep", ".3333em" };
         const tikz_option MINIMUM_SIZE{ "minimum size", ".3333em" };
 
         const tikz_option ROUNDED_CORNERS{ "rounded corners", "4pt" };
-        const tikz_option SHARP_CORNERS{ "sharp corners" };
+        const kv_store    SHARP_CORNERS = tikz_option{ "sharp corners" };
 
         const tikz_option LINE_WIDTH{ "line width", "1.25pt" };
-        const tikz_option LW_DOUBLE_BG{ "line width", "2.25pt" };
-        const tikz_option LW_LINE{ "line width", "1.25pt" };
-        const tikz_option LW_VERY_THIN_OUTLINE{ "line width", ".5pt" };
-        const tikz_option LW_THIN_OUTLINE{ "line width", ".75pt" };
-        const tikz_option LW_OUTLINE{ "line width", "1pt" };
-        const tikz_option LW_SUPPORT_LINE{ "line width", ".5pt" };
-        const tikz_option LW_THICK_SUPPORT_LINE{ "line width", ".75pt" };
-        const tikz_option LW_PATTERN_LINE{ "line width", ".75pt" };
+        const kv_store    LW_DOUBLE_BG          = tikz_option{ "line width", "2.25pt" };
+        const kv_store    LW_LINE               = tikz_option{ "line width", "1.25pt" };
+        const kv_store    LW_VERY_THIN_OUTLINE  = tikz_option{ "line width", ".5pt" };
+        const kv_store    LW_THIN_OUTLINE       = tikz_option{ "line width", ".75pt" };
+        const kv_store    LW_OUTLINE            = tikz_option{ "line width", "1pt" };
+        const kv_store    LW_SUPPORT_LINE       = tikz_option{ "line width", ".5pt" };
+        const kv_store    LW_THICK_SUPPORT_LINE = tikz_option{ "line width", ".75pt" };
+        const kv_store    LW_PATTERN_LINE       = tikz_option{ "line width", ".75pt" };
+        const kv_store    LW_PATTERN_THIN_LINE  = tikz_option{ "line width", ".5pt" };
 
         const tikz_option LINE_CAP{ "line cap", "butt" };
-        const tikz_option LINE_CAP_RECT{ "line cap", "rect" };
-        const tikz_option LINE_CAP_BUTT{ "line cap", "butt" };
-        const tikz_option LINE_CAP_ROUND{ "line cap", "round" };
+        const kv_store    LINE_CAP_RECT  = tikz_option{ "line cap", "rect" };
+        const kv_store    LINE_CAP_BUTT  = tikz_option{ "line cap", "butt" };
+        const kv_store    LINE_CAP_ROUND = tikz_option{ "line cap", "round" };
 
         const tikz_option LINE_JOIN{ "line join", "round" };
-        const tikz_option LINE_JOIN_MITER{ "line join", "miter" };
-        const tikz_option LINE_JOIN_ROUND{ "line join", "round" };
-        const tikz_option LINE_JOIN_BEVEL{ "line join", "bevel" };
+        const kv_store    LINE_JOIN_MITER = tikz_option{ "line join", "miter" };
+        const kv_store    LINE_JOIN_ROUND = tikz_option{ "line join", "round" };
+        const kv_store    LINE_JOIN_BEVEL = tikz_option{ "line join", "bevel" };
 
         const tikz_option ARR_TIP{ "-{Stealth[length=1.75pt 2.5 0, round, inset=0pt, angle'=45]}",
                                    EMPTY_STR,
@@ -124,17 +130,18 @@ namespace TIKZ {
         const tikz_option ARR_TIP_LATEX = ARR_TIP;
 
         const tikz_option ANCHOR{ "anchor", "center" };
-        const tikz_option ANCHOR_WEST{ "anchor", "west" };
-        const tikz_option ANCHOR_EAST{ "anchor", "east" };
-        const tikz_option ANCHOR_NORTH{ "anchor", "north" };
-        const tikz_option ANCHOR_SOUTH{ "anchor", "south" };
+        const kv_store    ANCHOR_WEST  = tikz_option{ "anchor", "west" };
+        const kv_store    ANCHOR_EAST  = tikz_option{ "anchor", "east" };
+        const kv_store    ANCHOR_NORTH = tikz_option{ "anchor", "north" };
+        const kv_store    ANCHOR_SOUTH = tikz_option{ "anchor", "south" };
 
-        const tikz_option CIRCLE{ "circle" };
-        const tikz_option RECTANGLE{ "rectangle" };
-        const tikz_option CROSS_OUT{ "cross out", EMPTY_STR, EMPTY_STR, { "shapes.misc" } };
+        const kv_store CIRCLE    = tikz_option{ "circle" };
+        const kv_store RECTANGLE = tikz_option{ "rectangle" };
+        const kv_store CROSS_OUT
+            = tikz_option{ "cross out", EMPTY_STR, EMPTY_STR, { "shapes.misc" } };
         const tikz_option REGULAR_POLYGON{
             "regular polygon, regular polygon sides", "5", EMPTY_STR, { "shapes.geometric" } };
-        const tikz_option REGULAR_TRIANGLE{
+        const kv_store REGULAR_TRIANGLE = tikz_option{
             "regular polygon, regular polygon sides", "3", "3", { "shapes.geometric" } };
 
         const tikz_option RADIUS{ "radius", "3pt" };
@@ -169,7 +176,7 @@ namespace TIKZ {
                        | tikz_option{ std::format( "shorten <=0pt" ) } | p_innerOptions );
         }
 
-        inline tikz_option pattern( const std::string& p_patternName, kv_store p_options = { } ) {
+        inline kv_store pattern( const std::string& p_patternName, kv_store p_options = { } ) {
             auto libs = p_options.libraries( );
             libs.insert( "patterns.meta" );
             return tikz_option{ "pattern", EMPTY_STR,
@@ -177,5 +184,20 @@ namespace TIKZ {
                                 libs, p_options.packages( ) };
         }
 
+        const kv_store PATTERN_LINES_45
+            = OPT::pattern( "Lines", OPT::PATTERN_ANGLE( "45" ) | OPT::PATTERN_DISTANCE( "2.75pt" )
+                                         | OPT::LW_PATTERN_LINE );
+        const kv_store PATTERN_LINES_90
+            = OPT::pattern( "Lines", OPT::PATTERN_ANGLE( "90" ) | OPT::PATTERN_DISTANCE( "2.75pt" )
+                                         | OPT::LW_PATTERN_LINE );
+        const kv_store PATTERN_LINES_135
+            = OPT::pattern( "Lines", OPT::PATTERN_ANGLE( "-45" ) | OPT::PATTERN_DISTANCE( "2.75pt" )
+                                         | OPT::LW_PATTERN_LINE );
+        const kv_store PATTERN_LINES_180
+            = OPT::pattern( "Lines", OPT::PATTERN_ANGLE( "180" ) | OPT::PATTERN_DISTANCE( "2.75pt" )
+                                         | OPT::LW_PATTERN_LINE );
+        const kv_store PATTERN_HATCH_45
+            = OPT::pattern( "Hatch", OPT::PATTERN_ANGLE( "45" ) | OPT::PATTERN_DISTANCE( "2.75pt" )
+                                         | OPT::LW_PATTERN_THIN_LINE );
     } // namespace OPT
 } // namespace TIKZ

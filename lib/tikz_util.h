@@ -26,4 +26,10 @@ namespace TIKZ {
     inline std::string textsize_large( const std::string& p_string ) {
         return "{\\large " + p_string + "}";
     }
+    inline std::string textsize_Large( const std::string& p_string ) {
+        return "{\\Large " + p_string + "}";
+    }
+    inline std::string textsize_LARGE( const std::string& p_string ) {
+        return "{\\LARGE " + p_string + "}";
+    }
 } // namespace TIKZ

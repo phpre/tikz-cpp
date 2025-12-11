@@ -1,5 +1,6 @@
 #include <format>
 #include "tikz_command.h"
+#include "tikz_default_paths.h"
 #include "tikz_option.h"
 #include "tikz_string.h"
 #include "tikz_util.h"
@@ -10,25 +11,27 @@ namespace TIKZ {
     const tikz_option XSCALE_TO_HEIGHT = OPT::XSCALE( "{min(1, \\thg)}" );
     const tikz_option YSCALE_TO_HEIGHT = OPT::YSCALE( "{min(1, \\thg)}" );
     math_command      width_macro( double p_width, const std::string& p_text,
-                                   const std::string& p_unit = "1cm" ) {
+                                   const std::string& p_unit      = "1cm",
+                                   const std::string& p_macroName = "twd" ) {
         std::string buf;
         if( p_text == EMPTY_STR ) {
             buf = std::format( "{:5.3f} * {} / width(\" \")", p_width, p_unit );
         } else {
             buf = std::format( "{:5.3f} * {} / width(\"{}\")", p_width, p_unit, p_text );
         }
-        return math_command{ "twd", buf };
+        return math_command{ p_macroName, buf };
     }
 
     math_command height_macro( double p_height, const std::string& p_text,
-                               const std::string& p_unit = "1cm" ) {
+                               const std::string& p_unit      = "1cm",
+                               const std::string& p_macroName = "thg" ) {
         std::string buf;
         if( p_text == EMPTY_STR ) {
             buf = std::format( "{:5.3f} * {} / height(\" \")", p_height, p_unit );
         } else {
             buf = std::format( "{:5.3f} * {} / height(\"{}\")", p_height, p_unit, p_text );
         }
-        return math_command{ "thg", buf };
+        return math_command{ p_macroName, buf };
     }
 
     void place_single_character( picture& p_pic, const stylized_string& p_S, u64 p_pos,
@@ -382,7 +385,8 @@ namespace TIKZ {
 
                 if( !match ) {
                     // if they don't, draw a big cross symbolizing the replacement
-                    p_pic.place_double_cross(
+                    place_double_cross(
+                        p_pic,
                         tikz_point{ ( p_TtopLeft.m_x + ( i + .5 ) * CHAR_WIDTH + p_PtopLeft.m_x
                                       + ( i + .5 ) * CHAR_WIDTH )
                                         / 2.0,
@@ -721,19 +725,21 @@ namespace TIKZ {
             if( p_occstyle == occ_style_t::ALL_POS ) {
                 for( u64 i = 0; i <= p_occs[ y ].front( ).m_posT; ++i ) {
                     if( has_occ[ i ] ) {
-                        p_pic.place_maru(
-                            p_TtopLeft + tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+                        place_maru( p_pic,
+                                    p_TtopLeft
+                                        + tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
                     } else {
-                        p_pic.place_batsu(
-                            p_TtopLeft + tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
+                        place_batsu( p_pic,
+                                     p_TtopLeft
+                                         + tikz_point{ ( i + .5 ) * CHAR_WIDTH, CHAR_HEIGHT / 2 } );
                     }
                 }
             } else if( p_occstyle == occ_style_t::STARTING_POS ) {
                 for( u64 i = 0; i <= y; ++i ) {
-                    p_pic.place_maru(
-                        p_TtopLeft
-                        + tikz_point{ ( p_occs[ i ].front( ).m_posT + .5 ) * CHAR_WIDTH,
-                                      CHAR_HEIGHT / 2 } );
+                    place_maru( p_pic,
+                                p_TtopLeft
+                                    + tikz_point{ ( p_occs[ i ].front( ).m_posT + .5 ) * CHAR_WIDTH,
+                                                  CHAR_HEIGHT / 2 } );
                 }
             } else if( p_occstyle == occ_style_t::OCC_FULL ) {
                 auto opt = OPT::ROTATE( "45" ) | OPT::OUTER_SEP( "0pt" ) | OPT::INNER_SEP( "1pt" )

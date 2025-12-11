@@ -37,9 +37,9 @@ void add_string_demo_pictures( document& p_doc ) {
                 tikz_point pos{ ( data.length( ) + 1 + i2 ) * CHAR_WIDTH,
                                 -CHAR_HEIGHT * ( 1.0 * i + .5 ) };
                 if( i & j ) {
-                    p1.place_maru( pos );
+                    place_maru( p1, pos );
                 } else {
-                    p1.place_batsu( pos );
+                    place_batsu( p1, pos );
                 }
             }
         }
@@ -128,23 +128,17 @@ void add_puzzle_demo_picture( document& p_doc ) {
                             puzzle_bend_t::CURVED_OUT, puzzle_bend_t::CURVED_OUT );
         place_puzzle_piece( pic, tikz_point{ 1.0, 1 },
                             OPT::LW_OUTLINE | OPT::DRAW( COLOR_C1 ) | OPT::ROUNDED_CORNERS( "6pt" )
-                                | OPT::pattern( "Lines", OPT::PATTERN_ANGLE( "45" )
-                                                             | OPT::PATTERN_DISTANCE( "2.75pt" )
-                                                             | OPT::LW_PATTERN_LINE )
+                                | OPT::PATTERN_LINES_45
                                 | OPT::PATTERN_COLOR( COLOR_C1.deemphasize( ) ) );
         place_puzzle_piece( pic, tikz_point{ -1.0, -1 },
                             OPT::LW_OUTLINE | OPT::DRAW( COLOR_C3 ) | OPT::ROUNDED_CORNERS( "6pt" )
-                                | OPT::pattern( "Lines", OPT::PATTERN_ANGLE( "-45" )
-                                                             | OPT::PATTERN_DISTANCE( "2.75pt" )
-                                                             | OPT::LW_PATTERN_LINE )
+                                | OPT::PATTERN_LINES_135
                                 | OPT::PATTERN_COLOR( COLOR_C3.deemphasize( ) ),
                             puzzle_bend_t::CURVED_IN, puzzle_bend_t::CURVED_IN,
                             puzzle_bend_t::CURVED_IN, puzzle_bend_t::CURVED_OUT );
         place_puzzle_piece( pic, tikz_point{ 1.0, -1 },
                             OPT::LW_OUTLINE | OPT::DRAW( COLOR_C5 ) | OPT::ROUNDED_CORNERS( "6pt" )
-                                | OPT::pattern( "Hatch", OPT::PATTERN_ANGLE( "45" )
-                                                             | OPT::PATTERN_DISTANCE( "2.75pt" )
-                                                             | OPT::LW_PATTERN_LINE( "0.5pt" ) )
+                                | OPT::PATTERN_HATCH_45
                                 | OPT::PATTERN_COLOR( COLOR_C5.deemphasize( ) ),
                             puzzle_bend_t::STRAIGHT, puzzle_bend_t::STRAIGHT,
                             puzzle_bend_t::CURVED_OUT, puzzle_bend_t::CURVED_OUT );

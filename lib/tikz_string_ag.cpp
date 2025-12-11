@@ -1,4 +1,5 @@
 #include "tikz_command.h"
+#include "tikz_default_paths.h"
 #include "tikz_option.h"
 #include "tikz_picture.h"
 #include "tikz_string.h"

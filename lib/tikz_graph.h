@@ -134,14 +134,4 @@ namespace TIKZ {
 
     void place_vertex( picture& p_pic, tikz_position p_position, const vertex& p_vertex,
                        const std::string& p_name = EMPTY_STR, const kv_store& p_options = { } );
-
-    void place_arrow( picture& p_pic, tikz_position p_startPos, tikz_position p_endPos,
-                      const kv_store& p_options = { },
-                      const kv_store& p_basicOptions
-                      = OPT::LW_SUPPORT_LINE | OPT::DRAW( COLOR_TEXT ) | OPT::ARR_TIP_LATEX );
-
-    void place_selected_arrow( picture& p_pic, tikz_position p_startPos, tikz_position p_endPos,
-                               color p_lineColor, color p_fillColor, double p_angle = 0,
-                               const kv_store& p_options = { } );
-
 } // namespace TIKZ

@@ -95,39 +95,4 @@ namespace TIKZ {
                        const std::string& p_name, const kv_store& p_options ) {
         p_pic.place_node( p_position, EMPTY_STR, p_vertex.compile( ) | p_options, p_name );
     }
-
-    void place_selected_arrow( picture& p_pic, tikz_position p_startPos, tikz_position p_endPos,
-                               color p_lineColor, color p_fillColor, double p_angle,
-                               const kv_store& p_options ) {
-        auto opt = OPT::ROTATE( std::format( "{:5.3f}", p_angle ) ) | OPT::DRAW( p_fillColor )
-                   | OPT::DOUBLE( p_lineColor ) | OPT::DOUBLE_DISTANCE( ".75pt" )
-                   | OPT::FILL( p_fillColor ) | OPT::ROUNDED_CORNERS( ".2pt" ) | p_options;
-        p_pic.add_library( "calc" );
-
-        std::deque<std::shared_ptr<path_operation>> path{ };
-        path.emplace_back( std::make_shared<line_to_operation>(
-            std::string{ "$(" } + p_endPos.to_string( ) + ") + (-6.5pt, 3.5pt)$" ) );
-        path.emplace_back( std::make_shared<line_to_operation>(
-            std::string{ "$(" } + p_endPos.to_string( ) + ") + (-6.5pt, 1.25pt)$" ) );
-        path.emplace_back( std::make_shared<line_to_operation>(
-            std::string{ "$(" } + p_startPos.to_string( ) + ") + (2.75pt, 1.25pt)$" ) );
-
-        path.emplace_back( std::make_shared<arc_to_operation>( 25.0, 333.5, 3.0 ) );
-
-        path.emplace_back( std::make_shared<line_to_operation>(
-            std::string{ "$(" } + p_startPos.to_string( ) + ") + (2.75pt, -1.25pt)$" ) );
-        path.emplace_back( std::make_shared<line_to_operation>(
-            std::string{ "$(" } + p_endPos.to_string( ) + ") + (-6.5pt, -1.25pt)$" ) );
-        path.emplace_back( std::make_shared<line_to_operation>(
-            std::string{ "$(" } + p_endPos.to_string( ) + ") + (-6.5pt, -3.5pt)$" ) );
-        path.emplace_back( std::make_shared<line_to_operation>( tikz_position{ } ) );
-
-        p_pic.add_command( std::make_shared<path_command>(
-            std::string{ "$(" } + p_endPos.to_string( ) + ") + (-.5pt, 0pt)$", path, opt ) );
-    }
-
-    void place_arrow( picture& p_pic, tikz_position p_startPos, tikz_position p_endPos,
-                      const kv_store& p_options, const kv_store& p_basicOptions ) {
-        p_pic.place_line( p_startPos, p_endPos, p_basicOptions | p_options );
-    }
 } // namespace TIKZ
