@@ -58,15 +58,26 @@ void add_string_demo_pictures( document& p_doc ) {
 }
 
 void add_alignment_demo_pictures( document& p_doc ) {
+    WITH_PICTURE( pic, { }, p_doc ) {
+        place_circled_number( pic, tikz_point{ 0.0, 0.0 }, 5, 4 * CHAR_WIDTH, COLOR_C1,
+                              COLOR_C1.to_bg( ) );
+
+        place_selected_arrow( pic, tikz_point{ -.5, -.5 }, tikz_point{ .5, -.5 }, COLOR_C2,
+                              COLOR_C2.to_bg( ), 0 );
+        place_edit_cost( pic, 5, tikz_point{ 0.0, -.5 }, COLOR_C2, COLOR_C2.to_bg( ) );
+
+        place_double_arrow( pic, tikz_point{ -.5, -1. }, tikz_point{ .5, -1. }, COLOR_C2,
+                            COLOR_C3.to_bg( ) );
+        place_edit_cost( pic, 5, tikz_point{ 0.0, -1. }, COLOR_C3, COLOR_C3.to_bg( ) );
+    }
     WITH_PICTURE( p1, { }, p_doc ) {
-        std::string T = "abab" + WILDCARD + "abcaab" + WILDCARD + "a" + WILDCARD + "a";
-        std::string P = "babcabcaccabaab";
+        std::string T  = "abab" + WILDCARD + "abcaab" + WILDCARD + "a" + WILDCARD + "a";
+        std::string P  = "babcabcaccabaab";
+        auto        bp = compute_breakpoints( P, T, WILDCARD );
 
         auto T_NAME = stylized_string{ T, "T", str_displ_t::FRAGMENT_WILDCARD }.add_wildcards(
             T, chr_displ_t::SHOW_ID_IF_WILDCARD );
         auto P_NAME = stylized_string{ P, "P", str_displ_t::FRAGMENT_WILDCARD };
-
-        auto bp = compute_breakpoints( P, T, WILDCARD );
 
         place_alignment( p1, P_NAME, tikz_point{ 0.0, 0.0 }, T_NAME, tikz_point{ 0.0, 1.25 }, bp );
 
@@ -154,6 +165,20 @@ void add_puzzle_demo_picture( document& p_doc ) {
 FILE_SIMPLE( g01, { add_string_demo_pictures( doc ); } )
 FILE_SIMPLE( g02, { add_alignment_demo_pictures( doc ); } )
 FILE_SIMPLE( g03, { add_puzzle_demo_picture( doc ); } )
+FILE_SIMPLE( g04, {
+    // std::string T = "acabb";
+    // std::string P = "cabba";
+    std::string T = "sarrebr";
+    std::string P = "saarb";
+    auto        T_NAME
+        = stylized_string{ T, "T", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS }
+              .add_wildcards( T, chr_displ_t::SHOW_ID_IF_WILDCARD );
+    auto P_NAME
+        = stylized_string{ P, "P", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
+
+    add_breakpoint_computation_pictures( doc, T, T_NAME, P, P_NAME,
+                                         { { 1, T.size( ) }, { 2, 1 }, { 2, 2 }, { 2, 3 } } );
+} )
 
 // ---------------------------------------------------------------------------------------------
 //

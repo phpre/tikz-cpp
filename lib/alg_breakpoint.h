@@ -1,5 +1,6 @@
 #pragma once
 #include <deque>
+#include <functional>
 #include <map>
 #include <string>
 
@@ -7,6 +8,12 @@
 #include "defines.h"
 
 namespace ALG {
+    typedef std::pair<char, char>              edit_op;
+    typedef std::map<edit_op, u64>             cost_table;
+    typedef const std::deque<std::deque<u64>>& dp_table;
+
+    typedef std::function<void( u64, u64, dp_table )> ed_dp_cb_t;
+
     // breakpoint of an alignment P ~>> T, as seen from P.
     struct breakpoint {
         u64  m_posP;
@@ -60,12 +67,22 @@ namespace ALG {
         inline long shift_after( ) const {
             return shift_before( ) + shift( );
         }
+
+        inline breakpoint reweight( const cost_table& p_w ) const {
+            auto cost = this->m_cost;
+            if( p_w.count( { this->m_charP, this->m_charT } ) ) {
+                cost = p_w.at( { this->m_charP, this->m_charT } );
+            }
+            return breakpoint{ this->m_posP, this->m_posT, cost, this->m_charP, this->m_charT };
+        }
     };
-
-    typedef std::pair<char, char>  edit_op;
-    typedef std::map<edit_op, u64> cost_table;
-
     typedef std::deque<breakpoint> breakpoint_repn;
+
+    inline breakpoint_repn reweight( const breakpoint_repn& p_bp, const cost_table& p_w ) {
+        breakpoint_repn res{ };
+        for( const auto& bp : p_bp ) { res.push_back( bp.reweight( p_w ) ); }
+        return res;
+    }
 
     inline breakpoint_repn trivial_alignment( fragmentco p_fragment ) {
         breakpoint_repn res{ };
@@ -84,19 +101,29 @@ namespace ALG {
     breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& p_T,
                                          const cost_table&  p_w,
                                          const std::string& p_wildcard   = WILDCARD,
-                                         bool               p_wcInOutput = true );
+                                         bool               p_wcInOutput = true,
+                                         ed_dp_cb_t         p_progressCB = nullptr );
 
     // computes optimal (unweighted) edit distance alignment of P onto T
     inline breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& p_T,
                                                 const std::string& p_wildcard   = WILDCARD,
-                                                bool               p_wcInOutput = true ) {
-        return compute_breakpoints( p_P, p_T, { }, p_wildcard, p_wcInOutput );
+                                                bool               p_wcInOutput = true,
+                                                ed_dp_cb_t         p_progressCB = nullptr ) {
+        return compute_breakpoints( p_P, p_T, { }, p_wildcard, p_wcInOutput, p_progressCB );
     }
 
-    std::deque<breakpoint_repn> compute_occs_with_edits( const std::string& p_P,
-                                                         const std::string& p_T, u64 p_threshold,
-                                                         const std::string& p_wildcard   = WILDCARD,
-                                                         bool               p_wcInOutput = true );
+    std::deque<breakpoint_repn>
+    compute_occs_with_edits( const std::string& p_P, const std::string& p_T, u64 p_threshold,
+                             const cost_table& p_w, const std::string& p_wildcard = WILDCARD,
+                             bool p_wcInOutput = true, ed_dp_cb_t p_progressCB = nullptr );
+
+    inline std::deque<breakpoint_repn>
+    compute_occs_with_edits( const std::string& p_P, const std::string& p_T, u64 p_threshold,
+                             const std::string& p_wildcard = WILDCARD, bool p_wcInOutput = true,
+                             ed_dp_cb_t p_progressCB = nullptr ) {
+        return compute_occs_with_edits( p_P, p_T, p_threshold, { }, p_wildcard, p_wcInOutput,
+                                        p_progressCB );
+    }
 
     std::deque<breakpoint_repn> compute_occs_with_mism( const std::string& p_P,
                                                         const std::string& p_T, u64 p_threshold,
@@ -104,8 +131,9 @@ namespace ALG {
                                                         bool               p_wcInOutput = true );
 
     inline std::deque<breakpoint_repn> compute_occs( const std::string& p_P, const std::string& p_T,
-                                                     const std::string& p_wildcard = WILDCARD ) {
-        return compute_occs_with_mism( p_P, p_T, 0, p_wildcard );
+                                                     const std::string& p_wildcard   = WILDCARD,
+                                                     bool               p_wcInOutput = true ) {
+        return compute_occs_with_mism( p_P, p_T, 0, p_wildcard, p_wcInOutput );
     }
 
     // compute A( P[ l .. r) )

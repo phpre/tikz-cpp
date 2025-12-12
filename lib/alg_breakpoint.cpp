@@ -23,19 +23,20 @@ namespace ALG {
 
     breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& p_T,
                                          const cost_table& p_w, const std::string& p_wildcard,
-                                         bool p_wcInOutput ) {
+                                         bool p_wcInOutput, ed_dp_cb_t p_progressCB ) {
         auto m = p_P.size( );
         auto n = p_T.size( );
 
         char wc = ( p_wildcard == EMPTY_STR || !p_wildcard.length( ) ) ? 0 : p_wildcard[ 0 ];
 
-        auto nw_dp      = std::deque<std::deque<u64>>{ m + 1, std::deque<u64>( n + 1, 0 ) };
-        nw_dp[ 0 ][ 0 ] = 0;
-        for( u64 i = 1; i <= m; ++i ) {
-            nw_dp[ i ][ 0 ] = nw_dp[ i - 1 ][ 0 ] + get_cost( p_w, p_P[ i - 1 ], 0, wc );
-        }
+        auto nw_dp = std::deque<std::deque<u64>>{ m + 1, std::deque<u64>( n + 1, 0 ) };
         for( u64 j = 1; j <= n; ++j ) {
             nw_dp[ 0 ][ j ] = nw_dp[ 0 ][ j - 1 ] + get_cost( p_w, 0, p_T[ j - 1 ], wc );
+            if( p_progressCB != nullptr ) { p_progressCB( 0, j, nw_dp ); }
+        }
+        for( u64 i = 1; i <= m; ++i ) {
+            nw_dp[ i ][ 0 ] = nw_dp[ i - 1 ][ 0 ] + get_cost( p_w, p_P[ i - 1 ], 0, wc );
+            if( p_progressCB != nullptr ) { p_progressCB( i, 0, nw_dp ); }
         }
 
         for( u64 i = 1; i <= m; ++i ) {
@@ -46,6 +47,7 @@ namespace ALG {
                 nw_dp[ i ][ j ] = std::min( nw_dp[ i ][ j ],
                                             nw_dp[ i - 1 ][ j - 1 ]
                                                 + get_cost( p_w, p_P[ i - 1 ], p_T[ j - 1 ], wc ) );
+                if( p_progressCB != nullptr ) { p_progressCB( i, j, nw_dp ); }
             }
         }
 
@@ -128,10 +130,10 @@ namespace ALG {
         return res;
     }
 
-    std::deque<breakpoint_repn> compute_occs_with_edits( const std::string& p_P,
-                                                         const std::string& p_T, u64 p_threshold,
-                                                         const std::string& p_wildcard,
-                                                         bool               p_wcInOutput ) {
+    std::deque<breakpoint_repn>
+    compute_occs_with_edits( const std::string& p_P, const std::string& p_T, u64 p_threshold,
+                             const cost_table& p_w, const std::string& p_wildcard,
+                             bool p_wcInOutput, ed_dp_cb_t p_progressCB ) {
         // compute starting positions of occurrences, for each starting position one alignment
         std::deque<breakpoint_repn> ress{ };
 
@@ -140,17 +142,24 @@ namespace ALG {
         char wc = ( p_wildcard == EMPTY_STR || !p_wildcard.length( ) ) ? 0 : p_wildcard[ 0 ];
 
         auto nw_dp = std::deque<std::deque<u64>>{ m + 1, std::deque<u64>( n + 1, 0 ) };
-        for( u64 i = 0; i <= m; ++i ) { nw_dp[ i ][ 0 ] = i; }
-        for( u64 j = 0; j <= n; ++j ) { nw_dp[ 0 ][ j ] = 0; }
+        for( u64 j = 0; j <= n; ++j ) {
+            nw_dp[ 0 ][ j ] = 0;
+            if( p_progressCB != nullptr ) { p_progressCB( 0, j, nw_dp ); }
+        }
+        for( u64 i = 1; i <= m; ++i ) {
+            nw_dp[ i ][ 0 ] = nw_dp[ i - 1 ][ 0 ] + get_cost( p_w, p_P[ m - i ], 0, wc );
+            if( p_progressCB != nullptr ) { p_progressCB( i, 0, nw_dp ); }
+        }
 
         for( u64 i = 1; i <= m; ++i ) {
             for( u64 j = 1; j <= n; ++j ) {
-                nw_dp[ i ][ j ] = std::min( nw_dp[ i - 1 ][ j ] + 1, nw_dp[ i ][ j - 1 ] + 1 );
-                if( match( p_P[ m - i ], p_T[ n - j ], wc ) ) {
-                    nw_dp[ i ][ j ] = std::min( nw_dp[ i ][ j ], nw_dp[ i - 1 ][ j - 1 ] );
-                } else {
-                    nw_dp[ i ][ j ] = std::min( nw_dp[ i ][ j ], nw_dp[ i - 1 ][ j - 1 ] + 1 );
-                }
+                nw_dp[ i ][ j ]
+                    = std::min( nw_dp[ i - 1 ][ j ] + get_cost( p_w, p_P[ m - i ], 0, wc ),
+                                nw_dp[ i ][ j - 1 ] + get_cost( p_w, 0, p_T[ n - j ], wc ) );
+                nw_dp[ i ][ j ] = std::min( nw_dp[ i ][ j ],
+                                            nw_dp[ i - 1 ][ j - 1 ]
+                                                + get_cost( p_w, p_P[ m - i ], p_T[ n - j ], wc ) );
+                if( p_progressCB != nullptr ) { p_progressCB( i, j, nw_dp ); }
             }
         }
 
@@ -171,18 +180,29 @@ namespace ALG {
                 if( dpi && dpj && nw_dp[ dpi ][ dpj ] == nw_dp[ dpi - 1 ][ dpj - 1 ]
                     && match( p_P[ i ], p_T[ j ], wc ) ) {
                     if( p_wcInOutput && ( p_P[ i ] == wc || p_T[ j ] == wc ) ) {
-                        res.push_back( breakpoint{ pos, p_P[ i ], p_T[ j ] } );
+                        res.push_back( breakpoint{ pos, get_cost( p_w, p_P[ i ], p_T[ j ], wc ),
+                                                   p_P[ i ], p_T[ j ] } );
                     }
                     pos = point{ i + 1, j + 1 };
 
-                } else if( dpi && dpj && nw_dp[ dpi ][ dpj ] == 1 + nw_dp[ dpi - 1 ][ dpj - 1 ] ) {
-                    res.push_back( breakpoint{ pos, p_P[ i ], p_T[ j ] } );
+                } else if( dpi && dpj
+                           && nw_dp[ dpi ][ dpj ]
+                                  == get_cost( p_w, p_P[ i ], p_T[ j ], wc )
+                                         + nw_dp[ dpi - 1 ][ dpj - 1 ] ) {
+                    res.push_back( breakpoint{ pos, get_cost( p_w, p_P[ i ], p_T[ j ], wc ),
+                                               p_P[ i ], p_T[ j ] } );
                     pos = point{ i + 1, j + 1 };
-                } else if( dpi && nw_dp[ dpi ][ dpj ] == 1 + nw_dp[ dpi - 1 ][ dpj ] ) {
-                    res.push_back( breakpoint{ pos, p_P[ i ], 0 } );
+                } else if( dpi
+                           && nw_dp[ dpi ][ dpj ]
+                                  == get_cost( p_w, p_P[ i ], 0, wc ) + nw_dp[ dpi - 1 ][ dpj ] ) {
+                    res.push_back(
+                        breakpoint{ pos, get_cost( p_w, p_P[ i ], 0, wc ), p_P[ i ], 0 } );
                     pos = point{ i + 1, j };
-                } else if( dpj && nw_dp[ dpi ][ dpj ] == 1 + nw_dp[ dpi ][ dpj - 1 ] ) {
-                    res.push_back( breakpoint{ pos, 0, p_T[ j ] } );
+                } else if( dpj
+                           && nw_dp[ dpi ][ dpj ]
+                                  == get_cost( p_w, 0, p_T[ j ], wc ) + nw_dp[ dpi ][ dpj - 1 ] ) {
+                    res.push_back(
+                        breakpoint{ pos, get_cost( p_w, 0, p_T[ j ], wc ), 0, p_T[ j ] } );
                     pos = point{ i, j + 1 };
                 } else {
                     fprintf( stderr, "You screwed up.\n" );

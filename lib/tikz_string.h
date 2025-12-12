@@ -115,7 +115,14 @@ namespace TIKZ {
                                        color      p_vertexColor = COLOR_BLACK.deemphasize( ) );
 
     void place_alignment_on_coordinates( picture& p_pic, const vertex_grid& p_vg,
-                                         const breakpoint_repn& p_brpnt, bool p_singleStep = true );
+                                         const breakpoint_repn& p_brpnt, bool p_singleStep = true,
+                                         bool p_showCost = false );
+
+    inline void place_weighted_alignment_on_coordinates( picture& p_pic, const vertex_grid& p_vg,
+                                                         const breakpoint_repn& p_brpnt,
+                                                         bool p_singleStep = true ) {
+        place_alignment_on_coordinates( p_pic, p_vg, p_brpnt, p_singleStep, true );
+    }
 
     void place_graph_slice_on_coordinates( picture& p_pic, const vertex_grid& p_vg,
                                            const graph_slice& p_gs, color p_color,

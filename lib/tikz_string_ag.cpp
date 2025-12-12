@@ -74,7 +74,8 @@ namespace TIKZ {
     }
 
     void place_alignment_on_coordinates( picture& p_pic, const vertex_grid& p_vg,
-                                         const breakpoint_repn& p_brpnt, bool p_singleStep ) {
+                                         const breakpoint_repn& p_brpnt, bool p_singleStep,
+                                         bool p_showCost ) {
         for( u64 i = p_brpnt.size( ) - 1; i; --i ) {
             auto curpos  = p_brpnt[ i ].position( );
             auto prev    = p_brpnt[ i - 1 ];
@@ -91,6 +92,12 @@ namespace TIKZ {
                         place_selected_arrow( p_pic, p_vg.label_for_pos( pp.second, pp.first ),
                                               p_vg.label_for_pos( curpos.second, curpos.first ),
                                               MAT_COL, MAT_COL.to_bg( ), -45.0 );
+
+                        if( p_showCost ) {
+                            auto mp = ( p_vg.point_for_pos( pp.second, pp.first ) * .6 )
+                                      + ( p_vg.point_for_pos( curpos.second, curpos.first ) * .4 );
+                            place_edit_cost( p_pic, 0, mp, MAT_COL, MAT_COL.to_bg( ) );
+                        }
                         curpos = pp;
                         pp     = point{ curpos.first - 1, curpos.second - 1 };
                     }
@@ -98,6 +105,11 @@ namespace TIKZ {
                 place_selected_arrow( p_pic, p_vg.label_for_pos( preva.second, preva.first ),
                                       p_vg.label_for_pos( curpos.second, curpos.first ), MAT_COL,
                                       MAT_COL.to_bg( ), -45.0 );
+                if( p_showCost ) {
+                    auto mp = ( p_vg.point_for_pos( preva.second, preva.first ) * .6 )
+                              + ( p_vg.point_for_pos( curpos.second, curpos.first ) * .4 );
+                    place_edit_cost( p_pic, 0, mp, MAT_COL, MAT_COL.to_bg( ) );
+                }
             }
 
             if( prev.m_charT && prev.m_charP ) {
@@ -105,16 +117,31 @@ namespace TIKZ {
                 place_selected_arrow( p_pic, p_vg.label_for_pos( prevpos.second, prevpos.first ),
                                       p_vg.label_for_pos( preva.second, preva.first ), SUB_COL,
                                       SUB_COL.to_bg( ), -45.0 );
+                if( p_showCost ) {
+                    auto mp = ( p_vg.point_for_pos( prevpos.second, prevpos.first ) * .6 )
+                              + ( p_vg.point_for_pos( preva.second, preva.first ) * .4 );
+                    place_edit_cost( p_pic, prev.m_cost, mp, SUB_COL, SUB_COL.to_bg( ) );
+                }
             } else if( prev.m_charP ) {
                 // deletion
                 place_selected_arrow( p_pic, p_vg.label_for_pos( prevpos.second, prevpos.first ),
                                       p_vg.label_for_pos( preva.second, preva.first ), DEL_COL,
                                       DEL_COL.to_bg( ), -90.0 );
+                if( p_showCost ) {
+                    auto mp = ( p_vg.point_for_pos( prevpos.second, prevpos.first ) * .6 )
+                              + ( p_vg.point_for_pos( preva.second, preva.first ) * .4 );
+                    place_edit_cost( p_pic, prev.m_cost, mp, DEL_COL, DEL_COL.to_bg( ) );
+                }
             } else if( prev.m_charT ) {
                 // insertion
                 place_selected_arrow( p_pic, p_vg.label_for_pos( prevpos.second, prevpos.first ),
                                       p_vg.label_for_pos( preva.second, preva.first ), INS_COL,
                                       INS_COL.to_bg( ), -0.0 );
+                if( p_showCost ) {
+                    auto mp = ( p_vg.point_for_pos( prevpos.second, prevpos.first ) * .6 )
+                              + ( p_vg.point_for_pos( preva.second, preva.first ) * .4 );
+                    place_edit_cost( p_pic, prev.m_cost, mp, INS_COL, INS_COL.to_bg( ) );
+                }
             }
         }
     }

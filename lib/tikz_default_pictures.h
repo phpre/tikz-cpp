@@ -1,10 +1,17 @@
 #pragma once
+#include <set>
 #include <string>
 
 #include "tikz_document.h"
 #include "tikz_string.h"
 
 namespace TIKZ {
+    void add_breakpoint_computation_pictures(
+        document& p_out, const std::string& p_T, stylized_string p_Tname, const std::string& p_P,
+        stylized_string p_Pname, const std::set<point>& p_filter = { },
+        const std::string& p_wildcard = WILDCARD, bool p_wcInOutput = true, bool p_skipInit = true,
+        bool p_highlightInit = true, bool p_showSelection = true, bool p_highlightNextStep = true );
+
     void add_string_picture( document& p_out, const std::string& p_string );
 
     void add_occurrences_pictures( document& p_out, const stylized_string& p_pname,

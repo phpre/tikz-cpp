@@ -1,7 +1,42 @@
 #include "tikz_command.h"
 #include "tikz_default_paths.h"
+#include "tikz_util.h"
 
 namespace TIKZ {
+    void place_circled_number( picture& p_pic, tikz_position p_position, u64 p_number,
+                               double p_size, color p_color, color p_bgColor ) {
+        // circle of bg color, cost on top
+        p_pic.place_node( p_position, EMPTY_STR,
+                          OPT::DRAW( p_bgColor ) | OPT::FILL( p_bgColor ) | OPT::LW_SUPPORT_LINE
+                              | OPT::CIRCLE | OPT::DOUBLE( p_color )
+                              | OPT::INNER_SEP( std::format( "{:5.3f}pt", p_size ) ) );
+
+        p_pic.add_command( std::make_shared<math_command>(
+            width_macro( 1.5 * p_size, math_mode( std::to_string( p_number ) ), "1pt" ) ) );
+        p_pic.add_command( std::make_shared<math_command>(
+            height_macro( 1.5 * p_size, math_mode( std::to_string( p_number ) ), "1pt" ) ) );
+        p_pic.place_text( math_mode( std::to_string( p_number ) ), p_position,
+                          OPT::INNER_SEP( "0pt" ) | OPT::TEXT_COLOR( p_color ) | XSCALE_TO_WIDTH
+                              | YSCALE_TO_HEIGHT | OPT::TRANSFORM_SHAPE );
+    }
+
+    void place_uncircled_number( picture& p_pic, tikz_position p_position, u64 p_number,
+                                 double p_size, color p_color, color p_bgColor ) {
+        // circle of bg color, cost on top
+        p_pic.place_node( p_position, EMPTY_STR,
+                          OPT::DRAW( p_bgColor ) | OPT::FILL( p_bgColor ) | OPT::LW_SUPPORT_LINE
+                              | OPT::CIRCLE | OPT::DOUBLE( p_bgColor )
+                              | OPT::INNER_SEP( std::format( "{:5.3f}pt", p_size ) ) );
+
+        p_pic.add_command( std::make_shared<math_command>(
+            width_macro( 1.75 * p_size, math_mode( std::to_string( p_number ) ), "1pt" ) ) );
+        p_pic.add_command( std::make_shared<math_command>(
+            height_macro( 1.75 * p_size, math_mode( std::to_string( p_number ) ), "1pt" ) ) );
+        p_pic.place_text( math_mode( std::to_string( p_number ) ), p_position,
+                          OPT::INNER_SEP( "0pt" ) | OPT::TEXT_COLOR( p_color ) | XSCALE_TO_WIDTH
+                              | YSCALE_TO_HEIGHT | OPT::TRANSFORM_SHAPE );
+    }
+
     void place_selected_arrow( picture& p_pic, tikz_position p_startPos, tikz_position p_endPos,
                                color p_lineColor, color p_fillColor, double p_angle,
                                const kv_store& p_options ) {
@@ -30,6 +65,13 @@ namespace TIKZ {
 
         p_pic.add_command( std::make_shared<path_command>(
             std::string{ "$(" } + p_endPos.to_string( ) + ") + (-.5pt, 0pt)$", path, opt ) );
+    }
+
+    void place_double_arrow( picture& p_pic, tikz_position p_startPos, tikz_position p_endPos,
+                             color p_lineColor, color p_fillColor, const kv_store& p_options ) {
+        p_pic.place_line( p_startPos, p_endPos,
+                          OPT::double_arrow( OPT::DRAW( p_lineColor ) ) | OPT::DRAW( p_fillColor )
+                              | p_options );
     }
 
     void place_arrow( picture& p_pic, tikz_position p_startPos, tikz_position p_endPos,

@@ -4,6 +4,123 @@
 #include "tikz_string_trie.h"
 
 namespace TIKZ {
+    void add_breakpoint_computation_pictures( document& p_doc, const std::string& p_T,
+                                              stylized_string p_Tname, const std::string& p_P,
+                                              stylized_string        p_Pname,
+                                              const std::set<point>& p_filter,
+                                              const std::string& p_wildcard, bool p_wcInOutput,
+                                              bool p_skipInit, bool p_highlightInit,
+                                              bool p_showSelection, bool p_highlightNextStep ) {
+        auto bp = compute_breakpoints(
+            p_P, p_T, p_wildcard, p_wcInOutput, [ & ]( u64 p_l_y, u64 p_l_x, dp_table p_l_dp ) {
+                if( !p_filter.empty( ) && !p_filter.count( { p_l_y, p_l_x } ) ) { return; }
+
+                bool lst = false;
+                if( p_highlightNextStep && !p_l_x && p_l_y == p_P.size( ) ) {
+                    lst = true;
+                } else if( p_skipInit && ( !p_l_y || !p_l_x ) ) {
+                    return;
+                }
+                WITH_PICTURE( pic, { }, p_doc ) {
+                    place_alignment_graph_label( pic, p_Pname, p_Tname );
+                    auto vg = vertex_grid{ tikz_point{ 0.0, 0.0 },
+                                           tikz_point{ CHAR_WIDTH, -CHAR_HEIGHT } };
+                    vg.place_vertices( pic,
+                                       vertex::unselected_vertex( COLOR_TEXT.to_bg( ), 1.0, 3.0 ),
+                                       p_T.size( ) + 1, p_P.size( ) + 1, 0, 0 );
+
+                    for( u64 y = 0; y <= p_P.size( ); ++y ) {
+                        for( u64 x = 0; x <= p_T.size( ); ++x ) {
+                            if( y > p_l_y && ( x || !p_l_y || !p_l_x ) ) { break; }
+                            if( !p_l_x && y && x ) { break; }
+
+                            if( p_showSelection ) {
+                                if( y && x && p_l_dp[ y ][ x ] == p_l_dp[ y - 1 ][ x - 1 ]
+                                    && p_P[ y - 1 ] == p_T[ x - 1 ] ) {
+                                    // match
+                                    place_arrow( pic, vg.label_for_pos( x - 1, y - 1 ),
+                                                 vg.label_for_pos( x, y ),
+                                                 OPT::LW_THICK_SUPPORT_LINE
+                                                     | OPT::DRAW( MAT_COL.deemphasize_strong( ) ) );
+                                }
+                                if( y && x && p_l_dp[ y ][ x ] == 1 + p_l_dp[ y - 1 ][ x - 1 ]
+                                    && p_P[ y - 1 ] != p_T[ x - 1 ] ) {
+                                    // TODO: use cost( .. )
+                                    // subst
+                                    place_arrow( pic, vg.label_for_pos( x - 1, y - 1 ),
+                                                 vg.label_for_pos( x, y ),
+                                                 OPT::DRAW( SUB_COL.deemphasize_strong( ) ) );
+                                }
+                                if( y && p_l_dp[ y ][ x ] == 1 + p_l_dp[ y - 1 ][ x ] ) {
+                                    // TODO: use cost( .. )
+                                    // del
+                                    place_arrow( pic, vg.label_for_pos( x, y - 1 ),
+                                                 vg.label_for_pos( x, y ),
+                                                 OPT::DRAW( DEL_COL.deemphasize_strong( ) ) );
+                                }
+                                if( x && p_l_dp[ y ][ x ] == 1 + p_l_dp[ y ][ x - 1 ] ) {
+                                    // TODO: use cost( .. )
+                                    // ins
+                                    place_arrow( pic, vg.label_for_pos( x - 1, y ),
+                                                 vg.label_for_pos( x, y ),
+                                                 OPT::DRAW( INS_COL.deemphasize_strong( ) ) );
+                                }
+                            }
+
+                            if( p_highlightInit && ( !y || !x ) ) {
+                                place_uncircled_number( pic, vg.point_for_pos( x, y ),
+                                                        p_l_dp[ y ][ x ], 4 * CHAR_WIDTH, SEP_COL,
+                                                        SEP_COL.to_flavor_bg( ) );
+                            } else {
+                                place_uncircled_number( pic, vg.point_for_pos( x, y ),
+                                                        p_l_dp[ y ][ x ], 4 * CHAR_WIDTH,
+                                                        COLOR_TEXT, COLOR_TEXT.to_flavor_bg( ) );
+                            }
+                            if( y == p_l_y && x == p_l_x ) { break; }
+                        }
+                    }
+                    if( p_highlightNextStep && ( lst || ( p_l_x && p_l_y ) ) ) {
+                        u64 ny = p_l_y;
+                        u64 nx = p_l_x + 1;
+                        if( nx > p_T.size( ) ) {
+                            ny++;
+                            nx = 1;
+                        }
+                        if( lst ) { nx = ny = 1; }
+                        if( ny > p_P.size( ) ) { continue; }
+                        p_doc.add_picture( pic );
+                        pic.place_node(
+                            vg.point_for_pos( nx, ny ), EMPTY_STR,
+                            OPT::DRAW( COLOR_TEXT.to_bg( ) ) | OPT::FILL( COLOR_TEXT.to_bg( ) )
+                                | OPT::LW_SUPPORT_LINE | OPT::CIRCLE
+                                | OPT::DOUBLE( COLOR_TEXT.to_bg( ) )
+                                | OPT::INNER_SEP( std::format( "{:5.3f}pt", 4 * CHAR_WIDTH ) ) );
+
+                        pic.place_double_text( textsize_footnotesize( "\\textbf{?}" ),
+                                               vg.point_for_pos( nx, ny ), COLOR_C2.to_bg( ),
+                                               COLOR_C2.deemphasize_weak( ), .25 );
+
+                        if( p_P[ ny - 1 ] != p_T[ nx - 1 ] ) {
+                            place_arrow( pic, vg.label_for_pos( nx - 1, ny - 1 ),
+                                         vg.label_for_pos( nx, ny ),
+                                         OPT::DRAW( SUB_COL.deemphasize( ) ) );
+                        } else {
+                            place_arrow( pic, vg.label_for_pos( nx - 1, ny - 1 ),
+                                         vg.label_for_pos( nx, ny ),
+                                         OPT::DRAW( MAT_COL.deemphasize( ) ) );
+                        }
+
+                        place_arrow( pic, vg.label_for_pos( nx, ny - 1 ),
+                                     vg.label_for_pos( nx, ny ),
+                                     OPT::DRAW( DEL_COL.deemphasize( ) ) );
+                        place_arrow( pic, vg.label_for_pos( nx - 1, ny ),
+                                     vg.label_for_pos( nx, ny ),
+                                     OPT::DRAW( INS_COL.deemphasize( ) ) );
+                    }
+                }
+            } );
+    }
+
     void add_string_picture( document& p_out, const std::string& p_string ) {
         WITH_PICTURE( pic, { }, p_out ) {
             place_string( pic, p_string, tikz_point{ 0.0, 0.0 } );

@@ -1,39 +1,10 @@
 #include <format>
-#include "tikz_command.h"
 #include "tikz_default_paths.h"
 #include "tikz_option.h"
 #include "tikz_string.h"
 #include "tikz_util.h"
 
 namespace TIKZ {
-    const tikz_option XSCALE_TO_WIDTH  = OPT::XSCALE( "{min(1, \\twd)}" );
-    const tikz_option YSCALE_TO_WIDTH  = OPT::YSCALE( "{min(1, \\twd)}" );
-    const tikz_option XSCALE_TO_HEIGHT = OPT::XSCALE( "{min(1, \\thg)}" );
-    const tikz_option YSCALE_TO_HEIGHT = OPT::YSCALE( "{min(1, \\thg)}" );
-    math_command      width_macro( double p_width, const std::string& p_text,
-                                   const std::string& p_unit      = "1cm",
-                                   const std::string& p_macroName = "twd" ) {
-        std::string buf;
-        if( p_text == EMPTY_STR ) {
-            buf = std::format( "{:5.3f} * {} / width(\" \")", p_width, p_unit );
-        } else {
-            buf = std::format( "{:5.3f} * {} / width(\"{}\")", p_width, p_unit, p_text );
-        }
-        return math_command{ p_macroName, buf };
-    }
-
-    math_command height_macro( double p_height, const std::string& p_text,
-                               const std::string& p_unit      = "1cm",
-                               const std::string& p_macroName = "thg" ) {
-        std::string buf;
-        if( p_text == EMPTY_STR ) {
-            buf = std::format( "{:5.3f} * {} / height(\" \")", p_height, p_unit );
-        } else {
-            buf = std::format( "{:5.3f} * {} / height(\"{}\")", p_height, p_unit, p_text );
-        }
-        return math_command{ p_macroName, buf };
-    }
-
     void place_single_character( picture& p_pic, const stylized_string& p_S, u64 p_pos,
                                  std::pair<std::string, std::string> p_render,
                                  tikz_position p_center, const kv_store& p_extraOptions ) {
@@ -406,21 +377,7 @@ namespace TIKZ {
 
     void place_edit_cost( picture& p_pic, u64 p_cost, tikz_position p_position, color p_color,
                           color p_bgColor ) {
-        // circle of bg color, cost on top
-        p_pic.place_node( p_position, EMPTY_STR,
-                          OPT::DRAW( p_bgColor ) | OPT::FILL( p_bgColor ) | OPT::LW_SUPPORT_LINE
-                              | OPT::CIRCLE | OPT::DOUBLE( p_color )
-                              | OPT::INNER_SEP( std::format( "{:5.3f}pt", 4 * CHAR_WIDTH ) ) );
-
-        // todo add width macro
-
-        p_pic.add_command( std::make_shared<math_command>(
-            width_macro( 6 * CHAR_WIDTH, math_mode( std::to_string( p_cost ) ), "1pt" ) ) );
-        p_pic.add_command( std::make_shared<math_command>(
-            height_macro( 6 * CHAR_WIDTH, math_mode( std::to_string( p_cost ) ), "1pt" ) ) );
-        p_pic.place_text( math_mode( std::to_string( p_cost ) ), p_position,
-                          OPT::INNER_SEP( "0pt" ) | OPT::TEXT_COLOR( p_color ) | XSCALE_TO_WIDTH
-                              | YSCALE_TO_HEIGHT | OPT::TRANSFORM_SHAPE );
+        place_circled_number( p_pic, p_position, p_cost, 4 * CHAR_WIDTH, p_color, p_bgColor );
     }
 
     std::string char_or_empty( char p_char, const std::string& p_wildcard ) {

@@ -5,10 +5,20 @@
 #include "tikz_point.h"
 
 namespace TIKZ {
+    void place_circled_number( picture& p_pic, tikz_position p_position, u64 p_number,
+                               double p_size, color p_color, color p_bgColor );
+
+    void place_uncircled_number( picture& p_pic, tikz_position p_position, u64 p_number,
+                                 double p_size, color p_color, color p_bgColor );
+
     void place_arrow( picture& p_pic, tikz_position p_startPos, tikz_position p_endPos,
                       const kv_store& p_options = { },
                       const kv_store& p_basicOptions
                       = OPT::LW_SUPPORT_LINE | OPT::DRAW( COLOR_TEXT ) | OPT::ARR_TIP_LATEX );
+
+    void place_double_arrow( picture& p_pic, tikz_position p_startPos, tikz_position p_endPos,
+                             color p_lineColor = COLOR_TEXT, color p_fillColor = COLOR_FILL_WHITE,
+                             const kv_store& p_options = { } );
 
     void place_selected_arrow( picture& p_pic, tikz_position p_startPos, tikz_position p_endPos,
                                color p_lineColor, color p_fillColor, double p_angle = 0,

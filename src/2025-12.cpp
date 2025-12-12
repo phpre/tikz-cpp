@@ -12,13 +12,6 @@ std::string MACROS_FILENAME = "macros";
 //
 // ---------------------------------------------------------------------------------------------
 
-const tikz_option XSCALE_TO_WIDTH = OPT::XSCALE( "{min(1, \\twd)}" );
-math_command      width_macro( double p_width, const std::string& p_text,
-                               const std::string& p_unit = "1cm" ) {
-    return math_command{ "twd",
-                         std::format( "{:5.3f} * {} / width(\"{}\")", p_width, p_unit, p_text ) };
-}
-
 void place_pillar_meta( picture& p_pic, const kv_store& p_metaOptions = { } ) {
     p_pic.place_rectangle( tikz_point{ -1.8, 2.2 }, tikz_point{ 1.8, -1.2 },
                            OPT::LINE_WIDTH( "2.5pt" ) | OPT::DRAW( COLOR_TEXT.to_flavor_bg( ) )
@@ -657,6 +650,52 @@ FILE_SIMPLE( p_f_apm_pillar, {
                                          | OPT::PATTERN_COLOR( COLOR_C5.deemphasize( ) ) );
         pic.add_scope( s1 );
     }
+} )
+FILE_SIMPLE( p_f_apm_soa, {
+    std::string T      = "sarrebr";
+    std::string P      = "saarb";
+    auto        T_NAME = stylized_string{ T, "T", str_displ_t::SHOW_CHARACTERS };
+    auto        P_NAME = stylized_string{ P, "P", str_displ_t::SHOW_CHARACTERS };
+    add_breakpoint_computation_pictures( doc, T, T_NAME, P, P_NAME, { { 3, 2 } } );
+} )
+FILE_SIMPLE( p_extra1, {
+    WITH_PICTURE( pic, { }, doc ) {
+        std::string T  = "acabb";
+        std::string P  = "cabba";
+        auto        bp = compute_breakpoints( P, T, WILDCARD );
+        auto T_NAME
+            = stylized_string{ T, "T", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS }
+                  .add_wildcards( T, chr_displ_t::SHOW_ID_IF_WILDCARD );
+        auto P_NAME
+            = stylized_string{ P, "P", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
+        place_alignment_graph_label( pic, P_NAME, T_NAME );
+        auto vg = place_alignment_graph( pic, P, fragmentco{ 0, P.size( ) }, T,
+                                         fragmentco{ 0, T.size( ) } );
+        place_alignment_on_coordinates( pic, vg, bp );
+        doc.add_picture( pic );
+        place_weighted_alignment_on_coordinates( pic, vg, bp );
+        doc.add_picture( pic );
+        cost_table w{
+            { { 'a', 0 }, 10 }
+        };
+        auto bp2 = reweight( bp, w );
+        auto bp3 = compute_breakpoints( P, T, w, WILDCARD );
+        place_weighted_alignment_on_coordinates( pic, vg, bp2 );
+        doc.add_picture( pic );
+
+        MAT_COL = COLOR_C1.deemphasize( );
+        DEL_COL = COLOR_C3.deemphasize( );
+        INS_COL = COLOR_C4.deemphasize( );
+        SUB_COL = COLOR_C5.deemphasize( );
+        SEP_COL = COLOR_C2.deemphasize( );
+        place_weighted_alignment_on_coordinates( pic, vg, bp2 );
+        MAT_COL = COLOR_C1;
+        DEL_COL = COLOR_C3;
+        INS_COL = COLOR_C4;
+        SUB_COL = COLOR_C5;
+        SEP_COL = COLOR_C2;
+        place_weighted_alignment_on_coordinates( pic, vg, bp3 );
+}
 } )
 
 // ---------------------------------------------------------------------------------------------
