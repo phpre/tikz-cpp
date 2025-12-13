@@ -166,18 +166,15 @@ FILE_SIMPLE( g01, { add_string_demo_pictures( doc ); } )
 FILE_SIMPLE( g02, { add_alignment_demo_pictures( doc ); } )
 FILE_SIMPLE( g03, { add_puzzle_demo_picture( doc ); } )
 FILE_SIMPLE( g04, {
-    // std::string T = "acabb";
-    // std::string P = "cabba";
-    std::string T = "sarrebr";
-    std::string P = "saarb";
-    auto        T_NAME
-        = stylized_string{ T, "T", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS }
-              .add_wildcards( T, chr_displ_t::SHOW_ID_IF_WILDCARD );
-    auto P_NAME
-        = stylized_string{ P, "P", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
-
-    add_breakpoint_computation_pictures( doc, T, T_NAME, P, P_NAME,
-                                         { { 1, T.size( ) }, { 2, 1 }, { 2, 2 }, { 2, 3 } } );
+    std::string Pr = "raasraas";
+    std::string Tr = "rrasraasrhasrras";
+    std::string T{ Tr.rbegin( ), Tr.rend( ) };
+    std::string P{ Pr.rbegin( ), Pr.rend( ) };
+    auto        Tr_NAME = stylized_string{ Tr, "T", str_displ_t::SHOW_CHARACTERS };
+    auto        Pr_NAME = stylized_string{ Pr, "P", str_displ_t::SHOW_CHARACTERS };
+    add_pmwe_computation_pictures( doc, T, Tr_NAME, P, Pr_NAME, 2, { { P.size( ), T.size( ) } } );
+    add_pmwe_computation_lv_pictures( doc, T, Tr_NAME, P, Pr_NAME, 2,
+                                      { { P.size( ) + T.size( ) + 1, 2 } } );
 } )
 
 // ---------------------------------------------------------------------------------------------

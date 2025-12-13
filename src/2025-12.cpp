@@ -652,11 +652,63 @@ FILE_SIMPLE( p_f_apm_pillar, {
     }
 } )
 FILE_SIMPLE( p_f_apm_soa, {
-    std::string T      = "sarrebr";
-    std::string P      = "saarb";
+    std::string P = "saarsaar";
+    std::string T = "sarrsahrsaarsarr";
+    // std::string T      = "sarrebr";
+    // std::string P      = "saarb";
+    auto T_NAME = stylized_string{ T, "T", str_displ_t::SHOW_CHARACTERS };
+    auto P_NAME = stylized_string{ P, "P", str_displ_t::SHOW_CHARACTERS };
+    add_breakpoint_computation_pictures( doc, T, T_NAME, P, P_NAME, { { 3, 2 } } );
+
+    std::string Pr = "raasraas";
+    std::string Tr = "rrasraasrhasrras";
+    // std::string Tr      = "rberras";
+    // std::string Pr      = "braas";
+    auto Tr_NAME = stylized_string{ Tr, "T", str_displ_t::SHOW_CHARACTERS };
+    auto Pr_NAME = stylized_string{ Pr, "P", str_displ_t::SHOW_CHARACTERS };
+    add_pmwe_computation_pictures( doc, T, Tr_NAME, P, Pr_NAME, 2, { { P.size( ), T.size( ) } } );
+    add_pmwe_computation_pictures( doc, T, Tr_NAME, P, Pr_NAME, 2, { { P.size( ), T.size( ) } },
+                                   true );
+    add_pmwe_computation_lv_pictures( doc, T, Tr_NAME, P, Pr_NAME, 2,
+                                      { { P.size( ) + T.size( ) + 1, 0 },
+                                        { P.size( ) + T.size( ) + 1, 1 },
+                                        { P.size( ) + T.size( ) + 1, 2 } } );
+} )
+FILE_SIMPLE( p_f_apm_ch02_idea, {
+    std::string P{ "aaaaaaaa" };
+    std::string T{ "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" };
     auto        T_NAME = stylized_string{ T, "T", str_displ_t::SHOW_CHARACTERS };
     auto        P_NAME = stylized_string{ P, "P", str_displ_t::SHOW_CHARACTERS };
-    add_breakpoint_computation_pictures( doc, T, T_NAME, P, P_NAME, { { 3, 2 } } );
+    add_pmwe_computation_lv_pictures( doc, T, T_NAME, P, P_NAME, 2,
+                                      { { P.size( ) + T.size( ) + 1, 0 } } );
+
+    P = "raasraas";
+    T = "kcurbraasrrasiuolraasrhasrrasnekce";
+    std::string Pr{ P.rbegin( ), P.rend( ) };
+    std::string Tr{ T.rbegin( ), T.rend( ) };
+    auto        Tr_NAME = stylized_string{ T, "T", str_displ_t::SHOW_CHARACTERS };
+    auto        Pr_NAME = stylized_string{ P, "P", str_displ_t::SHOW_CHARACTERS };
+    add_pmwe_computation_lv_pictures( doc, Tr, Tr_NAME, Pr, Pr_NAME, 2,
+                                      { { P.size( ) + T.size( ) + 1, 2 } } );
+    add_pmwe_computation_lv_pictures( doc, Tr, Tr_NAME, Pr, Pr_NAME, 2,
+                                      { { P.size( ) + T.size( ) + 1, 2 } },
+                                      {
+                                          { P.size( ) + 3, P.size( ) - 2 },
+                                          { P.size( ) + 4, P.size( ) - 3 },
+                                          { P.size( ) + 5, 0 },
+                                          { P.size( ) + 6, P.size( ) - 4 },
+                                          { P.size( ) + 7, P.size( ) - 3 },
+
+                                          { 12 + P.size( ) + 3, P.size( ) - 2 },
+                                          { 12 + P.size( ) + 4, P.size( ) - 3 },
+                                          { 12 + P.size( ) + 5, 0 },
+                                          { 12 + P.size( ) + 6, P.size( ) - 4 },
+                                          { 12 + P.size( ) + 7, P.size( ) - 3 },
+
+                                          { 12 + P.size( ) + 8, 2 },
+                                          { 12 + P.size( ) + 9, 0 },
+                                          { 12 + P.size( ) + 10, 1 },
+                                      } );
 } )
 FILE_SIMPLE( p_extra1, {
     WITH_PICTURE( pic, { }, doc ) {

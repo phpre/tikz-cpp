@@ -117,6 +117,11 @@ namespace ALG {
                              const cost_table& p_w, const std::string& p_wildcard = WILDCARD,
                              bool p_wcInOutput = true, ed_dp_cb_t p_progressCB = nullptr );
 
+    std::deque<breakpoint_repn>
+    compute_occs_with_edits_lv( const std::string& p_P, const std::string& p_T, u64 p_threshold,
+                                const std::string& p_wildcard = WILDCARD, bool p_wcInOutput = true,
+                                ed_dp_cb_t p_progressCB = nullptr );
+
     inline std::deque<breakpoint_repn>
     compute_occs_with_edits( const std::string& p_P, const std::string& p_T, u64 p_threshold,
                              const std::string& p_wildcard = WILDCARD, bool p_wcInOutput = true,

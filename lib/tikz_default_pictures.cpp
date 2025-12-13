@@ -121,6 +121,317 @@ namespace TIKZ {
             } );
     }
 
+    void add_pmwe_computation_pictures( document& p_doc, const std::string& p_T,
+                                        stylized_string p_Tname, const std::string& p_P,
+                                        stylized_string p_Pname, u64 p_threshold,
+                                        const std::set<point>& p_filter, bool p_fakePrune,
+                                        const std::string& p_wildcard, bool p_wcInOutput,
+                                        bool p_skipInit, bool p_highlightInit, bool p_showSelection,
+                                        bool p_highlightNextStep ) {
+        std::string Pr{ p_P.rbegin( ), p_P.rend( ) };
+        std::string Tr{ p_T.rbegin( ), p_T.rend( ) };
+        compute_occs_with_edits(
+            p_P, p_T, p_threshold, p_wildcard, p_wcInOutput,
+            [ & ]( u64 p_l_y, u64 p_l_x, dp_table p_l_dp ) {
+                if( !p_filter.empty( ) && !p_filter.count( { p_l_y, p_l_x } ) ) { return; }
+
+                bool lst = false;
+                if( p_highlightNextStep && !p_l_x && p_l_y == p_P.size( ) ) {
+                    lst = true;
+                } else if( p_skipInit && ( !p_l_y || !p_l_x ) ) {
+                    return;
+                }
+                WITH_PICTURE( pic, { }, p_doc ) {
+                    place_alignment_graph_label( pic, p_Pname, p_Tname );
+                    auto vg = vertex_grid{ tikz_point{ 0.0, 0.0 },
+                                           tikz_point{ CHAR_WIDTH, -CHAR_HEIGHT } };
+                    vg.place_vertices( pic,
+                                       vertex::unselected_vertex( COLOR_TEXT.to_bg( ), 1.0, 3.0 ),
+                                       p_T.size( ) + 1, p_P.size( ) + 1, 0, 0 );
+
+                    for( u64 y = 0; y <= p_P.size( ); ++y ) {
+                        for( u64 x = 0; x <= p_T.size( ); ++x ) {
+                            if( y > p_l_y && ( x || !p_l_y || !p_l_x ) ) { break; }
+                            if( !p_l_x && y && x ) { break; }
+
+                            if( !p_fakePrune || p_l_dp[ y ][ x ] <= p_threshold ) {
+                                if( p_showSelection ) {
+                                    if( y && x && p_l_dp[ y ][ x ] == p_l_dp[ y - 1 ][ x - 1 ]
+                                        && Pr[ y - 1 ] == Tr[ x - 1 ] ) {
+                                        // match
+                                        place_arrow(
+                                            pic, vg.label_for_pos( x - 1, y - 1 ),
+                                            vg.label_for_pos( x, y ),
+                                            OPT::LW_THICK_SUPPORT_LINE
+                                                | OPT::DRAW( MAT_COL.deemphasize_strong( ) ) );
+                                    }
+                                    if( y && x && p_l_dp[ y ][ x ] == 1 + p_l_dp[ y - 1 ][ x - 1 ]
+                                        && Pr[ y - 1 ] != Tr[ x - 1 ] ) {
+                                        // TODO: use cost( .. )
+                                        // subst
+                                        place_arrow( pic, vg.label_for_pos( x - 1, y - 1 ),
+                                                     vg.label_for_pos( x, y ),
+                                                     OPT::DRAW( SUB_COL.deemphasize_strong( ) ) );
+                                    }
+                                    if( y && p_l_dp[ y ][ x ] == 1 + p_l_dp[ y - 1 ][ x ] ) {
+                                        // TODO: use cost( .. )
+                                        // del
+                                        place_arrow( pic, vg.label_for_pos( x, y - 1 ),
+                                                     vg.label_for_pos( x, y ),
+                                                     OPT::DRAW( DEL_COL.deemphasize_strong( ) ) );
+                                    }
+                                    if( x && p_l_dp[ y ][ x ] == 1 + p_l_dp[ y ][ x - 1 ] ) {
+                                        // TODO: use cost( .. )
+                                        // ins
+                                        place_arrow( pic, vg.label_for_pos( x - 1, y ),
+                                                     vg.label_for_pos( x, y ),
+                                                     OPT::DRAW( INS_COL.deemphasize_strong( ) ) );
+                                    }
+                                }
+
+                                if( p_highlightInit && !y ) {
+                                    place_uncircled_number( pic, vg.point_for_pos( x, y ),
+                                                            p_l_dp[ y ][ x ], 4 * CHAR_WIDTH,
+                                                            SEP_COL.to_flavor_bg( ),
+                                                            SEP_COL.deemphasize( ) );
+                                } else if( p_highlightInit && !x ) {
+                                    place_uncircled_number( pic, vg.point_for_pos( x, y ),
+                                                            p_l_dp[ y ][ x ], 4 * CHAR_WIDTH,
+                                                            SEP_COL, SEP_COL.to_flavor_bg( ) );
+                                } else {
+                                    place_uncircled_number(
+                                        pic, vg.point_for_pos( x, y ), p_l_dp[ y ][ x ],
+                                        4 * CHAR_WIDTH, COLOR_TEXT, COLOR_TEXT.to_flavor_bg( ) );
+                                }
+                            } else {
+                                place_uncircled_number(
+                                    pic, vg.point_for_pos( x, y ), p_l_dp[ y ][ x ], 4 * CHAR_WIDTH,
+                                    COLOR_TEXT.deemphasize( ), COLOR_TEXT.to_flavor_bg( ) );
+                            }
+                            if( y == p_l_y && x == p_l_x ) { break; }
+                        }
+                    }
+                    if( p_highlightNextStep && ( lst || ( p_l_x && p_l_y ) ) ) {
+                        u64 ny = p_l_y;
+                        u64 nx = p_l_x + 1;
+                        if( nx > p_T.size( ) ) {
+                            ny++;
+                            nx = 1;
+                        }
+                        if( lst ) { nx = ny = 1; }
+                        if( ny > p_P.size( ) ) { continue; }
+                        p_doc.add_picture( pic );
+                        pic.place_node(
+                            vg.point_for_pos( nx, ny ), EMPTY_STR,
+                            OPT::DRAW( COLOR_TEXT.to_bg( ) ) | OPT::FILL( COLOR_TEXT.to_bg( ) )
+                                | OPT::LW_SUPPORT_LINE | OPT::CIRCLE
+                                | OPT::DOUBLE( COLOR_TEXT.to_bg( ) )
+                                | OPT::INNER_SEP( std::format( "{:5.3f}pt", 4 * CHAR_WIDTH ) ) );
+
+                        pic.place_double_text( textsize_footnotesize( "\\textbf{?}" ),
+                                               vg.point_for_pos( nx, ny ), COLOR_C2.to_bg( ),
+                                               COLOR_C2.deemphasize_weak( ), .25 );
+
+                        if( Pr[ ny - 1 ] != Tr[ nx - 1 ] ) {
+                            place_arrow( pic, vg.label_for_pos( nx - 1, ny - 1 ),
+                                         vg.label_for_pos( nx, ny ),
+                                         OPT::DRAW( SUB_COL.deemphasize( ) ) );
+                        } else {
+                            place_arrow( pic, vg.label_for_pos( nx - 1, ny - 1 ),
+                                         vg.label_for_pos( nx, ny ),
+                                         OPT::DRAW( MAT_COL.deemphasize( ) ) );
+                        }
+
+                        place_arrow( pic, vg.label_for_pos( nx, ny - 1 ),
+                                     vg.label_for_pos( nx, ny ),
+                                     OPT::DRAW( DEL_COL.deemphasize( ) ) );
+                        place_arrow( pic, vg.label_for_pos( nx - 1, ny ),
+                                     vg.label_for_pos( nx, ny ),
+                                     OPT::DRAW( INS_COL.deemphasize( ) ) );
+                    }
+                }
+            } );
+    }
+
+    void add_pmwe_computation_lv_pictures(
+        document& p_doc, const std::string& p_T, stylized_string p_Tname, const std::string& p_P,
+        stylized_string p_Pname, u64 p_threshold, const std::set<point>& p_filter,
+        const std::map<u64, u64>& p_fakeDiagPrune, const std::string& p_wildcard, bool p_wcInOutput,
+        bool p_skipInit, bool p_highlightInit, bool p_showNext ) {
+        std::string Pr{ p_P.rbegin( ), p_P.rend( ) };
+        std::string Tr{ p_T.rbegin( ), p_T.rend( ) };
+        u64         n = p_T.size( ), m = p_P.size( );
+
+        u64 shift = m;
+        u64 maxd  = m + n;
+        compute_occs_with_edits_lv(
+            p_P, p_T, p_threshold, p_wildcard, p_wcInOutput,
+            [ & ]( u64 p_l_diag, u64 p_l_k, dp_table p_l_dp ) {
+                if( !p_filter.empty( ) && !p_filter.count( { p_l_diag, p_l_k } ) ) { return; }
+                if( p_skipInit && !p_l_k && !p_filter.count( { p_l_diag, p_l_k } ) ) { return; }
+
+                WITH_PICTURE( pic, { }, p_doc ) {
+                    place_alignment_graph_label( pic, p_Pname, p_Tname );
+                    auto vg = vertex_grid{ tikz_point{ 0.0, 0.0 },
+                                           tikz_point{ CHAR_WIDTH, -CHAR_HEIGHT } };
+                    vg.place_vertices( pic,
+                                       vertex::unselected_vertex( COLOR_TEXT.to_bg( ), 1.0, 3.0 ),
+                                       p_T.size( ) + 1, p_P.size( ) + 1, 0, 0 );
+
+                    // print first row
+                    for( u64 x = 0; x <= n; ++x ) {
+                        if( p_highlightInit ) {
+                            place_uncircled_number( pic, vg.point_for_pos( x, 0 ), 0,
+                                                    4 * CHAR_WIDTH, SEP_COL.to_flavor_bg( ),
+                                                    SEP_COL.deemphasize( ) );
+                        } else {
+                            place_uncircled_number( pic, vg.point_for_pos( x, 0 ), 0,
+                                                    4 * CHAR_WIDTH, COLOR_TEXT,
+                                                    COLOR_TEXT.to_flavor_bg( ) );
+                        }
+                    }
+
+#define TGX( p_diag, p_k ) ( p_diag ) + p_l_dp[ p_diag ][ p_k ] - shift
+#define TGY( p_diag, p_k ) p_l_dp[ p_diag ][ p_k ]
+                    // place arrows
+                    for( u64 k = 0; k <= p_l_k; ++k ) {
+                        for( s64 d = -k; d <= s64( n ); ++d ) {
+                            u64 tgx = TGX( d + shift, k );
+                            u64 tgy = TGY( d + shift, k );
+                            if( tgy > m || tgx > n ) { continue; }
+                            if( k && p_l_dp[ d + shift ][ k - 1 ] == m ) { continue; }
+
+                            if( !p_fakeDiagPrune.empty( )
+                                && ( !p_fakeDiagPrune.count( d + shift )
+                                     || p_fakeDiagPrune.at( d + shift ) > tgy ) ) {
+                                continue;
+                            }
+
+                            if( p_showNext && tgy + 1 <= m && tgx + 1 <= n ) {
+                                // show subst
+                                place_arrow( pic, vg.label_for_pos( tgx, tgy ),
+                                             vg.label_for_pos( tgx + 1, tgy + 1 ),
+                                             OPT::DRAW( SUB_COL.deemphasize_strong( ) ) );
+                                place_uncircled_number( pic, vg.point_for_pos( tgx + 1, tgy + 1 ),
+                                                        k + 1, 4 * CHAR_WIDTH,
+                                                        COLOR_TEXT.deemphasize( ),
+                                                        COLOR_TEXT.to_flavor_bg( ) );
+                            }
+                        }
+                    }
+                    for( s64 d = 0; d <= s64( n ); ++d ) {
+                        if( !p_fakeDiagPrune.empty( )
+                            && ( !p_fakeDiagPrune.count( d + shift )
+                                 || p_fakeDiagPrune.at( d + shift ) > 0 ) ) {
+                            continue;
+                        }
+
+                        if( TGY( d + shift, 0 ) ) {
+                            place_double_arrow(
+                                pic, vg.label_for_pos( d, 0 ),
+                                vg.label_for_pos( TGX( d + shift, 0 ), TGY( d + shift, 0 ) ),
+                                MAT_COL.deemphasize( ), MAT_COL.to_flavor_bg( ) );
+                        }
+                        if( !p_l_k && d + shift == p_l_diag ) { break; }
+                    }
+                    for( u64 k = 1; k <= p_l_k; ++k ) {
+                        for( s64 d = -k; d <= s64( n ); ++d ) {
+                            if( k == p_l_k && d + shift > p_l_diag ) { break; }
+                            // first, see which neighboring diag is furthest down
+                            u64 mx = p_l_dp[ d + shift ][ k - 1 ] + 1; // subst
+                            if( d + shift ) {
+                                mx = std::max( mx,
+                                               p_l_dp[ d + shift - 1 ][ k - 1 ] ); // ins
+                            }
+                            if( d + shift + 1 <= maxd ) {
+                                mx = std::max( mx,
+                                               p_l_dp[ d + shift + 1 ][ k - 1 ] + 1 ); // del
+                            }
+
+                            bool sub = mx == p_l_dp[ d + shift ][ k - 1 ] + 1;
+                            bool ins = ( d + shift ) and mx == p_l_dp[ d + shift - 1 ][ k - 1 ];
+                            bool del = ( d + shift + 1 <= maxd )
+                                       and mx == p_l_dp[ d + shift + 1 ][ k - 1 ] + 1;
+
+                            u64 tgx = d + mx, tgy = mx;
+
+                            if( !p_fakeDiagPrune.empty( )
+                                && ( !p_fakeDiagPrune.count( d + shift )
+                                     || p_fakeDiagPrune.at( d + shift ) > tgy ) ) {
+                                continue;
+                            }
+
+                            if( tgx > n ) { continue; }
+                            if( tgy > m ) {
+                                if( del ) {
+                                    place_arrow( pic, vg.label_for_pos( d + m, m - 1 ),
+                                                 vg.label_for_pos( d + m, m ),
+                                                 OPT::DRAW( DEL_COL.deemphasize( ) ) );
+                                }
+                                continue;
+                            }
+                            // draw thin diag switching arrows
+                            if( sub ) {
+                                place_arrow( pic, vg.label_for_pos( tgx - 1, tgy - 1 ),
+                                             vg.label_for_pos( tgx, tgy ),
+                                             OPT::DRAW( SUB_COL.deemphasize( ) ) );
+                            }
+                            if( ins ) {
+                                place_arrow( pic, vg.label_for_pos( tgx - 1, tgy ),
+                                             vg.label_for_pos( tgx, tgy ),
+                                             OPT::DRAW( INS_COL.deemphasize( ) ) );
+                            }
+                            if( del ) {
+                                place_arrow( pic, vg.label_for_pos( tgx, tgy - 1 ),
+                                             vg.label_for_pos( tgx, tgy ),
+                                             OPT::DRAW( DEL_COL.deemphasize( ) ) );
+                            }
+
+                            place_uncircled_number( pic, vg.point_for_pos( tgx, tgy ), k,
+                                                    4 * CHAR_WIDTH, COLOR_TEXT.deemphasize( ),
+                                                    COLOR_TEXT.to_flavor_bg( ) );
+                            // draw thick lce arrow
+                            if( tgy < TGY( d + shift, k ) ) {
+                                place_double_arrow(
+                                    pic, vg.label_for_pos( tgx, tgy ),
+                                    vg.label_for_pos( TGX( d + shift, k ), TGY( d + shift, k ) ),
+                                    MAT_COL.deemphasize( ).lighten( 100 - k * 50.0 / p_threshold ),
+                                    MAT_COL.to_flavor_bg( ) );
+                            }
+                        }
+                    }
+                    // place numbers
+                    for( u64 k = 0; k <= p_l_k; ++k ) {
+                        for( s64 d = -k; d <= s64( n ); ++d ) {
+                            u64 tgx = TGX( d + shift, k );
+                            u64 tgy = TGY( d + shift, k );
+
+                            if( !p_fakeDiagPrune.empty( )
+                                && ( !p_fakeDiagPrune.count( d + shift )
+                                     || p_fakeDiagPrune.at( d + shift ) > tgy ) ) {
+                                continue;
+                            }
+                            if( tgy > m || tgx > n ) { continue; }
+                            if( k && p_l_dp[ d + shift ][ k - 1 ] == m ) { continue; }
+                            if( !k && !tgy ) { continue; }
+                            if( k == p_l_k && d + shift == p_l_diag ) {
+                                place_uncircled_number( pic, vg.point_for_pos( tgx, tgy ), k,
+                                                        4 * CHAR_WIDTH, MAT_COL,
+                                                        MAT_COL.to_flavor_bg( ) );
+                                break;
+                            } else {
+                                place_uncircled_number( pic, vg.point_for_pos( tgx, tgy ), k,
+                                                        4 * CHAR_WIDTH, COLOR_TEXT,
+                                                        COLOR_TEXT.to_flavor_bg( ) );
+                            }
+                        }
+                    }
+#undef TGX
+#undef TGY
+                }
+            } );
+    }
+
     void add_string_picture( document& p_out, const std::string& p_string ) {
         WITH_PICTURE( pic, { }, p_out ) {
             place_string( pic, p_string, tikz_point{ 0.0, 0.0 } );

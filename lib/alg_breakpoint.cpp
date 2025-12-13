@@ -1,6 +1,7 @@
 #include "alg_breakpoint.h"
 
 namespace ALG {
+
     bool match( char p_P, char p_T, char p_wc ) {
         if( !p_P && !p_T ) {
             return true;
@@ -19,6 +20,70 @@ namespace ALG {
         if( match( p_p, p_t, p_wc ) ) { return 0; }
         if( p_w.count( { p_p, p_t } ) ) { return p_w.at( { p_p, p_t } ); }
         return 1;
+    }
+
+    u64 lce( const std::string& p_s1, const std::string& p_s2, u64 p_i1, u64 p_i2, char p_wc ) {
+        u64 lce = 0;
+        while( p_i1 + lce < p_s1.length( ) && p_i2 + lce < p_s2.length( )
+               && match( p_s1[ p_i1 + lce ], p_s2[ p_i2 + lce ], p_wc ) ) {
+            ++lce;
+        }
+        return lce;
+    }
+
+    std::deque<breakpoint_repn> compute_occs_with_edits_lv( const std::string& p_P,
+                                                            const std::string& p_T, u64 p_threshold,
+                                                            const std::string& p_wildcard,
+                                                            bool               p_wcInOutput,
+                                                            ed_dp_cb_t         p_progressCB ) {
+        std::string Pr{ p_P.rbegin( ), p_P.rend( ) };
+        std::string Tr{ p_T.rbegin( ), p_T.rend( ) };
+
+        u64  m  = p_P.size( );
+        auto n  = p_T.size( );
+        u64  wc = ( p_wildcard == EMPTY_STR || !p_wildcard.length( ) ) ? 0 : p_wildcard[ 0 ];
+
+        // diagonal, errors
+        u64  shift = m;
+        u64  maxd  = n + m;
+        auto dp    = std::deque<std::deque<u64>>{ maxd + 1, std::deque<u64>( p_threshold + 1, 0 ) };
+
+        for( u64 d = 0; d <= n; ++d ) {
+            dp[ d + shift ][ 0 ] = lce( Pr, Tr, 0, d, wc );
+            if( p_progressCB != nullptr ) { p_progressCB( d + shift, 0, dp ); }
+        }
+        if( p_progressCB != nullptr ) { p_progressCB( m + n + 1, 0, dp ); }
+
+        for( u64 l = 1; l <= p_threshold; ++l ) {
+            for( s64 d = -l; d <= s64( n ); ++d ) {
+                if( dp[ d + shift ][ l - 1 ] == m ) {
+                    dp[ d + shift ][ l ] = m;
+                    continue;
+                }
+
+                dp[ d + shift ][ l ] = dp[ d + shift ][ l - 1 ] + 1; // subst
+                if( d + shift ) {
+                    dp[ d + shift ][ l ]
+                        = std::max( dp[ d + shift ][ l ], dp[ d + shift - 1 ][ l - 1 ] ); // ins
+                }
+                if( d + shift + 1 <= maxd ) {
+                    dp[ d + shift ][ l ]
+                        = std::max( dp[ d + shift ][ l ], dp[ d + shift + 1 ][ l - 1 ] + 1 ); // del
+                }
+                if( dp[ d + shift ][ l ] > m || d + dp[ d + shift ][ l ] > n ) {
+                    dp[ d + shift ][ l ] = m;
+                } else {
+                    dp[ d + shift ][ l ]
+                        += lce( Tr, Pr, d + dp[ d + shift ][ l ], dp[ d + shift ][ l ], wc );
+                }
+                if( p_progressCB != nullptr ) { p_progressCB( d + shift, l, dp ); }
+            }
+            if( p_progressCB != nullptr ) { p_progressCB( m + n + 1, l, dp ); }
+        }
+
+        // TODO: compute actual alignments of occ's
+        (void) p_wcInOutput;
+        return { };
     }
 
     breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& p_T,
@@ -137,8 +202,9 @@ namespace ALG {
         // compute starting positions of occurrences, for each starting position one alignment
         std::deque<breakpoint_repn> ress{ };
 
-        auto m  = p_P.size( );
-        auto n  = p_T.size( );
+        auto m = p_P.size( );
+        auto n = p_T.size( );
+
         char wc = ( p_wildcard == EMPTY_STR || !p_wildcard.length( ) ) ? 0 : p_wildcard[ 0 ];
 
         auto nw_dp = std::deque<std::deque<u64>>{ m + 1, std::deque<u64>( n + 1, 0 ) };
@@ -163,6 +229,7 @@ namespace ALG {
             }
         }
 
+        if( m + p_threshold > n ) { return { }; }
         for( u64 t = 0; t <= n - m + p_threshold; ++t ) {
             if( nw_dp[ m ][ n - t ] > p_threshold ) { continue; }
 
