@@ -330,7 +330,8 @@ namespace TIKZ {
     }
 
     void place_string_sequence( picture& p_pic, const std::deque<stylized_string>& p_S,
-                                tikz_point p_StopLeft, const kv_store& p_options ) {
+                                tikz_point p_StopLeft, bool p_redrawFrame,
+                                const kv_store& p_options ) {
         u64 len = 0;
         for( u64 i = 0, j = p_S.size( ); i < j; ++i ) { len += p_S[ i ].length( ); }
         if( !len ) { return; }
@@ -344,14 +345,16 @@ namespace TIKZ {
         }
         place_string( p_pic, es, p_StopLeft, p_options );
         auto pc = p_StopLeft;
-        for( u64 i = 0, j = p_S.size( ); i < j; ++i ) {
-            // for each character, print a small rectangle
-            for( u64 i2 = 0; i2 < p_S[ i ].length( ); ++i2 ) {
-                auto col = p_S[ i ].m_color;
-                col.replace_if_non_empty( p_S[ i ].annotation_at_pos( i2 ).m_textColor );
-                place_character_outline( p_pic, pc + tikz_point{ i2 * CHAR_WIDTH, 0.0 }, col );
+        if( p_redrawFrame ) {
+            for( u64 i = 0, j = p_S.size( ); i < j; ++i ) {
+                // for each character, print a small rectangle
+                for( u64 i2 = 0; i2 < p_S[ i ].length( ); ++i2 ) {
+                    auto col = p_S[ i ].m_color;
+                    col.replace_if_non_empty( p_S[ i ].annotation_at_pos( i2 ).m_textColor );
+                    place_character_outline( p_pic, pc + tikz_point{ i2 * CHAR_WIDTH, 0.0 }, col );
+                }
+                pc.m_x += CHAR_WIDTH * p_S[ i ].length( );
             }
-            pc.m_x += CHAR_WIDTH * p_S[ i ].length( );
         }
         pc = p_StopLeft;
         for( u64 i = 0, j = p_S.size( ); i < j; ++i ) {
@@ -375,7 +378,8 @@ namespace TIKZ {
     }
 
     void place_string_sequence_vertical( picture& p_pic, const std::deque<stylized_string>& p_S,
-                                         tikz_point p_StopLeft, const kv_store& p_options ) {
+                                         tikz_point p_StopLeft, bool p_redrawFrame,
+                                         const kv_store& p_options ) {
         u64 len = 0;
         for( u64 i = 0, j = p_S.size( ); i < j; ++i ) { len += p_S[ i ].length( ); }
         if( !len ) { return; }
@@ -389,15 +393,17 @@ namespace TIKZ {
         }
         place_string_vertical( p_pic, es, p_StopLeft, p_options );
         auto pc = p_StopLeft;
-        for( u64 i = 0, j = p_S.size( ); i < j; ++i ) {
-            // for each character, print a small rectangle
-            for( u64 i2 = 0; i2 < p_S[ i ].length( ); ++i2 ) {
-                auto col = p_S[ i ].m_color;
-                col.replace_if_non_empty( p_S[ i ].annotation_at_pos( i2 ).m_textColor );
-                place_character_outline( p_pic, p_StopLeft + tikz_point{ 0.0, -CHAR_HEIGHT * i2 },
-                                         col );
+        if( p_redrawFrame ) {
+            for( u64 i = 0, j = p_S.size( ); i < j; ++i ) {
+                // for each character, print a small rectangle
+                for( u64 i2 = 0; i2 < p_S[ i ].length( ); ++i2 ) {
+                    auto col = p_S[ i ].m_color;
+                    col.replace_if_non_empty( p_S[ i ].annotation_at_pos( i2 ).m_textColor );
+                    place_character_outline(
+                        p_pic, p_StopLeft + tikz_point{ 0.0, -CHAR_HEIGHT * i2 }, col );
+                }
+                pc.m_y -= CHAR_HEIGHT * p_S[ i ].length( );
             }
-            pc.m_y -= CHAR_HEIGHT * p_S[ i ].length( );
         }
         pc = p_StopLeft;
         for( u64 i = 0, j = p_S.size( ); i < j; ++i ) {

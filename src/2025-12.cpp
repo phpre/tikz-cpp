@@ -751,8 +751,7 @@ FILE_SIMPLE( p_f_apm_breaks_marking, {
         break_string( 3, COLOR_C3 ),
         stylized_string{ EMPTY_STR, fragmentco{ 0, 2 }, str_displ_t::NAME },
         break_string( 4, COLOR_C2 ),
-        stylized_string{ EMPTY_STR, fragmentco{ 0, 1 }, str_displ_t::NAME },
-        stylized_string{ EMPTY_STR, fragmentco{ 0, 1 }, str_displ_t::NAME },
+        stylized_string{ EMPTY_STR, fragmentco{ 0, 2 }, str_displ_t::NAME },
     };
     std::deque<stylized_string> T{
         stylized_string{ EMPTY_STR, fragmentco{ 0, 10 }, str_displ_t::NAME },
@@ -937,7 +936,7 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
         place_string_sequence(
             pic,
             { break_string( 1, COLOR_C1.deemphasize_weak( ) ), { EMPTY_STR, fragmentco{ 1, 16 } } },
-            tikz_point{ 0.0, 0.0 } );
+            tikz_point{ 0.0, 0.0 }, true );
         place_character_highlight( pic, tikz_point{ 0.0, 0.0 }, highc, highb );
 
         pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
@@ -965,7 +964,7 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
         place_string_sequence(
             pic,
             { break_string( 1, COLOR_C1.deemphasize_weak( ) ), { EMPTY_STR, fragmentco{ 1, 16 } } },
-            tikz_point{ 0.0, 0.0 } );
+            tikz_point{ 0.0, 0.0 }, true );
 
         place_character_highlight( pic, tikz_point{ CHAR_WIDTH, 0.0 }, highc, highb );
 
@@ -995,7 +994,7 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
             { break_string( 1, COLOR_C1.deemphasize_weak( ) ),
               rep_region_string( 3, 1, COLOR_C5, COLOR_C5.deemphasize_strong( ) ),
               { EMPTY_STR, fragmentco{ 4, 16 } } },
-            tikz_point{ 0.0, 0.0 } );
+            tikz_point{ 0.0, 0.0 }, true );
 
         place_character_highlight( pic, tikz_point{ CHAR_WIDTH, 0.0 }, highc, highb, { }, 3 );
 
@@ -1032,7 +1031,7 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
               rep_region_string( 2, 2, COLOR_C4, COLOR_C4.deemphasize_strong( ) ),
               break_string( 4, COLOR_C2.deemphasize_weak( ) ),
               { EMPTY_STR, fragmentco{ 9, 16 } } },
-            tikz_point{ 0.0, 0.0 } );
+            tikz_point{ 0.0, 0.0 }, true );
 
         place_character_highlight( pic, tikz_point{ 8 * CHAR_WIDTH, 0.0 }, highc, highb, { } );
 
@@ -1089,7 +1088,7 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
               break_string( 3, COLOR_C1.deemphasize_weak( ) ),
               rep_region_string( 5, 2, COLOR_C4, COLOR_C4.deemphasize_strong( ) ),
               { EMPTY_STR, fragmentco{ 11, 16 } } },
-            tikz_point{ 0.0, 0.0 } );
+            tikz_point{ 0.0, 0.0 }, true );
 
         place_character_highlight( pic, tikz_point{ 6 * CHAR_WIDTH, 0.0 }, highc, highb, { }, 5 );
 
@@ -1144,7 +1143,7 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
               break_string( 2, COLOR_C2.deemphasize_weak( ) ),
               break_string( 3, COLOR_C1.deemphasize_weak( ) ),
               { EMPTY_STR, fragmentco{ 6, 16 } } },
-            tikz_point{ 0.0, 0.0 } );
+            tikz_point{ 0.0, 0.0 }, true );
 
         place_character_highlight( pic, tikz_point{ 6 * CHAR_WIDTH, 0.0 }, highc, highb, { }, 10 );
 
@@ -1183,8 +1182,8 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
         pic.place_node( btc );
         pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
                         tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
-        place_string_sequence( pic, { { EMPTY_STR, fragmentco{ 0, 16 } } },
-                               tikz_point{ 0.0, 0.0 } );
+        place_string_sequence( pic, { { EMPTY_STR, fragmentco{ 0, 16 } } }, tikz_point{ 0.0, 0.0 },
+                               true );
 
         place_character_highlight( pic, tikz_point{ 6 * CHAR_WIDTH, 0.0 }, highc, highb, { }, 10 );
 
@@ -1209,11 +1208,9 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
                         tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
         place_string_sequence(
             pic,
-            {
-                { EMPTY_STR, fragmentco{ 0, 3 } },
-                rep_region_string( 13, 1, COLOR_C5, COLOR_C5.deemphasize_strong( ) ),
-            },
-            tikz_point{ 0.0, 0.0 } );
+            { { EMPTY_STR, fragmentco{ 0, 3 } },
+              rep_region_string( 13, 1, COLOR_C5, COLOR_C5.deemphasize_strong( ) ) },
+            tikz_point{ 0.0, 0.0 }, true );
 
         place_character_highlight( pic, tikz_point{ 3 * CHAR_WIDTH, 0.0 }, highc, highb, { }, 13 );
 
@@ -1242,8 +1239,8 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
         pic.place_node( btc );
         pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
                         tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
-        place_string_sequence( pic, { { EMPTY_STR, fragmentco{ 0, 16 } } },
-                               tikz_point{ 0.0, 0.0 } );
+        place_string_sequence( pic, { { EMPTY_STR, fragmentco{ 0, 16 } } }, tikz_point{ 0.0, 0.0 },
+                               true );
 
         place_character_highlight( pic, tikz_point{ 0 * CHAR_WIDTH, 0.0 }, highc, highb, { }, 16 );
 

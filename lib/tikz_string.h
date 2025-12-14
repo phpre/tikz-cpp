@@ -72,10 +72,12 @@ namespace TIKZ {
     }
 
     void place_string_sequence( picture& p_pic, const std::deque<stylized_string>& p_S,
-                                tikz_point p_StopLeft, const kv_store& p_options = { } );
+                                tikz_point p_StopLeft, bool p_redrawFrame = false,
+                                const kv_store& p_options = { } );
 
     void place_string_sequence_vertical( picture& p_pic, const std::deque<stylized_string>& p_S,
-                                         tikz_point p_StopLeft, const kv_store& p_options = { } );
+                                         tikz_point p_StopLeft, bool p_redrawFrame = false,
+                                         const kv_store& p_options = { } );
 
     // assumes T is on top, P on bottom
     void place_matched_string_pair( picture& p_pic, const stylized_string& p_P,
