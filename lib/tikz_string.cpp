@@ -359,12 +359,13 @@ namespace TIKZ {
         pc = p_StopLeft;
         for( u64 i = 0, j = p_S.size( ); i < j; ++i ) {
             double cor3 = 0.015;
-            p_pic.place_rectangle( tikz_point{ pc.m_x + cor3, pc.m_y - cor3 },
-                                   tikz_point{ pc.m_x + p_S[ i ].length( ) * CHAR_WIDTH - cor3,
-                                               pc.m_y - CHAR_HEIGHT + cor3 },
-                                   OPT::ROUNDED_CORNERS( "1pt" )
-                                       | OPT::FILL( p_S[ i ].m_fillColor ) );
-
+            if( p_redrawFrame ) {
+                p_pic.place_rectangle( tikz_point{ pc.m_x + cor3, pc.m_y - cor3 },
+                                       tikz_point{ pc.m_x + p_S[ i ].length( ) * CHAR_WIDTH - cor3,
+                                                   pc.m_y - CHAR_HEIGHT + cor3 },
+                                       OPT::ROUNDED_CORNERS( "1pt" )
+                                           | OPT::FILL( p_S[ i ].m_fillColor ) );
+            }
             if( !p_S[ i ].m_fillOptions.empty( ) ) {
                 p_pic.place_rectangle( tikz_point{ pc.m_x + cor3, pc.m_y - cor3 },
                                        tikz_point{ pc.m_x + p_S[ i ].length( ) * CHAR_WIDTH - cor3,
@@ -408,12 +409,13 @@ namespace TIKZ {
         pc = p_StopLeft;
         for( u64 i = 0, j = p_S.size( ); i < j; ++i ) {
             double cor3 = 0.015;
-            p_pic.place_rectangle( tikz_point{ pc.m_x + cor3, pc.m_y - cor3 },
-                                   tikz_point{ pc.m_x + CHAR_WIDTH - cor3,
-                                               pc.m_y - p_S[ i ].length( ) * CHAR_HEIGHT + cor3 },
-                                   OPT::ROUNDED_CORNERS( "1pt" )
-                                       | OPT::FILL( p_S[ i ].m_fillColor ) );
-
+            if( p_redrawFrame ) {
+                p_pic.place_rectangle(
+                    tikz_point{ pc.m_x + cor3, pc.m_y - cor3 },
+                    tikz_point{ pc.m_x + CHAR_WIDTH - cor3,
+                                pc.m_y - p_S[ i ].length( ) * CHAR_HEIGHT + cor3 },
+                    OPT::ROUNDED_CORNERS( "1pt" ) | OPT::FILL( p_S[ i ].m_fillColor ) );
+            }
             if( !p_S[ i ].m_fillOptions.empty( ) ) {
                 p_pic.place_rectangle(
                     tikz_point{ pc.m_x + cor3, pc.m_y - cor3 },
