@@ -280,6 +280,15 @@ namespace TIKZ {
 
                     // print first row
                     for( u64 x = 0; x <= n; ++x ) {
+                        if( !p_fakeDiagPrune.empty( )
+                            && ( !p_fakeDiagPrune.count( x + shift )
+                                 || p_fakeDiagPrune.at( x + shift ) > 0 ) ) {
+                            place_uncircled_number( pic, vg.point_for_pos( x, 0 ), 0,
+                                                    4 * CHAR_WIDTH, COLOR_TEXT,
+                                                    COLOR_TEXT.to_flavor_bg( ) );
+                            continue;
+                        }
+
                         if( p_highlightInit ) {
                             place_uncircled_number( pic, vg.point_for_pos( x, 0 ), 0,
                                                     4 * CHAR_WIDTH, SEP_COL.to_flavor_bg( ),

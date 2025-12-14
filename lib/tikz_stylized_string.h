@@ -66,8 +66,10 @@ namespace TIKZ {
         constexpr displ_t USE_TYPEWRITER = ( 1 << 5 );  // use typewriter font to
                                                         // display the name
                                                         // (instead of math mode)
+        constexpr displ_t USE_DOUBLE_TEXT = ( 1 << 6 ); // add an outline to any text
+                                                        // written
 
-        constexpr displ_t MAX = ( 1 << 6 );
+        constexpr displ_t MAX = ( 1 << 7 );
 
         // helper aliases
         constexpr displ_t CHARACTERS       = SHOW_POSITIONS | SHOW_CHARACTERS;
@@ -233,12 +235,14 @@ namespace TIKZ {
             }
             case fragment_t::FT_FRAGMENT: {
                 if( p_fragment.second.length( ) == 1 ) {
+                    if( m_name == EMPTY_STR ) { return { EMPTY_STR, EMPTY_STR }; }
                     return {
                         math_mode( m_name + pos_to_string( p_fragment.second.closed_begin( ) ) ),
                         textsize_footnotesize(
                             math_mode( VSIZE_CORRECTION + m_name
                                        + pos_to_string( p_fragment.second.closed_begin( ) ) ) ) };
                 } else {
+                    if( m_name == EMPTY_STR ) { return { EMPTY_STR, EMPTY_STR }; }
                     return {
                         math_mode( m_name + frag_to_string( p_fragment.second ) ),
                         textsize_footnotesize( math_mode(
@@ -246,6 +250,7 @@ namespace TIKZ {
                 }
             }
             case fragment_t::FT_FULL: {
+                if( m_name == EMPTY_STR ) { return { EMPTY_STR, EMPTY_STR }; }
                 if( m_displayStyle & str_displ_t::USE_TYPEWRITER ) {
                     return { m_name, text_typewriter( VSIZE_CORRECTION + m_name ) };
                 } else {
@@ -380,5 +385,31 @@ namespace TIKZ {
 
         return stylized_string{ s, EMPTY_STR, str_displ_t::SHOW_WILDCARDS }.add_wildcards(
             s, p_charDisplayStyle, p_indices.closed_begin( ), p_wildcard );
+    }
+
+    inline stylized_string break_string( u64 p_id = 0, const color& p_color = COLOR_C1,
+                                         const std::string& p_name = "B" ) {
+        auto res = stylized_string{ EMPTY_STR,
+                                    fragmentco{ 0, 1 },
+                                    str_displ_t::SHOW_WILDCARDS | str_displ_t::NAME,
+                                    AN_CENTER,
+                                    p_color,
+                                    p_color.to_flavor_bg( ) };
+        res.m_annotation[ 0 ].m_displayStyle |= chr_displ_t::RENDER_AS_FORMER_WILDCARD;
+        res.m_annotation[ 0 ].m_symbol = std::format( "${}_{{{}}}$", p_name, p_id );
+        return res;
+    }
+
+    inline stylized_string rep_region_string( u64 p_length, u64 p_id = 0,
+                                              const color& p_color        = COLOR_C1,
+                                              const color& p_patternColor = COLOR_C1.deemphasize( ),
+                                              const std::string& p_name   = "R" ) {
+        auto res = stylized_string{
+            std::format( "${}_{{{}}}$", p_name, p_id ), fragmentco{ 0, p_length },
+            str_displ_t::NAME | str_displ_t::USE_TYPEWRITER | str_displ_t::USE_DOUBLE_TEXT,
+            AN_CENTER, p_color };
+
+        res.m_fillOptions = OPT::PATTERN_HATCH_45 | OPT::PATTERN_COLOR( p_patternColor );
+        return res;
     }
 } // namespace TIKZ

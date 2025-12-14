@@ -40,9 +40,12 @@ void place_pillar_implementation( picture& p_pic, const std::string& p_impName, 
                             | p_impOptions );
 
     p_pic.add_command( std::make_shared<math_command>( width_macro( 1.35, p_impName ) ) );
-    p_pic.place_text( textsize_large( p_impName ), tikz_point{ 0.0, 0.0 },
-                      XSCALE_TO_WIDTH | OPT::ROUNDED_CORNERS( "3pt" ) | OPT::FILL_OPACITY( ".8" )
-                          | OPT::FILL( p_impColor.to_flavor_bg( ) ) );
+    // p_pic.place_text( textsize_large( p_impName ), tikz_point{ 0.0, 0.0 },
+    //                   XSCALE_TO_WIDTH | OPT::ROUNDED_CORNERS( "3pt" ) | OPT::FILL_OPACITY( ".8" )
+    //                       | OPT::FILL( p_impColor.to_flavor_bg( ) ) );
+    p_pic.place_double_text( textsize_large( p_impName ), tikz_point{ 0.0, 0.0 },
+                             p_impColor.to_flavor_bg( ), p_impColor.to_flavor_bg( ), 3.0,
+                             XSCALE_TO_WIDTH );
     p_pic.place_text( textsize_large( p_impName ), tikz_point{ 0.0, 0.0 },
                       XSCALE_TO_WIDTH | OPT::TEXT_COLOR( p_impColor.deemphasize_weak( ) ) );
 }
@@ -710,6 +713,556 @@ FILE_SIMPLE( p_f_apm_ch02_idea, {
                                           { 12 + P.size( ) + 10, 1 },
                                       } );
 } )
+FILE_SIMPLE( p_f_apm_ch02_idea_2, {
+    std::string P{ "aaaaaa" };
+    std::string T{ "aaaaaaaaaaaa" };
+    auto        T_NAME = stylized_string{ T, "T", str_displ_t::SHOW_CHARACTERS };
+    auto        P_NAME = stylized_string{ P, "P", str_displ_t::SHOW_CHARACTERS };
+    add_pmwe_computation_lv_pictures( doc, T, T_NAME, P, P_NAME, 1,
+                                      { { P.size( ) + T.size( ) + 1, 0 } } );
+    {
+        P = "abcdef";
+        T = "abcdefabcdef";
+        std::string Pr{ P.rbegin( ), P.rend( ) };
+        std::string Tr{ T.rbegin( ), T.rend( ) };
+        auto        Tr_NAME = stylized_string{ T, "T", str_displ_t::SHOW_CHARACTERS };
+        auto        Pr_NAME = stylized_string{ P, "P", str_displ_t::SHOW_CHARACTERS };
+        add_pmwe_computation_lv_pictures( doc, Tr, Tr_NAME, Pr, Pr_NAME, 1,
+                                          { { P.size( ) + T.size( ) + 1, 1 } } );
+    }
+    {
+        P = "abcdef";
+        T = "abcdeaabcdea";
+        std::string Pr{ P.rbegin( ), P.rend( ) };
+        std::string Tr{ T.rbegin( ), T.rend( ) };
+        auto        Tr_NAME = stylized_string{ T, "T", str_displ_t::SHOW_CHARACTERS };
+        auto        Pr_NAME = stylized_string{ P, "P", str_displ_t::SHOW_CHARACTERS };
+        add_pmwe_computation_lv_pictures( doc, Tr, Tr_NAME, Pr, Pr_NAME, 1,
+                                          { { P.size( ) + T.size( ) + 1, 1 } } );
+    }
+} )
+FILE_SIMPLE( p_f_apm_breaks_marking, {
+    std::deque<stylized_string> P{
+        stylized_string{ EMPTY_STR, fragmentco{ 0, 2 }, str_displ_t::NAME },
+        break_string( 1 ),
+        stylized_string{ EMPTY_STR, fragmentco{ 0, 1 }, str_displ_t::NAME },
+        break_string( 2, COLOR_C2 ),
+        stylized_string{ EMPTY_STR, fragmentco{ 0, 2 }, str_displ_t::NAME },
+        break_string( 3, COLOR_C3 ),
+        stylized_string{ EMPTY_STR, fragmentco{ 0, 2 }, str_displ_t::NAME },
+        break_string( 4, COLOR_C2 ),
+        stylized_string{ EMPTY_STR, fragmentco{ 0, 1 }, str_displ_t::NAME },
+        stylized_string{ EMPTY_STR, fragmentco{ 0, 1 }, str_displ_t::NAME },
+    };
+    std::deque<stylized_string> T{
+        stylized_string{ EMPTY_STR, fragmentco{ 0, 10 }, str_displ_t::NAME },
+        break_string( 3, COLOR_C3 ),
+        stylized_string{ EMPTY_STR, fragmentco{ 0, 8 }, str_displ_t::NAME },
+    };
+
+    WITH_PICTURE( pic, { }, doc ) {
+        pic.place_node( tikz_point{ -1.1 * CHAR_WIDTH, -1.1 * CHAR_HEIGHT } );
+        pic.place_node( tikz_point{ 19.1 * CHAR_WIDTH, 2.1 * CHAR_HEIGHT } );
+
+        pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                        tikz_point{ 2 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+
+        place_string_sequence( pic, P, tikz_point{ 3 * CHAR_WIDTH, 0.0 } );
+        doc.add_picture( pic );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "T" ),
+                        tikz_point{ -1 * CHAR_WIDTH, 1.5 * CHAR_HEIGHT } );
+        place_string( pic, stylized_string{ EMPTY_STR, fragmentco{ 0, 19 }, str_displ_t::NAME },
+                      tikz_point{ 0.0, 2 * CHAR_HEIGHT } );
+    }
+
+    WITH_PICTURE( pic, { }, doc ) {
+        pic.place_node( tikz_point{ -1.1 * CHAR_WIDTH, -1.1 * CHAR_HEIGHT } );
+        pic.place_node( tikz_point{ 19.1 * CHAR_WIDTH, 2.1 * CHAR_HEIGHT } );
+
+        pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                        tikz_point{ 2 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "T" ),
+                        tikz_point{ -1 * CHAR_WIDTH, 1.5 * CHAR_HEIGHT } );
+
+        place_matched_string_pair( pic, break_string( 3, COLOR_C3 ),
+                                   tikz_point{ 10 * CHAR_WIDTH, 0.0 }, break_string( 3, COLOR_C3 ),
+                                   tikz_point{ 10 * CHAR_WIDTH, 2 * CHAR_HEIGHT }, MAT_COL, true );
+
+        place_string_sequence( pic, P, tikz_point{ 3 * CHAR_WIDTH, 0.0 } );
+        place_string_sequence( pic, T, tikz_point{ 0.0, 2 * CHAR_HEIGHT } );
+
+        doc.add_picture( pic );
+
+        place_double_arrow( pic, tikz_point{ 9.95 * CHAR_WIDTH, 1.5 * CHAR_HEIGHT },
+                            tikz_point{ 7.5 * CHAR_WIDTH, 1.5 * CHAR_HEIGHT } );
+        place_double_arrow( pic, tikz_point{ 11.05 * CHAR_WIDTH, 1.5 * CHAR_HEIGHT },
+                            tikz_point{ 13.5 * CHAR_WIDTH, 1.5 * CHAR_HEIGHT } );
+    }
+} )
+FILE_SIMPLE( p_f_def_period, {
+    stylized_string   S{ "abcabcabcab" };
+    std::deque<color> cs{ COLOR_C1, COLOR_C3, COLOR_C5 };
+    for( u64 i = 0; i < S.length( ); ++i ) { S.highlight_position( i, cs[ i % 3 ] ); }
+
+    WITH_PICTURE( pic, { }, doc ) {
+        pic.place_text( math_mode( VSIZE_CORRECTION + "S" ),
+                        tikz_point{ 2 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+        place_string( pic, S, tikz_point{ 3 * CHAR_WIDTH, 0.0 } );
+    }
+} )
+FILE_SIMPLE( p_f_periodicity_lemma, {
+    stylized_string Qs{ EMPTY_STR, fragmentco{ 0, 2 }, str_displ_t::NAME };
+    stylized_string Q{ EMPTY_STR, fragmentco{ 0, 2 }, str_displ_t::NAME };
+    Q.highlight_position( 0, COLOR_C1, COLOR_C1.deemphasize( ) );
+    Q.highlight_position( 1, COLOR_C5, COLOR_C5.deemphasize( ) );
+    stylized_string Q2{ EMPTY_STR, fragmentco{ 0, 2 }, str_displ_t::NAME };
+    Q2.highlight_position( 0, COLOR_C1, COLOR_C1.deemphasize_weak( ) );
+    Q2.highlight_position( 1, COLOR_C5, COLOR_C5.deemphasize_weak( ) );
+
+    std::deque<stylized_string> T{
+        { EMPTY_STR, fragmentco{ 0, 3 }, str_displ_t::NAME }, Qs, Qs, Qs, Qs, Qs, Qs,
+        { EMPTY_STR, fragmentco{ 0, 2 }, str_displ_t::NAME } };
+    std::deque<stylized_string> P{ Qs, Qs, Qs, Qs, Qs };
+
+    stylized_string Pe = { EMPTY_STR, fragmentco{ 0, P.size( ) * Q.length( ) } };
+    WITH_PICTURE( pic, { }, doc ) {
+        place_matched_string_pair( pic, Pe, tikz_point{ 5 * CHAR_WIDTH, -2 * CHAR_HEIGHT }, Pe,
+                                   tikz_point{ 5 * CHAR_WIDTH, 2 * CHAR_HEIGHT },
+                                   MAT_COL.deemphasize( ), true );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "T" ),
+                        tikz_point{ -1 * CHAR_WIDTH, 1.5 * CHAR_HEIGHT } );
+        place_string_sequence( pic, T, tikz_point{ 0.0, 2 * CHAR_HEIGHT } );
+
+        pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                        tikz_point{ 4 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT } );
+        place_string_sequence( pic, P, tikz_point{ 5 * CHAR_WIDTH, -2 * CHAR_HEIGHT } );
+        doc.add_picture( pic );
+
+        place_matched_string_pair( pic, Pe, tikz_point{ 3 * CHAR_WIDTH, 0.0 }, Pe,
+                                   tikz_point{ 3 * CHAR_WIDTH, 2 * CHAR_HEIGHT }, MAT_COL, true );
+
+        place_string_sequence( pic, P, tikz_point{ 3 * CHAR_WIDTH, 0.0 } );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                        tikz_point{ 2 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+        place_string_sequence( pic, T, tikz_point{ 0.0, 2 * CHAR_HEIGHT } );
+    }
+
+    for( u64 i = 0; i < P.size( ); ++i ) {
+        WITH_PICTURE( pic, { }, doc ) {
+            place_matched_string_pair( pic, Pe, tikz_point{ 5 * CHAR_WIDTH, -2 * CHAR_HEIGHT }, Pe,
+                                       tikz_point{ 5 * CHAR_WIDTH, 2 * CHAR_HEIGHT },
+                                       MAT_COL.deemphasize( ), true );
+            place_matched_string_pair( pic, Pe, tikz_point{ 3 * CHAR_WIDTH, 0.0 }, Pe,
+                                       tikz_point{ 3 * CHAR_WIDTH, 2 * CHAR_HEIGHT }, MAT_COL,
+                                       true );
+            pic.place_text( math_mode( VSIZE_CORRECTION + "T" ),
+                            tikz_point{ -1 * CHAR_WIDTH, 1.5 * CHAR_HEIGHT } );
+            place_string_sequence( pic, T, tikz_point{ 0.0, 2 * CHAR_HEIGHT } );
+            pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                            tikz_point{ 2 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+            place_string_sequence( pic, P, tikz_point{ 3 * CHAR_WIDTH, 0.0 } );
+            pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                            tikz_point{ 4 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT } );
+            place_string_sequence( pic, P, tikz_point{ 5 * CHAR_WIDTH, -2 * CHAR_HEIGHT } );
+            // doc.add_picture( pic );
+
+            if( i ) {
+                place_string( pic, Q2, tikz_point{ ( 3 + 2 * i ) * CHAR_WIDTH, -2 * CHAR_HEIGHT } );
+            }
+            place_string( pic, Q2, tikz_point{ ( 3 + 2 * i ) * CHAR_WIDTH, 0.0 } );
+            doc.add_picture( pic );
+            place_string_sequence( pic, P, tikz_point{ 5 * CHAR_WIDTH, -2 * CHAR_HEIGHT } );
+            place_string( pic, Q2, tikz_point{ ( 5 + 2 * i ) * CHAR_WIDTH, -2 * CHAR_HEIGHT } );
+            P[ i ] = Q;
+        }
+    }
+    WITH_PICTURE( pic, { }, doc ) {
+        place_matched_string_pair( pic, Pe, tikz_point{ 5 * CHAR_WIDTH, -2 * CHAR_HEIGHT }, Pe,
+                                   tikz_point{ 5 * CHAR_WIDTH, 2 * CHAR_HEIGHT },
+                                   MAT_COL.deemphasize( ), true );
+        place_matched_string_pair( pic, Pe, tikz_point{ 3 * CHAR_WIDTH, 0.0 }, Pe,
+                                   tikz_point{ 3 * CHAR_WIDTH, 2 * CHAR_HEIGHT }, MAT_COL, true );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "T" ),
+                        tikz_point{ -1 * CHAR_WIDTH, 1.5 * CHAR_HEIGHT } );
+        place_string_sequence( pic, T, tikz_point{ 0.0, 2 * CHAR_HEIGHT } );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                        tikz_point{ 2 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+        place_string_sequence( pic, P, tikz_point{ 3 * CHAR_WIDTH, 0.0 } );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                        tikz_point{ 4 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT } );
+        place_string_sequence( pic, P, tikz_point{ 5 * CHAR_WIDTH, -2 * CHAR_HEIGHT } );
+        doc.add_picture( pic );
+
+        for( u64 i = 0; i <= P.size( ); ++i ) { T[ i + 1 ] = Q; }
+        place_string_sequence( pic, T, tikz_point{ 0.0, 2 * CHAR_HEIGHT } );
+    }
+} )
+FILE_SIMPLE( p_f_apm_analyze_proof, {
+    stylized_string Qs{ EMPTY_STR, fragmentco{ 0, 2 }, str_displ_t::NAME };
+    stylized_string Q{ EMPTY_STR, fragmentco{ 0, 2 }, str_displ_t::NAME };
+    Q.highlight_position( 0, COLOR_C1, COLOR_C1.deemphasize( ) );
+    Q.highlight_position( 1, COLOR_C5, COLOR_C5.deemphasize( ) );
+    stylized_string Q2{ EMPTY_STR, fragmentco{ 0, 2 }, str_displ_t::NAME };
+    Q2.highlight_position( 0, COLOR_C1, COLOR_C1.deemphasize_weak( ) );
+    Q2.highlight_position( 1, COLOR_C5, COLOR_C5.deemphasize_weak( ) );
+
+    std::deque<stylized_string> T{
+        { EMPTY_STR, fragmentco{ 0, 3 }, str_displ_t::NAME }, Qs, Qs, Qs, Qs, Qs, Qs,
+        { EMPTY_STR, fragmentco{ 0, 2 }, str_displ_t::NAME } };
+    std::deque<stylized_string> P{ Qs, Qs, Qs, Qs, Qs };
+
+    stylized_string Pe = { EMPTY_STR, fragmentco{ 0, 16 } };
+
+    tikz_point tpc{ 0.0, 0.01 };
+    tikz_point btc{ -3.6, -5 * CHAR_HEIGHT - 0.1 };
+    color      highc = COLOR_C3.to_flavor_bg( );
+    color      highb = COLOR_C3;
+    color      thgc  = COLOR_C3.deemphasize_weak( );
+
+    WITH_PICTURE( pic, { }, doc ) {
+        pic.place_node( tpc );
+        pic.place_node( btc );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                        tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+        place_string( pic, Pe, tikz_point{ 0.0, 0.0 } );
+
+        doc.add_picture( pic );
+        place_character_highlight( pic, tikz_point{ 0.0, 0.0 }, highc, highb );
+    }
+    WITH_PICTURE( pic, { }, doc ) {
+        pic.place_node( tpc );
+        pic.place_node( btc );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                        tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+        place_string_sequence(
+            pic,
+            { break_string( 1, COLOR_C1.deemphasize_weak( ) ), { EMPTY_STR, fragmentco{ 1, 16 } } },
+            tikz_point{ 0.0, 0.0 } );
+        place_character_highlight( pic, tikz_point{ 0.0, 0.0 }, highc, highb );
+
+        pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
+        place_string( pic, break_string( 1, COLOR_C1.deemphasize_weak( ) ),
+                      tikz_point{ 0.0, -2 * CHAR_HEIGHT } );
+        place_character_highlight( pic, tikz_point{ 0.0, -2 * CHAR_HEIGHT }, highc, highb );
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ 1.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
+
+        pic.place_text( VSIZE_CORRECTION + "Repetitive Regions $R = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ .5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
+    }
+    WITH_PICTURE( pic, { }, doc ) {
+        pic.place_node( tpc );
+        pic.place_node( btc );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                        tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+        place_string_sequence(
+            pic,
+            { break_string( 1, COLOR_C1.deemphasize_weak( ) ), { EMPTY_STR, fragmentco{ 1, 16 } } },
+            tikz_point{ 0.0, 0.0 } );
+
+        place_character_highlight( pic, tikz_point{ CHAR_WIDTH, 0.0 }, highc, highb );
+
+        pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
+        place_string( pic, break_string( 1, COLOR_C1.deemphasize_weak( ) ),
+                      tikz_point{ 0.0, -2 * CHAR_HEIGHT } );
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ 1.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
+
+        pic.place_text( VSIZE_CORRECTION + "Repetitive Regions $R = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ .5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
+    }
+    WITH_PICTURE( pic, { }, doc ) {
+        pic.place_node( tpc );
+        pic.place_node( btc );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                        tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+        place_string_sequence(
+            pic,
+            { break_string( 1, COLOR_C1.deemphasize_weak( ) ),
+              rep_region_string( 3, 1, COLOR_C5, COLOR_C5.deemphasize_strong( ) ),
+              { EMPTY_STR, fragmentco{ 4, 16 } } },
+            tikz_point{ 0.0, 0.0 } );
+
+        place_character_highlight( pic, tikz_point{ CHAR_WIDTH, 0.0 }, highc, highb, { }, 3 );
+
+        pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
+        place_string( pic, break_string( 1, COLOR_C1.deemphasize_weak( ) ),
+                      tikz_point{ 0.0, -2 * CHAR_HEIGHT } );
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ 1.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
+
+        pic.place_text( VSIZE_CORRECTION + "Repetitive Regions $R = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
+        place_string( pic, rep_region_string( 3, 1, COLOR_C5, COLOR_C5.deemphasize_strong( ) ),
+                      tikz_point{ 0.0, -4 * CHAR_HEIGHT } );
+        place_character_highlight( pic, tikz_point{ 0.0, -4 * CHAR_HEIGHT }, highc, highb, { }, 3 );
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ 3.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
+    }
+    WITH_PICTURE( pic, { }, doc ) {
+        pic.place_node( tpc );
+        pic.place_node( btc );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                        tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+        place_string_sequence(
+            pic,
+            { break_string( 1, COLOR_C1.deemphasize_weak( ) ),
+              rep_region_string( 3, 1, COLOR_C5, COLOR_C5.deemphasize_strong( ) ),
+              break_string( 2, COLOR_C2.deemphasize_weak( ) ),
+              break_string( 3, COLOR_C1.deemphasize_weak( ) ),
+              rep_region_string( 2, 2, COLOR_C4, COLOR_C4.deemphasize_strong( ) ),
+              break_string( 4, COLOR_C2.deemphasize_weak( ) ),
+              { EMPTY_STR, fragmentco{ 9, 16 } } },
+            tikz_point{ 0.0, 0.0 } );
+
+        place_character_highlight( pic, tikz_point{ 8 * CHAR_WIDTH, 0.0 }, highc, highb, { } );
+
+        pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST | OPT::TEXT_COLOR( thgc ) );
+        place_string( pic, break_string( 1, COLOR_C1.deemphasize_weak( ) ),
+                      tikz_point{ 0.0, -2 * CHAR_HEIGHT } );
+
+        pic.place_text( VSIZE_CORRECTION + "$,$",
+                        tikz_point{ 1.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::TEXT_COLOR( thgc ) );
+        place_string( pic, break_string( 2, COLOR_C2.deemphasize_weak( ) ),
+                      tikz_point{ 2 * CHAR_WIDTH, -2 * CHAR_HEIGHT } );
+
+        pic.place_text( VSIZE_CORRECTION + "$,$",
+                        tikz_point{ 3.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::TEXT_COLOR( thgc ) );
+        place_string( pic, break_string( 3, COLOR_C1.deemphasize_weak( ) ),
+                      tikz_point{ 4 * CHAR_WIDTH, -2 * CHAR_HEIGHT } );
+
+        pic.place_text( VSIZE_CORRECTION + "$,$",
+                        tikz_point{ 5.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::TEXT_COLOR( thgc ) );
+        place_string( pic, break_string( 4, COLOR_C2.deemphasize_weak( ) ),
+                      tikz_point{ 6 * CHAR_WIDTH, -2 * CHAR_HEIGHT } );
+
+        place_character_highlight( pic, tikz_point{ 6 * CHAR_WIDTH, -2 * CHAR_HEIGHT }, highc,
+                                   highb, { } );
+
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ 7.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST | OPT::TEXT_COLOR( thgc ) );
+
+        pic.place_text( VSIZE_CORRECTION + "Repetitive Regions $R = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
+        place_string( pic, rep_region_string( 3, 1, COLOR_C5, COLOR_C5.deemphasize_strong( ) ),
+                      tikz_point{ 0.0, -4 * CHAR_HEIGHT } );
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ 3.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
+    }
+    WITH_PICTURE( pic, { }, doc ) {
+        pic.place_node( tpc );
+        pic.place_node( btc );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                        tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+        place_string_sequence(
+            pic,
+            { break_string( 1, COLOR_C1.deemphasize_weak( ) ),
+              rep_region_string( 3, 1, COLOR_C5, COLOR_C5.deemphasize_strong( ) ),
+              break_string( 2, COLOR_C2.deemphasize_weak( ) ),
+              break_string( 3, COLOR_C1.deemphasize_weak( ) ),
+              rep_region_string( 5, 2, COLOR_C4, COLOR_C4.deemphasize_strong( ) ),
+              { EMPTY_STR, fragmentco{ 11, 16 } } },
+            tikz_point{ 0.0, 0.0 } );
+
+        place_character_highlight( pic, tikz_point{ 6 * CHAR_WIDTH, 0.0 }, highc, highb, { }, 5 );
+
+        pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
+        place_string( pic, break_string( 1, COLOR_C1.deemphasize_weak( ) ),
+                      tikz_point{ 0.0, -2 * CHAR_HEIGHT } );
+
+        pic.place_text( VSIZE_CORRECTION + "$,$",
+                        tikz_point{ 1.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT } );
+        place_string( pic, break_string( 2, COLOR_C2.deemphasize_weak( ) ),
+                      tikz_point{ 2 * CHAR_WIDTH, -2 * CHAR_HEIGHT } );
+
+        pic.place_text( VSIZE_CORRECTION + "$,$",
+                        tikz_point{ 3.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT } );
+        place_string( pic, break_string( 3, COLOR_C1.deemphasize_weak( ) ),
+                      tikz_point{ 4 * CHAR_WIDTH, -2 * CHAR_HEIGHT } );
+
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ 5.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
+
+        pic.place_text( VSIZE_CORRECTION + "Repetitive Regions $R = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST | OPT::TEXT_COLOR( thgc ) );
+        place_string( pic, rep_region_string( 3, 1, COLOR_C5, COLOR_C5.deemphasize_strong( ) ),
+                      tikz_point{ 0.0, -4 * CHAR_HEIGHT } );
+
+        pic.place_text( VSIZE_CORRECTION + "$,$",
+                        tikz_point{ 3.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::TEXT_COLOR( thgc ) );
+        place_string( pic, rep_region_string( 2, 2, COLOR_C4, COLOR_C4.deemphasize_strong( ) ),
+                      tikz_point{ 4 * CHAR_WIDTH, -4 * CHAR_HEIGHT } );
+
+        place_character_highlight( pic, tikz_point{ 4 * CHAR_WIDTH, -4 * CHAR_HEIGHT }, highc,
+                                   highb, { }, 2 );
+
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ 6.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST | OPT::TEXT_COLOR( thgc ) );
+    }
+    WITH_PICTURE( pic, { }, doc ) {
+        pic.place_node( tpc );
+        pic.place_node( btc );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                        tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+        place_string_sequence(
+            pic,
+            { break_string( 1, COLOR_C1.deemphasize_weak( ) ),
+              rep_region_string( 3, 1, COLOR_C5, COLOR_C5.deemphasize_strong( ) ),
+              break_string( 2, COLOR_C2.deemphasize_weak( ) ),
+              break_string( 3, COLOR_C1.deemphasize_weak( ) ),
+              { EMPTY_STR, fragmentco{ 6, 16 } } },
+            tikz_point{ 0.0, 0.0 } );
+
+        place_character_highlight( pic, tikz_point{ 6 * CHAR_WIDTH, 0.0 }, highc, highb, { }, 10 );
+
+        pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
+        place_string( pic, break_string( 1, COLOR_C1.deemphasize_weak( ) ),
+                      tikz_point{ 0.0, -2 * CHAR_HEIGHT } );
+
+        pic.place_text( VSIZE_CORRECTION + "$,$",
+                        tikz_point{ 1.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT } );
+        place_string( pic, break_string( 2, COLOR_C2.deemphasize_weak( ) ),
+                      tikz_point{ 2 * CHAR_WIDTH, -2 * CHAR_HEIGHT } );
+
+        pic.place_text( VSIZE_CORRECTION + "$,$",
+                        tikz_point{ 3.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT } );
+        place_string( pic, break_string( 3, COLOR_C1.deemphasize_weak( ) ),
+                      tikz_point{ 4 * CHAR_WIDTH, -2 * CHAR_HEIGHT } );
+
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ 5.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
+
+        pic.place_text( VSIZE_CORRECTION + "Repetitive Regions $R = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
+        place_string( pic, rep_region_string( 3, 1, COLOR_C5, COLOR_C5.deemphasize_strong( ) ),
+                      tikz_point{ 0.0, -4 * CHAR_HEIGHT } );
+
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ 3.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
+    }
+    WITH_PICTURE( pic, { }, doc ) {
+        pic.place_node( tpc );
+        pic.place_node( btc );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                        tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+        place_string_sequence( pic, { { EMPTY_STR, fragmentco{ 0, 16 } } },
+                               tikz_point{ 0.0, 0.0 } );
+
+        place_character_highlight( pic, tikz_point{ 6 * CHAR_WIDTH, 0.0 }, highc, highb, { }, 10 );
+
+        pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ .5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
+
+        pic.place_text( VSIZE_CORRECTION + "Repetitive Regions $R = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ .5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
+    }
+    WITH_PICTURE( pic, { }, doc ) {
+        pic.place_node( tpc );
+        pic.place_node( btc );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                        tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+        place_string_sequence(
+            pic,
+            {
+                { EMPTY_STR, fragmentco{ 0, 3 } },
+                rep_region_string( 13, 1, COLOR_C5, COLOR_C5.deemphasize_strong( ) ),
+            },
+            tikz_point{ 0.0, 0.0 } );
+
+        place_character_highlight( pic, tikz_point{ 3 * CHAR_WIDTH, 0.0 }, highc, highb, { }, 13 );
+
+        pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ .5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
+
+        pic.place_text( VSIZE_CORRECTION + "Repetitive Regions $R = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST | OPT::TEXT_COLOR( thgc ) );
+        place_string( pic, rep_region_string( 13, 1, COLOR_C5, COLOR_C5.deemphasize_strong( ) ),
+                      tikz_point{ 0.0, -4 * CHAR_HEIGHT } );
+
+        place_character_highlight( pic, tikz_point{ 0 * CHAR_WIDTH, -4 * CHAR_HEIGHT }, highc,
+                                   highb, { }, 13 );
+
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ 13.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST | OPT::TEXT_COLOR( thgc ) );
+    }
+    WITH_PICTURE( pic, { }, doc ) {
+        pic.place_node( tpc );
+        pic.place_node( btc );
+        pic.place_text( math_mode( VSIZE_CORRECTION + "P" ),
+                        tikz_point{ -1 * CHAR_WIDTH, -CHAR_HEIGHT / 2 } );
+        place_string_sequence( pic, { { EMPTY_STR, fragmentco{ 0, 16 } } },
+                               tikz_point{ 0.0, 0.0 } );
+
+        place_character_highlight( pic, tikz_point{ 0 * CHAR_WIDTH, 0.0 }, highc, highb, { }, 16 );
+
+        pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ .5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
+
+        pic.place_text( VSIZE_CORRECTION + "Repetitive Regions $R = \\bigg\\{$",
+                        tikz_point{ -.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
+        pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
+                        tikz_point{ .5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
+                        OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
+    }
+} )
+
 FILE_SIMPLE( p_extra1, {
     WITH_PICTURE( pic, { }, doc ) {
         std::string T  = "acabb";

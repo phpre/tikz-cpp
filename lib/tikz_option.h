@@ -105,6 +105,8 @@ namespace TIKZ {
         const tikz_option LINE_WIDTH{ "line width", "1.25pt" };
         const kv_store    LW_DOUBLE_BG          = tikz_option{ "line width", "2.25pt" };
         const kv_store    LW_LINE               = tikz_option{ "line width", "1.25pt" };
+        const kv_store    LW_THICK_LINE         = tikz_option{ "line width", "1.5pt" };
+        const kv_store    LW_VERY_THICK_LINE    = tikz_option{ "line width", "1.75pt" };
         const kv_store    LW_VERY_THIN_OUTLINE  = tikz_option{ "line width", ".5pt" };
         const kv_store    LW_THIN_OUTLINE       = tikz_option{ "line width", ".75pt" };
         const kv_store    LW_OUTLINE            = tikz_option{ "line width", "1pt" };

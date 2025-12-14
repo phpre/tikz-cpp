@@ -14,18 +14,19 @@ std::string MACROS_FILENAME = "macros";
 
 void add_string_demo_pictures( document& p_doc ) {
     std::deque<std::string> optname{ "rotatable",      "show positions",  "show characters",
-                                     "show wildcards", "group positions", "use typewriter" };
+                                     "show wildcards", "group positions", "use typewriter",
+                                     "use double text" };
     std::string             data = "hello world!";
     std::string             name = "S";
 
     WITH_PICTURE( p1, { }, p_doc ) {
-        for( u64 j = 1, i2 = 0; j < str_displ_t::MAX; j <<= 1, ++i2 ) {
+        for( u64 j = 1, i2 = 0; j < str_displ_t::MAX / 2; j <<= 1, ++i2 ) {
             p1.place_text(
                 VSIZE_CORRECTION + optname[ i2 ],
                 tikz_point{ ( data.length( ) + 1 + i2 ) * CHAR_WIDTH, CHAR_HEIGHT * ( .5 ) },
                 OPT::ROTATE( "90" ) | OPT::ANCHOR_WEST );
         }
-        for( u64 i = 0; i < str_displ_t::MAX; i += 2 ) {
+        for( u64 i = 0; i < str_displ_t::MAX / 2; i += 2 ) {
             auto S = stylized_string{ data, name, i }.add_wildcards(
                 std::deque<u64>{ 0, 1, 5 }, chr_displ_t::SHOW_ID_IF_WILDCARD );
             auto SI = S.color_invert( );
@@ -45,7 +46,7 @@ void add_string_demo_pictures( document& p_doc ) {
         }
     }
     WITH_PICTURE( p2, { }, p_doc ) {
-        for( u64 i = 0; i < str_displ_t::MAX / 2; ++i ) {
+        for( u64 i = 0; i < str_displ_t::MAX / 4; ++i ) {
             auto S = stylized_string{ data, name, i }.add_wildcards(
                 std::deque<u64>{ 0, 1, 5 }, chr_displ_t::SHOW_ID_IF_WILDCARD );
             auto SI = S.color_invert( );
@@ -165,17 +166,6 @@ void add_puzzle_demo_picture( document& p_doc ) {
 FILE_SIMPLE( g01, { add_string_demo_pictures( doc ); } )
 FILE_SIMPLE( g02, { add_alignment_demo_pictures( doc ); } )
 FILE_SIMPLE( g03, { add_puzzle_demo_picture( doc ); } )
-FILE_SIMPLE( g04, {
-    std::string Pr = "raasraas";
-    std::string Tr = "rrasraasrhasrras";
-    std::string T{ Tr.rbegin( ), Tr.rend( ) };
-    std::string P{ Pr.rbegin( ), Pr.rend( ) };
-    auto        Tr_NAME = stylized_string{ Tr, "T", str_displ_t::SHOW_CHARACTERS };
-    auto        Pr_NAME = stylized_string{ Pr, "P", str_displ_t::SHOW_CHARACTERS };
-    add_pmwe_computation_pictures( doc, T, Tr_NAME, P, Pr_NAME, 2, { { P.size( ), T.size( ) } } );
-    add_pmwe_computation_lv_pictures( doc, T, Tr_NAME, P, Pr_NAME, 2,
-                                      { { P.size( ) + T.size( ) + 1, 2 } } );
-} )
 
 // ---------------------------------------------------------------------------------------------
 //

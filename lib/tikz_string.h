@@ -16,52 +16,66 @@ namespace TIKZ {
     void place_separator( picture& p_pic, tikz_point p_PtopLeft, tikz_point p_TtopLeft,
                           color p_color );
 
+    void place_character_outline( picture& p_pic, tikz_point p_StopLeft, color p_color,
+                                  const kv_store& p_options = { }, double p_corLeft = 0.0,
+                                  double p_corTop = 0.0, double p_corRight = 0.0,
+                                  double p_corBot = 0.0 );
+
+    void place_character_sep_dots( picture& p_pic, tikz_point p_StopLeft, u64 p_length,
+                                   color p_color, const kv_store& p_options = { } );
+    void place_character_sep_dots_vertical( picture& p_pic, tikz_point p_StopLeft, u64 p_length,
+                                            color p_color, const kv_store& p_options = { } );
+
+    inline void place_character_highlight( picture& p_pic, tikz_point p_StopLeft, color p_color,
+                                           color p_bgColor, const kv_store& p_options = { },
+                                           u64 p_length = 1, u64 p_height = 1 ) {
+        if( p_length > 1 ) {
+            place_character_sep_dots( p_pic, p_StopLeft, p_length, p_bgColor,
+                                      OPT::DRAW( p_bgColor ) | OPT::LINE_WIDTH( "1pt" )
+                                          | p_options );
+        } else if( p_height > 1 ) {
+            place_character_sep_dots_vertical( p_pic, p_StopLeft, p_height, p_bgColor,
+                                               OPT::DRAW( p_bgColor ) | OPT::LINE_WIDTH( "1pt" )
+                                                   | p_options );
+        }
+        place_character_outline( p_pic, p_StopLeft, p_bgColor,
+                                 OPT::DOUBLE( p_color ) | OPT::DOUBLE_DISTANCE( ".75pt" )
+                                     | OPT::LINE_WIDTH( ".75pt" ) | p_options,
+                                 0.0, 0.0, ( p_length - 1 ) * CHAR_WIDTH,
+                                 ( p_height - 1 ) * -CHAR_HEIGHT );
+        if( p_length > 1 ) {
+            place_character_sep_dots( p_pic, p_StopLeft, p_length, p_color, p_options );
+        } else if( p_height > 1 ) {
+            place_character_sep_dots_vertical( p_pic, p_StopLeft, p_height, p_color, p_options );
+        }
+    }
+
     // Prints a string S
     void place_string( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft,
-                       const kv_store& p_options = { }, bool p_openBegin = false,
-                       bool p_openEnd = false );
+                       const kv_store& p_options = { } );
 
     inline void place_string( picture& p_pic, const std::string& p_string, tikz_point p_StopLeft,
-                              const kv_store& p_options = { }, bool p_openBegin = false,
-                              bool p_openEnd = false ) {
+                              const kv_store& p_options = { } ) {
         auto tn = stylized_string{ p_string, EMPTY_STR,
                                    str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
-        place_string( p_pic, tn, p_StopLeft, p_options, p_openBegin, p_openEnd );
+        place_string( p_pic, tn, p_StopLeft, p_options );
     }
 
     void place_string_vertical( picture& p_pic, const stylized_string& p_S, tikz_point p_StopLeft,
-                                const kv_store& p_options = { }, bool p_openBegin = false,
-                                bool p_openEnd = false );
+                                const kv_store& p_options = { } );
 
     inline void place_string_vertical( picture& p_pic, const std::string& p_string,
-                                       tikz_point p_StopLeft, const kv_store& p_options = { },
-                                       bool p_openBegin = false, bool p_openEnd = false ) {
+                                       tikz_point p_StopLeft, const kv_store& p_options = { } ) {
         auto tn = stylized_string{ p_string, EMPTY_STR,
                                    str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
-        place_string_vertical( p_pic, tn, p_StopLeft, p_options, p_openBegin, p_openEnd );
+        place_string_vertical( p_pic, tn, p_StopLeft, p_options );
     }
 
-    inline void place_string_sequence( picture& p_pic, const std::deque<stylized_string>& p_S,
-                                       tikz_point p_StopLeft, const kv_store& p_options = { },
-                                       bool p_openBegin = false, bool p_openEnd = false ) {
-        for( u64 i = 0, j = p_S.size( ); i < j; ++i ) {
-            place_string( p_pic, p_S[ i ], p_StopLeft, p_options, i ? false : p_openBegin,
-                          ( i < j - 1 ) ? false : p_openEnd );
-            p_StopLeft.m_x += CHAR_WIDTH * p_S[ i ].length( );
-        }
-    }
+    void place_string_sequence( picture& p_pic, const std::deque<stylized_string>& p_S,
+                                tikz_point p_StopLeft, const kv_store& p_options = { } );
 
-    inline void place_string_sequence_vertical( picture&                           p_pic,
-                                                const std::deque<stylized_string>& p_S,
-                                                tikz_point                         p_StopLeft,
-                                                const kv_store&                    p_options = { },
-                                                bool p_openBegin = false, bool p_openEnd = false ) {
-        for( u64 i = 0, j = p_S.size( ); i < j; ++i ) {
-            place_string( p_pic, p_S[ i ], p_StopLeft, p_options, i ? false : p_openBegin,
-                          ( i < j - 1 ) ? false : p_openEnd );
-            p_StopLeft.m_y -= CHAR_HEIGHT * p_S[ i ].length( );
-        }
-    }
+    void place_string_sequence_vertical( picture& p_pic, const std::deque<stylized_string>& p_S,
+                                         tikz_point p_StopLeft, const kv_store& p_options = { } );
 
     // assumes T is on top, P on bottom
     void place_matched_string_pair( picture& p_pic, const stylized_string& p_P,
