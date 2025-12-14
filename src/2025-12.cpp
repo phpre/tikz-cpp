@@ -8,6 +8,15 @@ std::string MACROS_FILENAME = "macros";
 
 // ---------------------------------------------------------------------------------------------
 //
+//      globals
+//
+// ---------------------------------------------------------------------------------------------
+
+const color HIGHLIGHT_FG = COLOR_C3.to_flavor_bg( );
+const color HIGHLIGHT_BG = COLOR_C3;
+
+// ---------------------------------------------------------------------------------------------
+//
 //      non-default pictures
 //
 // ---------------------------------------------------------------------------------------------
@@ -790,11 +799,16 @@ FILE_SIMPLE( p_f_apm_breaks_marking, {
         place_string_sequence( pic, P, tikz_point{ 3 * CHAR_WIDTH, 0.0 } );
         place_string_sequence( pic, T, tikz_point{ 0.0, 2 * CHAR_HEIGHT } );
 
+        place_character_highlight( pic, tikz_point{ 10 * CHAR_WIDTH, 2 * CHAR_HEIGHT },
+                                   HIGHLIGHT_FG, HIGHLIGHT_BG );
+        place_character_highlight( pic, tikz_point{ 10 * CHAR_WIDTH, 0.0 }, HIGHLIGHT_FG,
+                                   HIGHLIGHT_BG );
+
         doc.add_picture( pic );
 
-        place_double_arrow( pic, tikz_point{ 9.95 * CHAR_WIDTH, 1.5 * CHAR_HEIGHT },
+        place_double_arrow( pic, tikz_point{ 9.85 * CHAR_WIDTH, 1.5 * CHAR_HEIGHT },
                             tikz_point{ 7.5 * CHAR_WIDTH, 1.5 * CHAR_HEIGHT } );
-        place_double_arrow( pic, tikz_point{ 11.05 * CHAR_WIDTH, 1.5 * CHAR_HEIGHT },
+        place_double_arrow( pic, tikz_point{ 11.15 * CHAR_WIDTH, 1.5 * CHAR_HEIGHT },
                             tikz_point{ 13.5 * CHAR_WIDTH, 1.5 * CHAR_HEIGHT } );
     }
 } )
@@ -914,9 +928,7 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
 
     tikz_point tpc{ 0.0, 0.01 };
     tikz_point btc{ -3.6, -5 * CHAR_HEIGHT - 0.1 };
-    color      highc = COLOR_C3.to_flavor_bg( );
-    color      highb = COLOR_C3;
-    color      thgc  = COLOR_C3.deemphasize_weak( );
+    color      thgc = COLOR_C3.deemphasize_weak( );
 
     WITH_PICTURE( pic, { }, doc ) {
         pic.place_node( tpc );
@@ -926,7 +938,7 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
         place_string( pic, Pe, tikz_point{ 0.0, 0.0 } );
 
         doc.add_picture( pic );
-        place_character_highlight( pic, tikz_point{ 0.0, 0.0 }, highc, highb );
+        place_character_highlight( pic, tikz_point{ 0.0, 0.0 }, HIGHLIGHT_FG, HIGHLIGHT_BG );
     }
     WITH_PICTURE( pic, { }, doc ) {
         pic.place_node( tpc );
@@ -937,14 +949,15 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
             pic,
             { break_string( 1, COLOR_C1.deemphasize_weak( ) ), { EMPTY_STR, fragmentco{ 1, 16 } } },
             tikz_point{ 0.0, 0.0 }, true );
-        place_character_highlight( pic, tikz_point{ 0.0, 0.0 }, highc, highb );
+        place_character_highlight( pic, tikz_point{ 0.0, 0.0 }, HIGHLIGHT_FG, HIGHLIGHT_BG );
 
         pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
                         tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
                         OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
         place_string( pic, break_string( 1, COLOR_C1.deemphasize_weak( ) ),
                       tikz_point{ 0.0, -2 * CHAR_HEIGHT } );
-        place_character_highlight( pic, tikz_point{ 0.0, -2 * CHAR_HEIGHT }, highc, highb );
+        place_character_highlight( pic, tikz_point{ 0.0, -2 * CHAR_HEIGHT }, HIGHLIGHT_FG,
+                                   HIGHLIGHT_BG );
         pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
                         tikz_point{ 1.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
                         OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
@@ -966,7 +979,7 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
             { break_string( 1, COLOR_C1.deemphasize_weak( ) ), { EMPTY_STR, fragmentco{ 1, 16 } } },
             tikz_point{ 0.0, 0.0 }, true );
 
-        place_character_highlight( pic, tikz_point{ CHAR_WIDTH, 0.0 }, highc, highb );
+        place_character_highlight( pic, tikz_point{ CHAR_WIDTH, 0.0 }, HIGHLIGHT_FG, HIGHLIGHT_BG );
 
         pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
                         tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
@@ -996,7 +1009,8 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
               { EMPTY_STR, fragmentco{ 4, 16 } } },
             tikz_point{ 0.0, 0.0 }, true );
 
-        place_character_highlight( pic, tikz_point{ CHAR_WIDTH, 0.0 }, highc, highb, { }, 3 );
+        place_character_highlight( pic, tikz_point{ CHAR_WIDTH, 0.0 }, HIGHLIGHT_FG, HIGHLIGHT_BG,
+                                   { }, 3 );
 
         pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
                         tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
@@ -1012,7 +1026,8 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
                         OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_EAST );
         place_string( pic, rep_region_string( 3, 1, COLOR_C5, COLOR_C5.deemphasize_strong( ) ),
                       tikz_point{ 0.0, -4 * CHAR_HEIGHT } );
-        place_character_highlight( pic, tikz_point{ 0.0, -4 * CHAR_HEIGHT }, highc, highb, { }, 3 );
+        place_character_highlight( pic, tikz_point{ 0.0, -4 * CHAR_HEIGHT }, HIGHLIGHT_FG,
+                                   HIGHLIGHT_BG, { }, 3 );
         pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
                         tikz_point{ 3.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
                         OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
@@ -1033,7 +1048,8 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
               { EMPTY_STR, fragmentco{ 9, 16 } } },
             tikz_point{ 0.0, 0.0 }, true );
 
-        place_character_highlight( pic, tikz_point{ 8 * CHAR_WIDTH, 0.0 }, highc, highb, { } );
+        place_character_highlight( pic, tikz_point{ 8 * CHAR_WIDTH, 0.0 }, HIGHLIGHT_FG,
+                                   HIGHLIGHT_BG, { } );
 
         pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
                         tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
@@ -1059,8 +1075,8 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
         place_string( pic, break_string( 4, COLOR_C2.deemphasize_weak( ) ),
                       tikz_point{ 6 * CHAR_WIDTH, -2 * CHAR_HEIGHT } );
 
-        place_character_highlight( pic, tikz_point{ 6 * CHAR_WIDTH, -2 * CHAR_HEIGHT }, highc,
-                                   highb, { } );
+        place_character_highlight( pic, tikz_point{ 6 * CHAR_WIDTH, -2 * CHAR_HEIGHT },
+                                   HIGHLIGHT_FG, HIGHLIGHT_BG, { } );
 
         pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
                         tikz_point{ 7.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
@@ -1090,7 +1106,8 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
               { EMPTY_STR, fragmentco{ 11, 16 } } },
             tikz_point{ 0.0, 0.0 }, true );
 
-        place_character_highlight( pic, tikz_point{ 6 * CHAR_WIDTH, 0.0 }, highc, highb, { }, 5 );
+        place_character_highlight( pic, tikz_point{ 6 * CHAR_WIDTH, 0.0 }, HIGHLIGHT_FG,
+                                   HIGHLIGHT_BG, { }, 5 );
 
         pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
                         tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
@@ -1124,8 +1141,8 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
         place_string( pic, rep_region_string( 2, 2, COLOR_C4, COLOR_C4.deemphasize_strong( ) ),
                       tikz_point{ 4 * CHAR_WIDTH, -4 * CHAR_HEIGHT } );
 
-        place_character_highlight( pic, tikz_point{ 4 * CHAR_WIDTH, -4 * CHAR_HEIGHT }, highc,
-                                   highb, { }, 2 );
+        place_character_highlight( pic, tikz_point{ 4 * CHAR_WIDTH, -4 * CHAR_HEIGHT },
+                                   HIGHLIGHT_FG, HIGHLIGHT_BG, { }, 2 );
 
         pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
                         tikz_point{ 6.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
@@ -1145,7 +1162,8 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
               { EMPTY_STR, fragmentco{ 6, 16 } } },
             tikz_point{ 0.0, 0.0 }, true );
 
-        place_character_highlight( pic, tikz_point{ 6 * CHAR_WIDTH, 0.0 }, highc, highb, { }, 10 );
+        place_character_highlight( pic, tikz_point{ 6 * CHAR_WIDTH, 0.0 }, HIGHLIGHT_FG,
+                                   HIGHLIGHT_BG, { }, 10 );
 
         pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
                         tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
@@ -1185,7 +1203,8 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
         place_string_sequence( pic, { { EMPTY_STR, fragmentco{ 0, 16 } } }, tikz_point{ 0.0, 0.0 },
                                true );
 
-        place_character_highlight( pic, tikz_point{ 6 * CHAR_WIDTH, 0.0 }, highc, highb, { }, 10 );
+        place_character_highlight( pic, tikz_point{ 6 * CHAR_WIDTH, 0.0 }, HIGHLIGHT_FG,
+                                   HIGHLIGHT_BG, { }, 10 );
 
         pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
                         tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
@@ -1212,7 +1231,8 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
               rep_region_string( 13, 1, COLOR_C5, COLOR_C5.deemphasize_strong( ) ) },
             tikz_point{ 0.0, 0.0 }, true );
 
-        place_character_highlight( pic, tikz_point{ 3 * CHAR_WIDTH, 0.0 }, highc, highb, { }, 13 );
+        place_character_highlight( pic, tikz_point{ 3 * CHAR_WIDTH, 0.0 }, HIGHLIGHT_FG,
+                                   HIGHLIGHT_BG, { }, 13 );
 
         pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
                         tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
@@ -1227,8 +1247,8 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
         place_string( pic, rep_region_string( 13, 1, COLOR_C5, COLOR_C5.deemphasize_strong( ) ),
                       tikz_point{ 0.0, -4 * CHAR_HEIGHT } );
 
-        place_character_highlight( pic, tikz_point{ 0 * CHAR_WIDTH, -4 * CHAR_HEIGHT }, highc,
-                                   highb, { }, 13 );
+        place_character_highlight( pic, tikz_point{ 0 * CHAR_WIDTH, -4 * CHAR_HEIGHT },
+                                   HIGHLIGHT_FG, HIGHLIGHT_BG, { }, 13 );
 
         pic.place_text( VSIZE_CORRECTION + "$\\bigg\\}$",
                         tikz_point{ 13.5 * CHAR_WIDTH, -4.5 * CHAR_HEIGHT },
@@ -1242,7 +1262,8 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
         place_string_sequence( pic, { { EMPTY_STR, fragmentco{ 0, 16 } } }, tikz_point{ 0.0, 0.0 },
                                true );
 
-        place_character_highlight( pic, tikz_point{ 0 * CHAR_WIDTH, 0.0 }, highc, highb, { }, 16 );
+        place_character_highlight( pic, tikz_point{ 0 * CHAR_WIDTH, 0.0 }, HIGHLIGHT_FG,
+                                   HIGHLIGHT_BG, { }, 16 );
 
         pic.place_text( VSIZE_CORRECTION + "Breaks $B = \\bigg\\{$",
                         tikz_point{ -.5 * CHAR_WIDTH, -2.5 * CHAR_HEIGHT },
