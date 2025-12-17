@@ -479,7 +479,7 @@ FILE_SIMPLE( p_f_wapm_kt, {
     const stylized_string P_NAME2{ std::string{ "P" }, fragmentco{ 0, P.size( ) } };
     const stylized_string T_NAME2{ std::string{ "T" }, fragmentco{ 0, T.size( ) } };
     const stylized_string P_NAME{ P, std::string{ "P" }, str_displ_t::FRAGMENT };
-    const stylized_string S_NAME{ std::string{ "S" }, fragmentco{ 0, 0 } };
+    const stylized_string T_NAME{ std::string{ "T" }, fragmentco{ 0, 0 } };
     const stylized_string T2_NAME{ T2, std::string{ "T" }, str_displ_t::FRAGMENT };
     const stylized_string P2_NAME{ P2, std::string{ "P" }, str_displ_t::FRAGMENT };
 
@@ -493,7 +493,7 @@ FILE_SIMPLE( p_f_wapm_kt, {
         T_NAME2.slice( align_fragment( BP_P_T, { 0, BP_P2_T2.back( ).m_posP } ) ),
         P_NAME2.slice( { 0, BP_P2_T2.back( ).m_posP } ) );
 
-    add_slices_pictures( doc, P_NAME, S_NAME, fragmentco{ 0, 11 }, 1, BP_P_T, P, T );
+    add_slices_pictures( doc, P_NAME, T_NAME, fragmentco{ 0, 11 }, 1, BP_P_T, P, T );
 
     add_alignment_graph_explanation_pictures( doc );
 
