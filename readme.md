@@ -42,12 +42,11 @@ Build Instructions
   - for each file `src/<>.cpp` in `src/`, produces an executable `<>` (linking in `libtikzcpp.a`) and runs `<>` (which is supposed to write `*.tex` files into the `figs/` folder.
   - compiles each file `figs/{}.tex` into `out/{}.pdf` using `latexmk` and `LuaLatex`.
 - `make out/lib/libtikzcpp.a` generates just the library
-- For file `src/<>.cpp`, running `make generate_figures_<>` generates and compiles all figures from `src/<>.cpp`.
 - `make clean` removes all intermediate files, but not the outputs in `out/`
 
 Usage
 --
 Below is a list of publications that uses this library for its figures, as well as example figures from said publications (reproduced with permission; note the original copyright).
-- [[CKW25]](https://arxiv.org/abs/2510.17752); file `src/2025-10-ckw.cpp` generates Figures 3 to 7. <br/><br/>
-  <img width="45%" alt="[CKW25, Figure 3]" src="https://github.com/user-attachments/assets/59d37486-ba64-47a3-a52f-341d4f121074" /> 
+- [[CKW25]](https://arxiv.org/abs/2510.17752); file `src/2025-10.cpp` generates Figures 3 to 7. <br/><br/>
+  <img width="45%" alt="[CKW25, Figure 3]" src="https://github.com/user-attachments/assets/59d37486-ba64-47a3-a52f-341d4f121074" />
   <img width="45%" alt="[CKW25, Figure 4]" src="https://github.com/user-attachments/assets/1b379ef3-4cc4-4fa2-b3a7-264a9e04197f" />
