@@ -20,6 +20,10 @@ std::string output( std::string p_name ) {
     return "\\text{out}_" + p_name;
 }
 
+symbolic_simple_function<std::string, std::string> symbolic_phi( std::string p_name ) {
+    return [ & ]( std::string p_input ) { return p_name + "(" + p_input + ")"; };
+}
+
 template <typename T, typename R>
 meta_circuit<T, R>
 dedekind( std::deque<std::pair<std::string, symbolic_simple_function<T, R>>> p_phi ) {
@@ -38,7 +42,7 @@ dedekind( std::deque<std::pair<std::string, symbolic_simple_function<T, R>>> p_p
         return meta_circuit<T, R>{ { out } };
     }
 
-    return circuit<T>{ {} };
+    return meta_circuit<T, R>{ {} };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -65,4 +69,6 @@ FILE_SIMPLE( g01, {
 //
 // ---------------------------------------------------------------------------------------------
 
-MAIN( { } )
+MAIN( {
+    auto d1 = dedekind<std::string, std::string>( { { "1", symbolic_phi( "\\phi_1" ) } } );
+        } )
