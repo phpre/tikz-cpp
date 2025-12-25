@@ -3,6 +3,7 @@
 
 #include "alg_ag_slice.h"
 #include "alg_breakpoint.h"
+#include "alg_circuit.h"
 #include "alg_fragmentco.h"
 #include "alg_trie.h"
 
