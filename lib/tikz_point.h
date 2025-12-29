@@ -10,7 +10,7 @@ namespace TIKZ {
         double m_x;
         double m_y;
 
-        tikz_point( double p_x, double p_y ) : m_x{ p_x }, m_y{ p_y } {};
+        tikz_point( double p_x = 0.0, double p_y = 0.0 ) : m_x{ p_x }, m_y{ p_y } {};
 
         tikz_point( const std::pair<double, double>& p_point )
             : m_x{ p_point.first }, m_y{ p_point.second } {};

@@ -7,6 +7,7 @@
 #include "alg_fragmentco.h"
 #include "alg_trie.h"
 
+#include "tikz_circuit.h"
 #include "tikz_color.h"
 #include "tikz_command.h"
 #include "tikz_default_paths.h"

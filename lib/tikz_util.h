@@ -12,6 +12,10 @@ namespace TIKZ {
         return "\\texttt{" + p_string + "}";
     }
 
+    inline std::string text_boldface( const std::string& p_string ) {
+        return "\\textbf{" + p_string + "}";
+    }
+
     constexpr std::string VSIZE_CORRECTION       = "\\vphantom{Ag|}";
     constexpr std::string WILDCARD_SYMBOL_FILLED = "\\wcsymbolf";
     constexpr std::string WILDCARD_SYMBOL        = "\\wcsymbol";
