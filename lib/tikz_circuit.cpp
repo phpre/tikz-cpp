@@ -6,6 +6,11 @@
 #include "tikz_util.h"
 
 namespace TIKZ {
+    double GATE_HEIGHT        = .5;
+    double GATE_WIDTH         = .5;
+    double DEFAULT_GATE_SEP_X = 2 * GATE_WIDTH;
+    double DEFAULT_GATE_SEP_Y = 1.75 * GATE_HEIGHT;
+
     std::map<std::string, tikz_point> place_input_gate( picture& p_pic, const std::string& p_text,
                                                         tikz_point p_topLeft, u64 p_fanOut,
                                                         const std::string& p_name, color p_color,
@@ -90,7 +95,7 @@ namespace TIKZ {
 
         auto smno = OPT::FILL( p_bgColor ) | OPT::CIRCLE | OPT::INNER_SEP( "1.25pt" ) | p_options;
         for( u64 i = 1; i <= p_fanOut; ++i ) {
-            double     px   = width * i * 1.0 / ( p_fanOut + 1 );
+            double     px   = width * i * .5 / ( p_fanOut + 1 );
             auto       name = std::format( "{}_out_{}", p_name, i );
             tikz_point pos  = p_topLeft + tikz_point{ px, -.02 };
             p_pic.place_node( pos, EMPTY_STR, smno, name );
@@ -106,7 +111,7 @@ namespace TIKZ {
         smno = OPT::FILL( p_color ) | OPT::CIRCLE | OPT::INNER_SEP( "0.75pt" )
                | OPT::OUTER_SEP( ".5pt" ) | p_options;
         for( u64 i = 1; i <= p_fanOut; ++i ) {
-            double     px   = width * i * 1.0 / ( p_fanOut + 1 );
+            double     px   = width * i * .5 / ( p_fanOut + 1 );
             auto       name = std::format( "{}_out_{}", p_name, i );
             tikz_point pos  = p_topLeft + tikz_point{ px, -.02 };
             p_pic.place_node( pos, EMPTY_STR, smno, name );
@@ -127,7 +132,8 @@ namespace TIKZ {
                                                      u64 p_fanOut, const std::string& p_name,
                                                      color p_color, color p_bgColor, bool p_invert,
                                                      const kv_store& p_options ) {
-        auto numio  = std::max( p_fanIn, p_fanOut ) + 1.0;
+        auto numio = std::max( p_fanIn, p_fanOut ) + 1.0;
+        if( numio < 3 ) { numio = 3; }
         auto height = ( numio - 1 ) * GATE_HEIGHT / 2.0;
 
         auto smno = OPT::FILL( p_bgColor ) | OPT::CIRCLE | OPT::INNER_SEP( "1.25pt" ) | p_options;
@@ -199,5 +205,4 @@ namespace TIKZ {
                                       | OPT::DOUBLE_DISTANCE( ".75pt" ) );
         }
     }
-
 } // namespace TIKZ

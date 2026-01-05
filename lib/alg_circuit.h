@@ -413,8 +413,92 @@ namespace ALG {
     };
 
     template <typename R, typename T = R>
+    struct subcircuit_gate : public gate<R, T> {
+        std::shared_ptr<output_gate<R, T>>                              m_op;
+        std::deque<std::pair<std::string, std::shared_ptr<gate<R, T>>>> m_children;
+
+        inline subcircuit_gate(
+            const std::string& p_name, std::shared_ptr<output_gate<R, T>> p_op,
+            const std::deque<std::pair<std::string, std::shared_ptr<gate<R, T>>>>& p_children )
+            : m_op{ p_op }, m_children{ p_children } {
+            gate<R, T>::m_name = p_name;
+        }
+
+        inline subcircuit_gate( const std::string& p_name, std::shared_ptr<output_gate<R, T>> p_op )
+            : m_op{ p_op } {
+            gate<R, T>::m_name = p_name;
+
+            m_children = std::deque<std::pair<std::string, std::shared_ptr<gate<R, T>>>>{ };
+
+            for( const auto& input : m_op->inputs( ) ) {
+                m_children.push_back( { input, std::make_shared<input_gate<R, T>>( input ) } );
+            }
+        }
+
+        inline virtual bool is_operator( ) const {
+            return true;
+        }
+
+        inline virtual std::deque<std::shared_ptr<gate<R, T>>> children( ) const {
+            std::deque<std::shared_ptr<gate<R, T>>> res{ };
+            for( const auto& [ n, c ] : m_children ) { res.push_back( c ); }
+            return res;
+        }
+
+        inline virtual u64 depth( ) const {
+            u64 res = 0;
+            for( const auto& [ n, c ] : m_children ) { res = std::max( res, c->depth( ) ); }
+            return 1 + res;
+        }
+
+        inline R evaluate( circuit_input<R> p_input ) const {
+            circuit_input<R> sc_in{ };
+            for( const auto& [ n, c ] : m_children ) { sc_in[ n ] = c->evaluate( p_input ); }
+            return m_op->evaluate( sc_in );
+        }
+
+        inline R evaluate( std::function<R( const std::string& )> p_input ) const {
+            circuit_input<R> sc_in{ };
+            for( const auto& [ n, c ] : m_children ) { sc_in[ n ] = c->evaluate( p_input ); }
+            return m_op->evaluate( sc_in );
+        }
+
+        virtual inline std::shared_ptr<gate<R, T>>
+        instantiate( function_input<T>                                   p_input,
+                     std::function<std::string( const std::string&, T )> p_nameFunction ) const {
+            std::deque<std::pair<std::string, std::shared_ptr<gate<R, T>>>> res{ };
+            for( const auto& [ n, c ] : m_children ) {
+                res.push_back( { n, c->instantiate( p_input, p_nameFunction ) } );
+            }
+            return std::make_shared<subcircuit_gate<R, T>>( gate<R, T>::m_name, m_op, res );
+        }
+
+        virtual inline std::shared_ptr<gate<R, T>>
+        replace_input( const std::string&          p_inputGateName,
+                       std::shared_ptr<gate<R, T>> p_replacement ) const {
+            std::deque<std::pair<std::string, std::shared_ptr<gate<R, T>>>> res{ };
+            for( const auto& [ n, c ] : m_children ) {
+                res.push_back( { n, c->replace_input( p_inputGateName, p_replacement ) } );
+            }
+            return std::make_shared<subcircuit_gate<R, T>>( gate<R, T>::m_name, m_op, res );
+        }
+
+        virtual inline std::set<std::string> inputs( ) const {
+            std::set<std::string> res;
+            for( const auto& [ n, c ] : m_children ) { res.merge( c->inputs( ) ); }
+            return res;
+        }
+    };
+
+    template <typename R, typename T = R>
     struct circuit {
         std::deque<std::shared_ptr<output_gate<R, T>>> m_outputs;
+
+        circuit<R, T> merge( const circuit<R, T>& p_other ) const {
+            circuit<R, T> res{ m_outputs };
+            res.m_outputs.append_range( p_other.m_outputs );
+            return res;
+        }
 
         inline u64 depth( ) const {
             u64 d = 0;
