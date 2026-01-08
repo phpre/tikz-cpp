@@ -1348,6 +1348,11 @@ FILE_SIMPLE( p_extra2, {
                                compute_breakpoints_mism( "saarbr\xfc"
                                                          "cken",
                                                          "sarrebruck" ) );
+
+        add_alignment_picture( doc, "semfe", "sefte",
+                               compute_breakpoints_mism( "semfe", "sefte" ) );
+        add_alignment_picture( doc, "semfe", "semeli" );
+
         CROSS_FILL = cf;
     }
 } )
