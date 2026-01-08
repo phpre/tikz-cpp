@@ -163,6 +163,32 @@ namespace ALG {
         return res;
     }
 
+    breakpoint_repn compute_breakpoints_mism( const std::string& p_P, const std::string& p_T,
+                                              const std::string& p_wildcard, bool p_wcInOutput ) {
+        auto m  = p_P.size( );
+        auto n  = p_T.size( );
+        char wc = ( p_wildcard == EMPTY_STR || !p_wildcard.length( ) ) ? 0 : p_wildcard[ 0 ];
+
+        breakpoint_repn cur{ };
+        cur.push_back( breakpoint{ 0, 0 } );
+
+        for( u64 j = 0; j < m && j < n; ++j ) {
+            if( !match( p_P[ j ], p_T[ j ], wc ) ) {
+                cur.push_back( breakpoint{ j, j, p_P[ j ], p_T[ j ] } );
+            }
+            if( p_wcInOutput && ( p_P[ j ] == wc || p_T[ j ] == wc ) ) {
+                cur.push_back( breakpoint{ j, j, p_P[ j ], p_T[ j ] } );
+            }
+        }
+        if( m < n ) {
+            cur.push_back( breakpoint{ m, m } );
+        } else {
+            cur.push_back( breakpoint{ n, n } );
+        }
+
+        return cur;
+    }
+
     std::deque<breakpoint_repn> compute_occs_with_mism( const std::string& p_P,
                                                         const std::string& p_T, u64 p_threshold,
                                                         const std::string& p_wildcard,

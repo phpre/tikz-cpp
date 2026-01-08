@@ -1282,11 +1282,13 @@ FILE_SIMPLE( p_f_apm_analyze_proof, {
 } )
 
 FILE_SIMPLE( p_extra1, {
+    int _a;
+    (void) _a;
     WITH_PICTURE( pic, { }, doc ) {
         std::string T  = "acabb";
         std::string P  = "cabba";
         auto        bp = compute_breakpoints( P, T, WILDCARD );
-        auto T_NAME
+        auto        T_NAME
             = stylized_string{ T, "T", str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS }
                   .add_wildcards( T, chr_displ_t::SHOW_ID_IF_WILDCARD );
         auto P_NAME
@@ -1298,11 +1300,9 @@ FILE_SIMPLE( p_extra1, {
         doc.add_picture( pic );
         place_weighted_alignment_on_coordinates( pic, vg, bp );
         doc.add_picture( pic );
-        cost_table w{
-            { { 'a', 0 }, 10 }
-        };
-        auto bp2 = reweight( bp, w );
-        auto bp3 = compute_breakpoints( P, T, w, WILDCARD );
+        cost_table w{ { { 'a', 0 }, 10 } };
+        auto       bp2 = reweight( bp, w );
+        auto       bp3 = compute_breakpoints( P, T, w, WILDCARD );
         place_weighted_alignment_on_coordinates( pic, vg, bp2 );
         doc.add_picture( pic );
 
@@ -1318,7 +1318,38 @@ FILE_SIMPLE( p_extra1, {
         SUB_COL = COLOR_C5;
         SEP_COL = COLOR_C2;
         place_weighted_alignment_on_coordinates( pic, vg, bp3 );
-}
+    }
+} )
+
+FILE_SIMPLE( p_extra2, {
+    int _a;
+    (void) _a;
+    WITH_PICTURE( pic, { }, doc ) {
+        bool cf    = CROSS_FILL;
+        CROSS_FILL = true;
+        add_alignment_picture( doc,
+                               "saarbr\xfc"
+                               "cken",
+                               "saarbruecken",
+                               compute_breakpoints_mism( "saarbr\xfc"
+                                                         "cken",
+                                                         "saarbruecken" ) );
+        add_alignment_picture( doc,
+                               "saarbr\xfc"
+                               "cken",
+                               "saarbrucken",
+                               compute_breakpoints_mism( "saarbr\xfc"
+                                                         "cken",
+                                                         "saarbrucken" ) );
+        add_alignment_picture( doc,
+                               "saarbr\xfc"
+                               "cken",
+                               "sarrebruck",
+                               compute_breakpoints_mism( "saarbr\xfc"
+                                                         "cken",
+                                                         "sarrebruck" ) );
+        CROSS_FILL = cf;
+    }
 } )
 
 // ---------------------------------------------------------------------------------------------

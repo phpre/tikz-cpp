@@ -98,6 +98,10 @@ namespace ALG {
         return res;
     }
 
+    breakpoint_repn compute_breakpoints_mism( const std::string& p_P, const std::string& p_T,
+                                              const std::string& p_wildcard   = WILDCARD,
+                                              bool               p_wcInOutput = true );
+
     breakpoint_repn compute_breakpoints( const std::string& p_P, const std::string& p_T,
                                          const cost_table&  p_w,
                                          const std::string& p_wildcard   = WILDCARD,
