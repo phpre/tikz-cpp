@@ -255,9 +255,9 @@ namespace ALG {
             }
         }
 
-        if( m + p_threshold > n ) { return { }; }
+        if( m > p_threshold && m - p_threshold > n ) { return { }; }
         for( u64 t = 0; t <= n - m + p_threshold; ++t ) {
-            if( nw_dp[ m ][ n - t ] > p_threshold ) { continue; }
+            if( t > n || nw_dp[ m ][ n - t ] > p_threshold ) { continue; }
 
             point           pos{ 0, t };
             breakpoint_repn res{ };

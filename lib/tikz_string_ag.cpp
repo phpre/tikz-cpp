@@ -14,21 +14,37 @@ namespace TIKZ {
     vertex_grid place_alignment_graph( picture& p_pic, const std::string& p_P, fragmentco p_fragP,
                                        const std::string& p_T, fragmentco p_fragT,
                                        tikz_point p_gridCellSize, tikz_point p_gridTopLeft,
-                                       color p_color ) {
+                                       color p_color, u64 p_limit ) {
         vertex_grid vg{ p_gridTopLeft, p_gridCellSize };
-        vg.place_vertices( p_pic, vertex::unselected_vertex( p_color ), p_fragT.length( ) + 1,
-                           p_fragP.length( ) + 1, p_fragT.closed_begin( ),
-                           p_fragP.closed_begin( ) );
+
+        if( !p_limit ) {
+            vg.place_vertices( p_pic, vertex::unselected_vertex( p_color ), p_fragT.length( ) + 1,
+                               p_fragP.length( ) + 1, p_fragT.closed_begin( ),
+                               p_fragP.closed_begin( ) );
+        } else {
+            vg.place_vertices( p_pic, vertex::unselected_vertex( p_color.deemphasize_strong( ) ),
+                               p_fragT.length( ) + 1, p_fragP.length( ) + 1,
+                               p_fragT.closed_begin( ), p_fragP.closed_begin( ) );
+            for( u64 d = 0; d <= p_limit; ++d ) {
+                vg.place_diagonal( p_pic, vertex::unselected_vertex( p_color ),
+                                   p_fragP.length( ) + 1 - d, p_fragT.closed_begin( ),
+                                   p_fragP.closed_begin( ) + d );
+                vg.place_diagonal( p_pic, vertex::unselected_vertex( p_color ),
+                                   std::min( p_fragP.length( ) + 1, p_fragT.length( ) + 1 - d ),
+                                   p_fragT.closed_begin( ) + d, p_fragP.closed_begin( ) );
+            }
+        }
+
+        s64 idiag = static_cast<s64>( p_fragT.closed_begin( ) )
+                    - static_cast<s64>( p_fragP.closed_begin( ) );
 
         for( u64 x = p_fragT.closed_begin( ); x <= p_fragT.open_end( ); ++x ) {
             for( u64 y = p_fragP.closed_begin( ); y <= p_fragP.open_end( ); ++y ) {
-                if( x > p_fragT.closed_begin( ) ) {
-                    place_arrow( p_pic, vg.label_for_pos( x - 1, y ), vg.label_for_pos( x, y ),
-                                 OPT::DRAW( INS_COL.deemphasize_strong( ) ) );
-                }
-                if( y > p_fragP.closed_begin( ) ) {
-                    place_arrow( p_pic, vg.label_for_pos( x, y - 1 ), vg.label_for_pos( x, y ),
-                                 OPT::DRAW( DEL_COL.deemphasize_strong( ) ) );
+                s64 diag = static_cast<s64>( x ) - static_cast<s64>( y );
+                if( p_limit
+                    && ( diag - idiag > static_cast<s64>( p_limit )
+                         || idiag - diag > static_cast<s64>( p_limit ) ) ) {
+                    continue;
                 }
                 if( x > p_fragT.closed_begin( ) && y > p_fragP.closed_begin( ) ) {
                     if( p_P[ y - 1 ] == p_T[ x - 1 ] ) {
@@ -40,6 +56,17 @@ namespace TIKZ {
                                      vg.label_for_pos( x, y ),
                                      OPT::DRAW( SUB_COL.deemphasize_strong( ) ) );
                     }
+                }
+                if( p_limit && idiag - diag + 1 > static_cast<s64>( p_limit ) ) {
+                } else if( x > p_fragT.closed_begin( ) ) {
+                    place_arrow( p_pic, vg.label_for_pos( x - 1, y ), vg.label_for_pos( x, y ),
+                                 OPT::DRAW( INS_COL.deemphasize_strong( ) ) );
+                }
+
+                if( p_limit && diag - idiag + 1 > static_cast<s64>( p_limit ) ) {
+                } else if( y > p_fragP.closed_begin( ) ) {
+                    place_arrow( p_pic, vg.label_for_pos( x, y - 1 ), vg.label_for_pos( x, y ),
+                                 OPT::DRAW( DEL_COL.deemphasize_strong( ) ) );
                 }
             }
         }

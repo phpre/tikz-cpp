@@ -123,12 +123,12 @@ namespace TIKZ {
                                               tikz_point p_gridTopLeft = tikz_point{ 0.0, 0.0 },
                                               color      p_color = COLOR_BLACK.deemphasize( ) );
 
-    vertex_grid place_alignment_graph( picture& p_pic, const std::string& p_P, fragmentco p_fragP,
-                                       const std::string& p_T, fragmentco p_fragT,
-                                       tikz_point p_gridCellSize
-                                       = tikz_point{ CHAR_WIDTH, -CHAR_HEIGHT },
-                                       tikz_point p_gridTopLeft = tikz_point{ 0.0, 0.0 },
-                                       color      p_vertexColor = COLOR_BLACK.deemphasize( ) );
+    vertex_grid
+    place_alignment_graph( picture& p_pic, const std::string& p_P, fragmentco p_fragP,
+                           const std::string& p_T, fragmentco p_fragT,
+                           tikz_point p_gridCellSize = tikz_point{ CHAR_WIDTH, -CHAR_HEIGHT },
+                           tikz_point p_gridTopLeft  = tikz_point{ 0.0, 0.0 },
+                           color p_vertexColor = COLOR_BLACK.deemphasize( ), u64 p_limit = 0 );
 
     void place_alignment_on_coordinates( picture& p_pic, const vertex_grid& p_vg,
                                          const breakpoint_repn& p_brpnt, bool p_singleStep = true,
