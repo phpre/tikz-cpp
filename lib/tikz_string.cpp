@@ -250,7 +250,8 @@ namespace TIKZ {
         for( u64 i = 0; i < p_S.length( ); ++i ) {
             double cor1 = i ? .01 : 0, cor2 = ( i + 1 < p_S.length( ) ) ? .01 : 0;
             auto   col = p_S.m_color;
-            col.replace_if_non_empty( p_S.annotation_at_pos( i ).m_textColor );
+            col.replace_if_non_empty(
+                p_S.annotation_at_pos( i + p_S.m_fragment.closed_begin( ) ).m_textColor );
             place_character_outline( p_pic, p_StopLeft + tikz_point{ i * CHAR_WIDTH, 0.0 }, col,
                                      p_options, cor1, 0.0, -cor2, 0.0 );
         }
@@ -268,7 +269,7 @@ namespace TIKZ {
         }
         for( u64 i = 0; i < p_S.length( ); ++i ) {
             double cor1 = i ? .04 : .05, cor2 = ( i + 1 < p_S.length( ) ) ? .04 : .05;
-            auto   ann = p_S.annotation_at_pos( i );
+            auto   ann = p_S.annotation_at_pos( i + p_S.m_fragment.closed_begin( ) );
             if( ann.m_bgColor.is_non_empty( ) ) {
                 auto bgcol = ann.m_bgColor;
                 p_pic.place_rectangle(
@@ -575,6 +576,7 @@ namespace TIKZ {
         bool printBreakpoints      = p_style & AT_PRINT_BREAKPOINTS;
         bool printExtraStringParts = p_style & AT_PRINT_EXTRA_STRING_PARTS;
         bool costs                 = p_style & AT_SHOW_EDIT_COST;
+        bool showPosNumber         = p_style & AT_ANNOTATE_POS;
 
         stylized_string pnew{ p_P.m_name, p_P.m_fragment,
                               p_P.m_displayStyle | str_displ_t::SHOW_CHARACTERS };
@@ -798,6 +800,29 @@ namespace TIKZ {
         if( compress ) {
             place_string( p_pic, pnew, tikz_point{ pxinit, p_PtopLeft.m_y } );
             place_string( p_pic, tnew, tikz_point{ txinit, p_TtopLeft.m_y } );
+
+            if( showPosNumber ) {
+                for( u64 x = tnew.m_fragment.closed_begin( ); x < tnew.m_fragment.open_end( );
+                     ++x ) {
+                    p_pic.place_text(
+                        textsize_footnotesize( std::to_string( x ) ),
+                        tikz_point{
+                            txinit + ( 0.5 + x - tnew.m_fragment.closed_begin( ) ) * CHAR_WIDTH,
+                            p_TtopLeft.m_y },
+                        OPT::INNER_SEP( "2pt" ) | OPT::ANCHOR_SOUTH
+                            | OPT::TEXT_COLOR( COLOR_TEXT.deemphasize_weak( ) ) );
+                }
+                for( u64 x = pnew.m_fragment.closed_begin( ); x < pnew.m_fragment.open_end( );
+                     ++x ) {
+                    p_pic.place_text(
+                        textsize_footnotesize( std::to_string( x ) ),
+                        tikz_point{
+                            pxinit + ( 0.5 + x - pnew.m_fragment.closed_begin( ) ) * CHAR_WIDTH,
+                            p_PtopLeft.m_y - CHAR_HEIGHT },
+                        OPT::INNER_SEP( "2pt" ) | OPT::ANCHOR_NORTH
+                            | OPT::TEXT_COLOR( COLOR_TEXT.deemphasize_weak( ) ) );
+                }
+            }
         }
 
         if( costs ) {
