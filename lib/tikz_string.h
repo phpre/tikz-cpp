@@ -94,6 +94,7 @@ namespace TIKZ {
     constexpr alignment_style_t AT_COMPRESS                 = ( 1 << 2 );
     constexpr alignment_style_t AT_SHOW_MATCHED_CHARACTERS  = ( 1 << 4 );
     constexpr alignment_style_t AT_SHOW_EDIT_COST           = ( 1 << 5 );
+    constexpr alignment_style_t AT_ANNOTATE_POS             = ( 1 << 6 );
 
     constexpr alignment_style_t AT_DEFAULT = AT_PRINT_BREAKPOINTS;
     constexpr alignment_style_t AT_OCCS_DEFAULT
@@ -105,7 +106,7 @@ namespace TIKZ {
                      const stylized_string& p_T, tikz_point p_TtopLeft,
                      const breakpoint_repn& p_brpnt, alignment_style_t p_style = AT_DEFAULT );
 
-    enum class occ_style_t { NO_ANNOTATION, STARTING_POS, ALL_POS, OCC_FULL };
+    enum class occ_style_t { NO_ANNOTATION, STARTING_POS, ALL_POS, OCC_FULL, CHAR_POS };
     void place_highlighted_occurrence( picture& p_pic, const stylized_string& p_P,
                                        tikz_point p_PtopLeft, const stylized_string& p_T,
                                        tikz_point                         p_TtopLeft,

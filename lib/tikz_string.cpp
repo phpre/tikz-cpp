@@ -818,7 +818,8 @@ namespace TIKZ {
                                        const std::deque<breakpoint_repn>& p_occs, u64 p_selectedOcc,
                                        occ_style_t p_occstyle ) {
         alignment_style_t alstyle = AT_OCCS_DEFAULT;
-        std::deque<bool>  has_occ{ };
+        if( p_occstyle == occ_style_t::CHAR_POS ) { alstyle |= AT_ANNOTATE_POS; }
+        std::deque<bool> has_occ{ };
         for( u64 y = 0; y < p_occs.size( ); ++y ) {
             while( has_occ.size( ) < p_occs[ y ].front( ).m_posT ) { has_occ.push_back( false ); }
             has_occ.push_back( true );
