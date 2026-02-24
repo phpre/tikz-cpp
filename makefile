@@ -90,7 +90,7 @@ THIS_FILE := $(lastword $(MAKEFILE_LIST))
 generate_figures_%: $(BINDIR)/%
 	@mkdir -p $(FIGDIR)
 	@mkdir -p $(OUTDIR)
-	$(SILENTCMD)$< "$(FIGDIR)/$(notdir $<)_" "$(TEXDIR)/"
+	$(SILENTCMD)$< "$(FIGDIR)/$(notdir $<)=" "$(TEXDIR)/"
 
 $(FIGDIR)/%.pdf: $(FIGDIR)/%.tex
 	$(SILENTMSG) "TEX $<"
@@ -99,11 +99,12 @@ $(FIGDIR)/%.pdf: $(FIGDIR)/%.tex
 
 figures: $(PDFS)
 	@mkdir -p $(OUTDIR)
-	@pdfunite $^ $(OUTDIR)/combined.pdf
+	$(SILENTCMD)pdfunite $^ $(OUTDIR)/combined.pdf
 
 generate_figures: $(GEN_FIGS)
 	@$(MAKE) -f $(THIS_FILE) figures
-	$(SILENTCMD)cp $(FIGDIR)/*.pdf $(OUTDIR)
+	@$(foreach file, $(wildcard $(FIGDIR)/*.pdf), mkdir -p $(subst $(FIGDIR),$(OUTDIR),$(firstword $(subst =, ,$(file))));)
+	@$(foreach file, $(wildcard $(FIGDIR)/*.pdf), cp $(file) $(subst $(FIGDIR),$(OUTDIR),$(subst =,/,$(file)));)
 
 clean:
 	$(SILENTCMD)rm -r $(OBJLIBDIR) $(OBJDIR) $(BINDIR) $(FIGDIR) || true
