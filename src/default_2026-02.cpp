@@ -30,7 +30,7 @@ struct inference_graph {
 
             for( u64 i = 0; i < m_P.size( ) + m_T.size( ) + 1; ++i ) {
                 _isRed.push_back( false );
-                if( !_color[ i ] ) { color( i, _isRed.size( ) ); }
+                if( !_color[ i ] ) { color( i, _isRed.size( ) - 1 ); }
             }
             return;
         }
@@ -59,14 +59,39 @@ struct inference_graph {
         return m_P.size( ) + m_T.size( );
     }
 
+    inline bool is_red( u64 p_vtx ) const {
+        return _isRed[ _color[ p_vtx ] ];
+    }
+
+    inline std::string mid_label( u64 p_start, const std::string& p_pname,
+                                  const std::string& p_tname ) const {
+        if( p_start < m_P.size( ) ) {
+            return p_pname + "_mid";
+        } else if( p_start < m_T.size( ) + m_P.size( ) ) {
+            return p_tname + "_mid";
+        }
+        return "";
+    }
+
+    inline std::string label_for_vtx( u64 p_vtx, const std::string& p_pname,
+                                      const std::string& p_tname ) const {
+        if( p_vtx < m_P.size( ) ) {
+            return p_pname + "_" + std::to_string( p_vtx );
+        } else if( p_vtx < m_T.size( ) + m_P.size( ) ) {
+            return p_tname + "_" + std::to_string( p_vtx - m_P.size( ) );
+        } else {
+            return "bot";
+        }
+    }
+
     inline u64 neighbor( u64 p_vtx, breakpoint p_bp ) const {
-        if( p_bp.m_posP == vertex_P( p_vtx ) ) {
+        if( vertex_P( p_bp.m_posP ) == p_vtx ) {
             if( p_bp.m_charT ) {
                 return vertex_T( p_bp.m_posT );
             } else {
                 return vertex_bot( );
             }
-        } else if( p_bp.m_posT == vertex_T( p_vtx ) ) {
+        } else if( vertex_T( p_bp.m_posT ) == p_vtx ) {
             if( p_bp.m_charP ) {
                 return vertex_P( p_bp.m_posP );
             } else {
@@ -80,7 +105,7 @@ struct inference_graph {
             }
         }
 
-        return vertex_bot( ) + 1;
+        return vertex_bot( ) + 1000;
     }
 
     inference_graph( const std::string& p_P, const std::string& p_T ) : m_P{ p_P }, m_T{ p_T } {
@@ -153,7 +178,6 @@ struct inference_graph {
     }
 };
 
-// - draw basic graph, return labels for vertex positions
 // - draw edge between two vertices (either red/black) (should get breakpoint)
 //  ~> draw cc
 //   ~> draw all cc
@@ -163,6 +187,100 @@ struct inference_graph {
 //      non-default pictures
 //
 // ---------------------------------------------------------------------------------------------
+
+void place_inference_graph_edge( picture& p_pic, const inference_graph& p_ig, u64 p_start,
+                                 u64 p_end, const std::string& p_pname, const std::string& p_tname,
+                                 bool p_red = false ) {
+    if( p_start == p_ig.vertex_bot( ) ) { std::swap( p_start, p_end ); }
+    if( p_end == p_ig.vertex_bot( ) ) {
+        p_pic.place_vhv_line( p_ig.label_for_vtx( p_start, p_pname, p_tname ),
+                              p_ig.mid_label( p_start, p_pname, p_tname ),
+                              p_ig.label_for_vtx( p_end, p_pname, p_tname ),
+                              OPT::DOUBLE( COLOR_C3.to_bg( ) ) | OPT::DOUBLE_DISTANCE( "0.75pt" )
+                                  | OPT::DRAW( COLOR_C3 ) | OPT::ROUNDED_CORNERS( "3pt" ) );
+    } else if( !p_red ) {
+        p_pic.place_line( p_ig.label_for_vtx( p_start, p_pname, p_tname ),
+                          p_ig.label_for_vtx( p_end, p_pname, p_tname ),
+                          OPT::DOUBLE( COLOR_TEXT ) | OPT::DOUBLE_DISTANCE( "0.75pt" )
+                              | OPT::DRAW( COLOR_FILL_WHITE ) );
+    } else {
+        p_pic.place_line( p_ig.label_for_vtx( p_start, p_pname, p_tname ),
+                          p_ig.label_for_vtx( p_end, p_pname, p_tname ),
+                          OPT::DOUBLE( COLOR_C3.to_bg( ) ) | OPT::DOUBLE_DISTANCE( "0.75pt" )
+                              | OPT::DRAW( COLOR_C3 ) );
+    }
+}
+
+std::vector<std::pair<std::string, bool>>
+place_inference_graph_coordinates( picture& p_pic, const inference_graph& p_ig,
+                                   const std::string& p_pname, const std::string& p_tname,
+                                   tikz_point p_PtopLeft, tikz_point p_TtopLeft, u64 p_pShift = 0,
+                                   bool p_showStringNames = true ) {
+    std::vector<std::pair<std::string, bool>> res{ };
+
+    // place string names
+    if( p_showStringNames ) {
+        p_pic.place_text( math_mode( VSIZE_CORRECTION + p_pname ),
+                          p_PtopLeft + tikz_point{ -1 * CHAR_WIDTH, -.5 * CHAR_HEIGHT } );
+        p_pic.place_text( math_mode( VSIZE_CORRECTION + p_tname ),
+                          p_TtopLeft + tikz_point{ -1 * CHAR_WIDTH, -.5 * CHAR_HEIGHT } );
+    }
+
+    // place strings
+    place_string( p_pic, stylized_string{ p_ig.m_T, p_tname }, p_TtopLeft );
+    place_string( p_pic, stylized_string{ p_ig.m_P, p_pname },
+                  p_PtopLeft + ( p_pShift * CHAR_WIDTH ) );
+
+    // place position number
+    // place coordinates
+    for( u64 x = 0; x < p_ig.m_P.size( ); ++x ) {
+        p_pic.place_text( textsize_footnotesize( std::to_string( x ) ),
+                          tikz_point{ p_PtopLeft.m_x + ( 0.5 + x + p_pShift ) * CHAR_WIDTH,
+                                      p_PtopLeft.m_y - CHAR_HEIGHT },
+                          OPT::INNER_SEP( "2pt" ) | OPT::ANCHOR_NORTH
+                              | OPT::TEXT_COLOR( COLOR_TEXT.deemphasize_weak( ) ) );
+
+        tikz_point  pt{ p_PtopLeft.m_x + ( 0.5 + x + p_pShift ) * CHAR_WIDTH,
+                        p_PtopLeft.m_y + .875 * CHAR_HEIGHT };
+        std::string label = p_ig.label_for_vtx( p_ig.vertex_P( x ), p_pname, p_tname );
+        p_pic.place_coordinate( pt, label );
+        res.push_back( { label, p_ig.is_red( p_ig.vertex_P( x ) ) } );
+    }
+    for( u64 x = 0; x < p_ig.m_T.size( ); ++x ) {
+        p_pic.place_text( textsize_footnotesize( std::to_string( x ) ),
+                          tikz_point{ p_TtopLeft.m_x + ( 0.5 + x ) * CHAR_WIDTH, p_TtopLeft.m_y },
+                          OPT::INNER_SEP( "2pt" ) | OPT::ANCHOR_SOUTH
+                              | OPT::TEXT_COLOR( COLOR_TEXT.deemphasize_weak( ) ) );
+
+        tikz_point  pt{ p_TtopLeft.m_x + ( 0.5 + x ) * CHAR_WIDTH,
+                        p_TtopLeft.m_y - 1.875 * CHAR_HEIGHT };
+        std::string label = p_ig.label_for_vtx( p_ig.vertex_T( x ), p_pname, p_tname );
+        p_pic.place_coordinate( pt, label );
+        res.push_back( { label, p_ig.is_red( p_ig.vertex_T( x ) ) } );
+    }
+
+    // place bot vertex
+    tikz_point  pt{ p_TtopLeft.m_x + ( .75 + p_ig.m_T.size( ) ) * CHAR_WIDTH,
+                    ( p_TtopLeft.m_y + p_PtopLeft.m_y - CHAR_HEIGHT ) / 2.0 };
+    std::string label = p_ig.label_for_vtx( p_ig.vertex_bot( ), p_pname, p_tname );
+    p_pic.place_coordinate( pt, label );
+    res.push_back( { label, true } );
+
+    // place dummy mid coordinates
+    tikz_point ptt{ p_TtopLeft.m_x + ( .125 + p_ig.m_T.size( ) ) * CHAR_WIDTH,
+                    p_TtopLeft.m_y - 1.375 * CHAR_HEIGHT };
+    p_pic.place_coordinate( ptt, p_ig.mid_label( p_ig.vertex_T( 0 ), p_pname, p_tname ) );
+    tikz_point ptp{ p_TtopLeft.m_x + ( .125 + p_ig.m_T.size( ) ) * CHAR_WIDTH,
+                    p_PtopLeft.m_y + .375 * CHAR_HEIGHT };
+    p_pic.place_coordinate( ptp, p_ig.mid_label( p_ig.vertex_P( 0 ), p_pname, p_tname ) );
+
+    if( p_showStringNames ) {
+        p_pic.place_text( math_mode( "\\bot" ), pt + ( CHAR_WIDTH / 4.0 ),
+                          OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
+    }
+
+    return res;
+}
 
 // ---------------------------------------------------------------------------------------------
 //
@@ -202,16 +320,41 @@ FILE_SIMPLE( g01, {
                               occ_style_t::CHAR_POS );
 
     {
-        inference_graph i_g{ P, T };
+        inference_graph ig{ P, T };
         for( const auto& bp : bps2 ) {
-            i_g.add_alignment( bp );
+            ig.add_alignment( bp );
 
-            printf( "P %s %s\nT %s %s\n\n", i_g.color_P( ).c_str( ), i_g.black_P( ).c_str( ),
-                    i_g.color_T( ).c_str( ), i_g.black_T( ).c_str( ) );
+            WITH_PICTURE( pic, { }, doc ) {
+                auto vtc = place_inference_graph_coordinates(
+                    pic, ig, "P", "T", { 0, -5 * CHAR_HEIGHT }, { 0, 0 * CHAR_HEIGHT }, 3 );
 
-            // draw vertices
-            // draw edges
-            // highlight 1 cc
+                for( u64 i = 0; i <= ig.vertex_bot( ); ++i ) {
+                    for( const auto& e : ig.m_edges[ i ] ) {
+                        auto n = ig.neighbor( i, e );
+                        if( n < i ) { continue; }
+
+                        place_inference_graph_edge( pic, ig, i, n, "P", "T",
+                                                    e.m_charT != e.m_charP );
+                    }
+                }
+                for( const auto& [ lb, red ] : vtc ) {
+                    if( red ) {
+                        place_vertex( pic, lb,
+                                      vertex::marked_vertex(
+                                          COLOR_C3, 1.25, .75, vertex::ST_CIRCLE,
+                                          vertex::unselected_vertex( COLOR_FILL_WHITE, .75 ) ) );
+                    } else {
+                        place_vertex(
+                            pic, lb,
+                            vertex::marked_vertex( COLOR_FILL_WHITE, 1.25, .75, vertex::ST_CIRCLE,
+                                                   vertex::unselected_vertex( COLOR_TEXT, .75 ) ) );
+                    }
+                }
+
+                // draw vertices
+                // draw edges
+                // highlight 1 cc
+            }
         }
     }
     /*
