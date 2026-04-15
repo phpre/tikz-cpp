@@ -145,6 +145,9 @@ namespace ALG {
         return compute_occs_with_mism( p_P, p_T, 0, p_wildcard, p_wcInOutput );
     }
 
+    // return a new breakpoint repn with all missing matching edges added
+    breakpoint_repn breakpoint_uncompress( const breakpoint_repn& p_brpts, const std::string& p_P );
+
     // compute A( P[ l .. r) )
     breakpoint_repn breakpoint_slice( const breakpoint_repn& p_brpts, fragmentco p_frag );
 

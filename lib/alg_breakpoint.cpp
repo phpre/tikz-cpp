@@ -311,6 +311,31 @@ namespace ALG {
         return ress;
     }
 
+    breakpoint_repn breakpoint_uncompress( const breakpoint_repn& p_brpts,
+                                           const std::string&     p_P ) {
+        breakpoint_repn result{ };
+
+        result.push_back( p_brpts.front( ) );
+
+        u64 posP  = p_brpts.front( ).m_posP;
+        s32 shift = p_brpts.front( ).shift_after( );
+
+        for( u64 i = 1; i < p_brpts.size( ); ++i ) {
+            const auto& cur = p_brpts[ i ];
+
+            while( posP < cur.m_posP ) {
+                result.push_back( { posP, posP - shift, p_P[ posP ], p_P[ posP ] } );
+                ++posP;
+            }
+
+            result.push_back( cur );
+            shift = cur.shift_after( );
+            if( cur.m_charP ) { posP++; }
+        }
+
+        return result;
+    }
+
     // compute A( P[ l .. r) )
     breakpoint_repn breakpoint_slice( const breakpoint_repn& p_brpts, fragmentco p_frag ) {
         breakpoint_repn result{ };
