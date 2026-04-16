@@ -3,9 +3,10 @@
 
 #include "tikz.h"
 using namespace TIKZ;
-std::string OUTDIR_DEFAULT  = "../figs/";
-std::string TEXDIR_DEFAULT  = "../tex/";
-std::string FONT_FILENAME   = "font_default";
+std::string OUTDIR_DEFAULT = "../figs/";
+std::string TEXDIR_DEFAULT = "../tex/";
+// std::string FONT_FILENAME   = "font_default";
+std::string FONT_FILENAME   = "font";
 std::string COLOR_FILENAME  = "color";
 std::string MACROS_FILENAME = "macros";
 
@@ -188,26 +189,24 @@ struct inference_graph {
 //
 // ---------------------------------------------------------------------------------------------
 
+constexpr auto MAIN_COLOR = COLOR_TEXT;
+constexpr auto RED_COLOR  = COLOR_C3;
+
 void place_inference_graph_edge( picture& p_pic, const inference_graph& p_ig, u64 p_start,
                                  u64 p_end, const std::string& p_pname, const std::string& p_tname,
-                                 bool p_red = false ) {
+                                 color p_color = MAIN_COLOR, color p_bgColor = COLOR_FILL_WHITE ) {
     if( p_start == p_ig.vertex_bot( ) ) { std::swap( p_start, p_end ); }
     if( p_end == p_ig.vertex_bot( ) ) {
         p_pic.place_vhv_line( p_ig.label_for_vtx( p_start, p_pname, p_tname ),
                               p_ig.mid_label( p_start, p_pname, p_tname ),
                               p_ig.label_for_vtx( p_end, p_pname, p_tname ),
-                              OPT::DOUBLE( COLOR_C3.to_bg( ) ) | OPT::DOUBLE_DISTANCE( "0.75pt" )
-                                  | OPT::DRAW( COLOR_C3 ) | OPT::ROUNDED_CORNERS( "3pt" ) );
-    } else if( !p_red ) {
-        p_pic.place_line( p_ig.label_for_vtx( p_start, p_pname, p_tname ),
-                          p_ig.label_for_vtx( p_end, p_pname, p_tname ),
-                          OPT::DOUBLE( COLOR_TEXT ) | OPT::DOUBLE_DISTANCE( "0.75pt" )
-                              | OPT::DRAW( COLOR_FILL_WHITE ) );
+                              OPT::DOUBLE( p_color ) | OPT::DOUBLE_DISTANCE( "0.75pt" )
+                                  | OPT::DRAW( p_bgColor ) | OPT::ROUNDED_CORNERS( "3pt" ) );
     } else {
         p_pic.place_line( p_ig.label_for_vtx( p_start, p_pname, p_tname ),
                           p_ig.label_for_vtx( p_end, p_pname, p_tname ),
-                          OPT::DOUBLE( COLOR_C3.to_bg( ) ) | OPT::DOUBLE_DISTANCE( "0.75pt" )
-                              | OPT::DRAW( COLOR_C3 ) );
+                          OPT::DOUBLE( p_color ) | OPT::DOUBLE_DISTANCE( "0.75pt" )
+                              | OPT::DRAW( p_bgColor ) );
     }
 }
 
@@ -226,10 +225,11 @@ place_inference_graph_coordinates( picture& p_pic, const inference_graph& p_ig,
                           p_TtopLeft + tikz_point{ -1 * CHAR_WIDTH, -.5 * CHAR_HEIGHT } );
     }
 
-    // place strings
-    place_string( p_pic, stylized_string{ p_ig.m_T, p_tname }, p_TtopLeft );
-    place_string( p_pic, stylized_string{ p_ig.m_P, p_pname },
-                  p_PtopLeft + ( p_pShift * CHAR_WIDTH ) );
+    auto pstr = stylized_string{ p_ig.m_P, p_tname,
+                                 str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
+
+    auto tstr = stylized_string{ p_ig.m_T, p_pname,
+                                 str_displ_t::SHOW_CHARACTERS | str_displ_t::SHOW_WILDCARDS };
 
     // place position number
     // place coordinates
@@ -245,6 +245,12 @@ place_inference_graph_coordinates( picture& p_pic, const inference_graph& p_ig,
         std::string label = p_ig.label_for_vtx( p_ig.vertex_P( x ), p_pname, p_tname );
         p_pic.place_coordinate( pt, label );
         res.push_back( { label, p_ig.is_red( p_ig.vertex_P( x ) ) } );
+
+        // mark red characters
+        if( p_ig.is_red( p_ig.vertex_P( x ) ) ) {
+            pstr.annotation_at_pos( x ).m_displayStyle |= chr_displ_t::RENDER_AS_FORMER_WILDCARD;
+            pstr.annotation_at_pos( x ).m_textColor = RED_COLOR.deemphasize_weak( );
+        }
     }
     for( u64 x = 0; x < p_ig.m_T.size( ); ++x ) {
         p_pic.place_text( textsize_footnotesize( std::to_string( x ) ),
@@ -257,6 +263,12 @@ place_inference_graph_coordinates( picture& p_pic, const inference_graph& p_ig,
         std::string label = p_ig.label_for_vtx( p_ig.vertex_T( x ), p_pname, p_tname );
         p_pic.place_coordinate( pt, label );
         res.push_back( { label, p_ig.is_red( p_ig.vertex_T( x ) ) } );
+
+        // mark red characters
+        if( p_ig.is_red( p_ig.vertex_T( x ) ) ) {
+            tstr.annotation_at_pos( x ).m_displayStyle |= chr_displ_t::RENDER_AS_FORMER_WILDCARD;
+            tstr.annotation_at_pos( x ).m_textColor = RED_COLOR.deemphasize_weak( );
+        }
     }
 
     // place bot vertex
@@ -274,6 +286,10 @@ place_inference_graph_coordinates( picture& p_pic, const inference_graph& p_ig,
                     p_PtopLeft.m_y + .375 * CHAR_HEIGHT };
     p_pic.place_coordinate( ptp, p_ig.mid_label( p_ig.vertex_P( 0 ), p_pname, p_tname ) );
 
+    // place strings
+
+    place_string( p_pic, tstr, p_TtopLeft );
+    place_string( p_pic, pstr, p_PtopLeft + ( p_pShift * CHAR_WIDTH ) );
     if( p_showStringNames ) {
         p_pic.place_text( math_mode( "\\bot" ), pt + ( CHAR_WIDTH / 4.0 ),
                           OPT::INNER_SEP( "0pt" ) | OPT::ANCHOR_WEST );
@@ -333,27 +349,148 @@ FILE_SIMPLE( g01, {
                         auto n = ig.neighbor( i, e );
                         if( n < i ) { continue; }
 
-                        place_inference_graph_edge( pic, ig, i, n, "P", "T",
-                                                    e.m_charT != e.m_charP );
-                    }
-                }
-                for( const auto& [ lb, red ] : vtc ) {
-                    if( red ) {
-                        place_vertex( pic, lb,
-                                      vertex::marked_vertex(
-                                          COLOR_C3, 1.25, .75, vertex::ST_CIRCLE,
-                                          vertex::unselected_vertex( COLOR_FILL_WHITE, .75 ) ) );
-                    } else {
-                        place_vertex(
-                            pic, lb,
-                            vertex::marked_vertex( COLOR_FILL_WHITE, 1.25, .75, vertex::ST_CIRCLE,
-                                                   vertex::unselected_vertex( COLOR_TEXT, .75 ) ) );
+                        if( e.m_charT != e.m_charP || !e.m_charT || !e.m_charP ) {
+                            place_inference_graph_edge( pic, ig, i, n, "P", "T", RED_COLOR.to_bg( ),
+                                                        RED_COLOR.deemphasize_strong( ) );
+                        } else {
+                            place_inference_graph_edge( pic, ig, i, n, "P", "T",
+                                                        MAIN_COLOR.deemphasize_strong( ),
+                                                        MAIN_COLOR.to_bg( ) );
+                        }
                     }
                 }
 
-                // draw vertices
-                // draw edges
-                // highlight 1 cc
+                std::set<u64> nwvtc{ };
+                // highlight new alignment
+                for( const auto& e : breakpoint_uncompress( bp, P ) ) {
+                    if( !e.m_charT && !e.m_charP ) { continue; }
+
+                    u64 st = !e.m_charP ? ig.vertex_bot( ) : ig.vertex_P( e.m_posP );
+                    u64 ed = !e.m_charT ? ig.vertex_bot( ) : ig.vertex_T( e.m_posT );
+                    nwvtc.insert( st );
+                    nwvtc.insert( ed );
+
+                    auto cc = ig.component( st );
+                    if( cc.first ) {
+                        for( auto vc : cc.second ) { nwvtc.insert( vc ); }
+                    }
+
+                    if( e.m_charT != e.m_charP || !e.m_charT || !e.m_charP ) {
+                        place_inference_graph_edge( pic, ig, st, ed, "P", "T", RED_COLOR.to_bg( ),
+                                                    RED_COLOR );
+                    } else {
+                        place_inference_graph_edge( pic, ig, st, ed, "P", "T", MAIN_COLOR,
+                                                    MAIN_COLOR.to_bg( ) );
+                    }
+                }
+
+                for( u64 i = 0; i < vtc.size( ); ++i ) {
+                    const auto& [ lb, red ] = vtc[ i ];
+                    if( nwvtc.count( i ) ) {
+                        if( red ) {
+                            place_vertex(
+                                pic, lb,
+                                vertex::marked_vertex(
+                                    RED_COLOR, 1.25, .75, vertex::ST_CIRCLE,
+                                    vertex::unselected_vertex( COLOR_FILL_WHITE, .75 ) ) );
+                        } else {
+                            place_vertex( pic, lb,
+                                          vertex::marked_vertex(
+                                              COLOR_FILL_WHITE, 1.25, .75, vertex::ST_CIRCLE,
+                                              vertex::unselected_vertex( MAIN_COLOR, .75 ) ) );
+                        }
+                    } else {
+                        if( red ) {
+                            place_vertex(
+                                pic, lb,
+                                vertex::marked_vertex(
+                                    RED_COLOR.deemphasize_strong( ), 1.25, .75, vertex::ST_CIRCLE,
+                                    vertex::unselected_vertex( COLOR_FILL_WHITE, .75 ) ) );
+                        } else {
+                            place_vertex( pic, lb,
+                                          vertex::marked_vertex(
+                                              COLOR_FILL_WHITE, 1.25, .75, vertex::ST_CIRCLE,
+                                              vertex::unselected_vertex(
+                                                  MAIN_COLOR.deemphasize_strong( ), .75 ) ) );
+                        }
+                    }
+                }
+            }
+            // highlight 1 cc
+            for( const auto& cc : ig.all_components( ) ) {
+                if( cc.second.empty( ) ) { continue; }
+                WITH_PICTURE( pic, { }, doc ) {
+                    auto vtc = place_inference_graph_coordinates(
+                        pic, ig, "P", "T", { 0, -5 * CHAR_HEIGHT }, { 0, 0 * CHAR_HEIGHT }, 3 );
+
+                    // place background
+                    for( u64 i = 0; i <= ig.vertex_bot( ); ++i ) {
+                        for( const auto& e : ig.m_edges[ i ] ) {
+                            auto n = ig.neighbor( i, e );
+                            if( n < i ) { continue; }
+
+                            if( e.m_charT != e.m_charP || !e.m_charT || !e.m_charP ) {
+                                place_inference_graph_edge( pic, ig, i, n, "P", "T",
+                                                            RED_COLOR.to_bg( ),
+                                                            RED_COLOR.deemphasize_strong( ) );
+                            } else {
+                                place_inference_graph_edge( pic, ig, i, n, "P", "T",
+                                                            MAIN_COLOR.deemphasize_strong( ),
+                                                            MAIN_COLOR.to_bg( ) );
+                            }
+                        }
+                    }
+
+                    std::set<u64> nwvtc{ };
+                    // place current cc
+                    for( auto i : cc.second ) {
+                        nwvtc.insert( i );
+                        for( const auto& e : ig.m_edges[ i ] ) {
+                            auto n = ig.neighbor( i, e );
+                            if( n < i ) { continue; }
+
+                            if( e.m_charT != e.m_charP || !e.m_charT || !e.m_charP ) {
+                                place_inference_graph_edge( pic, ig, i, n, "P", "T",
+                                                            RED_COLOR.to_bg( ), RED_COLOR );
+                            } else {
+                                place_inference_graph_edge( pic, ig, i, n, "P", "T", MAIN_COLOR,
+                                                            MAIN_COLOR.to_bg( ) );
+                            }
+                        }
+                    }
+                    for( u64 i = 0; i < vtc.size( ); ++i ) {
+                        const auto& [ lb, red ] = vtc[ i ];
+                        if( nwvtc.count( i ) ) {
+                            if( red ) {
+                                place_vertex(
+                                    pic, lb,
+                                    vertex::marked_vertex(
+                                        RED_COLOR, 1.25, .75, vertex::ST_CIRCLE,
+                                        vertex::unselected_vertex( COLOR_FILL_WHITE, .75 ) ) );
+                            } else {
+                                place_vertex( pic, lb,
+                                              vertex::marked_vertex(
+                                                  COLOR_FILL_WHITE, 1.25, .75, vertex::ST_CIRCLE,
+                                                  vertex::unselected_vertex( MAIN_COLOR, .75 ) ) );
+                            }
+                        } else {
+                            if( red ) {
+                                place_vertex(
+                                    pic, lb,
+                                    vertex::marked_vertex(
+                                        RED_COLOR.deemphasize_strong( ), 1.25, .75,
+                                        vertex::ST_CIRCLE,
+                                        vertex::unselected_vertex( COLOR_FILL_WHITE, .75 ) ) );
+                            } else {
+                                place_vertex( pic, lb,
+                                              vertex::marked_vertex(
+                                                  COLOR_FILL_WHITE, 1.25, .75, vertex::ST_CIRCLE,
+                                                  vertex::unselected_vertex(
+                                                      MAIN_COLOR.deemphasize_strong( ), .75 ) ) );
+                            }
+                        }
+                    }
+                }
             }
         }
     }
